@@ -149,7 +149,7 @@ namespace PrettyConsole {
             if (converter is not null) {
                 return (T)converter.ConvertFromString(input);
             }
-            return default(T);
+            return default;
         }
 
         public static void Clear() {
