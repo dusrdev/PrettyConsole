@@ -9,28 +9,89 @@ using System.Linq;
 namespace PrettyConsole {
     public static class Console {
         /// <summary>
+        /// Provides easy access to the colors which are used throughout this class
+        /// <para>Using this while optionally changing the default colors will make the interface more streamlined</para>
+        /// </summary>
+        public enum Color {
+            Primary,
+            Secondary,
+            Success,
+            Error,
+            Highlight
+        };
+
+        /// <summary>
+        /// Converts local colors to use the defaults that can be changed in this class
+        /// <para>this allows using different colors even without calling the built in System.ConsoleColor's</para>
+        /// </summary>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        private static ConsoleColor ConvertFromColor(Color color) {
+            return color switch {
+                Color.Primary => ColorPrimary,
+                Color.Secondary => ColorSecondary,
+                Color.Success => ColorSuccess,
+                Color.Error => ColorError,
+                Color.Highlight => ColorHighlight,
+                _ => ColorPrimary,
+            };
+        }
+
+        /// <summary>
         /// The base color of all texts
         /// </summary>
         /// <remarks>By default is <c>ConsoleColor.White</c></remarks>
-        public static ConsoleColor ColorBase { get; set; } = ConsoleColor.White;
+        public static ConsoleColor ColorPrimary { get; set; } = ConsoleColor.White;
 
         /// <summary>
-        /// The title color for advanced input options like selection or multi-selection
+        /// <para>The title color for advanced input options like selection or multi-selection</para>
         /// </summary>
-        /// <remarks>By default is <c>ConsoleColor.Cyan</c></remarks>
-        public static ConsoleColor ColorTitle { get; set; } = ConsoleColor.Cyan;
+        /// <remarks>By default is <c>ConsoleColor.Blue</c></remarks>
+        public static ConsoleColor ColorHighlight { get; set; } = ConsoleColor.Blue;
 
         /// <summary>
-        /// The highlight color
+        /// The color for success
         /// </summary>
         /// <remarks>By default is <c>ConsoleColor.Green</c></remarks>
-        public static ConsoleColor ColorHighlight { get; set; } = ConsoleColor.Green;
+        public static ConsoleColor ColorSuccess { get; set; } = ConsoleColor.Green;
+
+        /// <summary>
+        /// The color for error
+        /// </summary>
+        /// <remarks>By default is <c>ConsoleColor.Red</c></remarks>
+        public static ConsoleColor ColorError { get; set; } = ConsoleColor.Red;
+
+        /// <summary>
+        /// Secondary color - used for subtexts
+        /// </summary>
+        /// <remarks>By default is <c>ConsoleColor.Gray</c></remarks>
+        public static ConsoleColor ColorSecondary { get; set; } = ConsoleColor.Gray;
 
         /// <summary>
         /// The color of user inputs when requested from this class
         /// </summary>
-        /// <remarks>By default is <c>ConsoleColor.Green</c></remarks>
-        public static ConsoleColor ColorInput { get; set; } = ConsoleColor.Green;
+        /// <remarks>By default is <c>ConsoleColor.Gray</c></remarks>
+        public static ConsoleColor ColorInput { get; set; } = ConsoleColor.Gray;
+
+        /// <summary>
+        /// Used to set the colors which are used by default in most functions of the class
+        /// </summary>
+        /// <param name="primary"></param>
+        /// <param name="secondary"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        /// <param name="highlight"></param>
+        /// <param name="input"></param>
+        private static void SetColors(ConsoleColor primary = ConsoleColor.White, ConsoleColor secondary = ConsoleColor.Gray,
+            ConsoleColor success = ConsoleColor.Green, ConsoleColor error = ConsoleColor.Red,
+            ConsoleColor highlight = ConsoleColor.Blue, ConsoleColor input = ConsoleColor.Gray) {
+            ColorPrimary = primary;
+            ColorSecondary = secondary;
+            ColorSuccess = success;
+            ColorError = error;
+            ColorHighlight = highlight;
+            ColorInput = input;
+        }
 
         /// <summary>
         /// Write any object to the console in <b>ColorBase</b>
@@ -39,7 +100,7 @@ namespace PrettyConsole {
         /// To end line, use <b>WriteLine</b> with the same parameters
         /// </remarks>
         public static void Write(object o) {
-            Write(o, ColorBase);
+            Write(o, ColorPrimary);
         }
 
         /// <summary>
@@ -49,7 +110,7 @@ namespace PrettyConsole {
         /// To write without ending line, use <b>Write</b> with the same parameters
         /// </remarks>
         public static void WriteLine(object o) {
-            WriteLine(o, ColorBase);
+            WriteLine(o, ColorPrimary);
         }
 
         /// <summary>
@@ -66,6 +127,19 @@ namespace PrettyConsole {
         }
 
         /// <summary>
+        /// Write any object to the console in <paramref name="color"/>
+        /// </summary>
+        /// <remarks>
+        /// To end line, use <b>WriteLine</b> with the same parameters
+        /// </remarks>
+        public static void Write(object o, Color color) {
+            b.ResetColor();
+            b.ForegroundColor = ConvertFromColor(color);
+            b.Write(o);
+            b.ResetColor();
+        }
+
+        /// <summary>
         /// Write any object to the console in <paramref name="color"/> and ends line
         /// </summary>
         /// <remarks>
@@ -73,6 +147,17 @@ namespace PrettyConsole {
         /// </remarks>
         public static void WriteLine(object o, ConsoleColor color) {
             Write(o, color);
+            NewLine();
+        }
+
+        /// <summary>
+        /// Write any object to the console in <paramref name="color"/> and ends line
+        /// </summary>
+        /// <remarks>
+        /// To write without ending line, use <b>Write</b> with the same parameters
+        /// </remarks>
+        public static void WriteLine(object o, Color color) {
+            Write(o, ConvertFromColor(color));
             NewLine();
         }
 
@@ -95,6 +180,24 @@ namespace PrettyConsole {
         }
 
         /// <summary>
+        /// Write tuples of (<b>element</b>, <b>color</b>) to the console
+        /// </summary>
+        /// <remarks>
+        /// To end line, use <b>WriteLine</b> with the same parameters
+        /// </remarks>
+        public static void Write(params (object item, Color color)[] elements) {
+            if (elements is null || elements.Length is 0) {
+                throw new ArgumentException("Invalid parameters");
+            }
+            b.ResetColor();
+            foreach (var (o, c) in elements) {
+                b.ForegroundColor = ConvertFromColor(c);
+                b.Write(o);
+            }
+            b.ResetColor();
+        }
+
+        /// <summary>
         /// Write tuples of (<b>element</b>, <b>color</b>) to the console and ends line
         /// </summary>
         /// <remarks>
@@ -106,14 +209,25 @@ namespace PrettyConsole {
         }
 
         /// <summary>
+        /// Write tuples of (<b>element</b>, <b>color</b>) to the console and ends line
+        /// </summary>
+        /// <remarks>
+        /// To write without ending line, use <b>Write</b> with the same parameters
+        /// </remarks>
+        public static void WriteLine(params (object item, Color color)[] elements) {
+            Write(elements);
+            NewLine();
+        }
+
+        /// <summary>
         /// Used to wait for user input, you can customize <paramref name="message"/> or leave as default
         /// </summary>
         /// <param name="message"><b>Default value:</b> "Press any key to continue"</param>
         public static void RequestAnyInput(string message = "Press any key to continue") {
-            Write((message, ColorBase), ("... ", ColorHighlight));
+            Write((message, ColorPrimary), ("... ", ColorHighlight));
             b.ForegroundColor = ColorInput;
             _ = b.Read();
-            b.ForegroundColor = ColorBase;
+            b.ForegroundColor = ColorPrimary;
         }
 
         /// <summary>
@@ -124,7 +238,7 @@ namespace PrettyConsole {
         /// The user can confirm by entering <b>"Y"</b>/<b>"y"</b> or just pressing <b>enter</b>, anything else is regarded as <c>false</c>.
         /// </remarks>
         public static bool Confirm(string message) {
-            Write((message, ColorBase), ("? ", ColorHighlight), ("[", ColorBase), ("y", ColorHighlight), ("/", ColorBase), ("n", ConsoleColor.Red), ("]: ", ColorBase));
+            Write((message, ColorPrimary), ("? ", ColorHighlight), ("[", ColorPrimary), ("y", ColorSuccess), ("/", ColorPrimary), ("n", ColorError), ("]: ", ColorPrimary)); ;
             b.ForegroundColor = ColorInput;
             string input = b.ReadLine();
             b.ResetColor();
@@ -145,12 +259,12 @@ namespace PrettyConsole {
         /// </remarks>
         public static string Selection(string title, IEnumerable<string> choices) {
             if (!string.IsNullOrWhiteSpace(title)) {
-                WriteLine(title, ColorTitle);
+                WriteLine(title, ColorHighlight);
             }
             Dictionary<int, string> dict = new();
             int i = 1;
             foreach (string choice in choices) {
-                WriteLine(($"\t{i}", ColorHighlight), ($". {choice}", ColorBase));
+                WriteLine(($"\t{i}", ColorHighlight), ($". {choice}", ColorPrimary));
                 dict.Add(i, choice);
                 i++;
             }
@@ -166,7 +280,7 @@ namespace PrettyConsole {
         }
 
         /// <summary>
-        /// Enumerates a list of strings and allows the user to multiple strings by any order
+        /// Enumerates a list of strings and allows the user to select multiple strings by any order
         /// </summary>
         /// <param name="title"><b>Optional</b>, null or whitespace will not be displayed</param>
         /// <param name="choices">Any collection of strings</param>
@@ -176,12 +290,12 @@ namespace PrettyConsole {
         /// </remarks>
         public static List<string> MultiSelection(string title, IEnumerable<string> choices) {
             if (!string.IsNullOrWhiteSpace(title)) {
-                WriteLine(title, ColorTitle);
+                WriteLine(title, ColorHighlight);
             }
             Dictionary<int, string> dict = new();
             int i = 1;
             foreach (string choice in choices) {
-                WriteLine(($"\t{i}", ColorHighlight), ($". {choice}", ColorBase));
+                WriteLine(($"\t{i}", ColorHighlight), ($". {choice}", ColorPrimary));
                 dict.Add(i, choice);
                 i++;
             }
@@ -224,7 +338,7 @@ namespace PrettyConsole {
         /// </remarks>
         public static (string option, string subOption) TreeMenu(string title, Dictionary<string, List<string>> menu) {
             if (!string.IsNullOrWhiteSpace(title)) {
-                WriteLine(title, ColorTitle);
+                WriteLine(title, ColorHighlight);
                 NewLine();
             }
             var maxMainOption = General.MaxStringLength(menu.Keys);
@@ -234,13 +348,13 @@ namespace PrettyConsole {
             foreach (var (mainChoice, subChoices) in menu) {
                 var lst = new List<int>();
                 int prefixLength = i.ToString().Length + 2;
-                Write(($"{i}", ColorHighlight), ($". {General.SuffixWithSpaces(mainChoice, maxMainOption - prefixLength)}", ColorBase));
+                Write(($"{i}", ColorHighlight), ($". {General.SuffixWithSpaces(mainChoice, maxMainOption - prefixLength)}", ColorPrimary));
                 foreach (var subChoice in subChoices) {
                     lst.Add(j);
                     if (j is 1) {
-                        WriteLine(($"{j}", ColorHighlight), ($". {subChoice}", ColorBase));
+                        WriteLine(($"{j}", ColorHighlight), ($". {subChoice}", ColorPrimary));
                     } else {
-                        WriteLine(($"{General.SuffixWithSpaces(null, maxMainOption)}{j}", ColorHighlight), ($". {subChoice}", ColorBase));
+                        WriteLine(($"{General.SuffixWithSpaces(null, maxMainOption)}{j}", ColorHighlight), ($". {subChoice}", ColorPrimary));
                     }
                     j++;
                 }
@@ -296,7 +410,7 @@ namespace PrettyConsole {
         /// For complex types request a string and validate/convert yourself
         /// </remarks>
         public static T Input<T>(string message) {
-            Write($"{message}: ", ColorBase);
+            Write($"{message}: ", ColorPrimary);
             b.ForegroundColor = ColorInput;
             string input = b.ReadLine();
             b.ResetColor();
@@ -321,10 +435,12 @@ namespace PrettyConsole {
         /// Resets the color properties to the default values, used when the default values were altered to produce and more customizable output.
         /// </summary>
         public static void ResetColors() {
-            ColorBase = ConsoleColor.White;
-            ColorTitle = ConsoleColor.Cyan;
-            ColorHighlight = ConsoleColor.Green;
-            ColorInput = ConsoleColor.Green;
+            ColorPrimary = ConsoleColor.White;
+            ColorSecondary = ConsoleColor.Gray;
+            ColorHighlight = ConsoleColor.Blue;
+            ColorSuccess = ConsoleColor.Green;
+            ColorError = ConsoleColor.Red;
+            ColorInput = ConsoleColor.Gray;
         }
 
         /// <summary>
