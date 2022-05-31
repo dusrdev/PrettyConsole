@@ -2,8 +2,13 @@
 
 namespace TestingGround {
     internal class Program {
-        static void Main(string[] args) {
-            List<string> choices = new List<string>() {
+        static void Main() {
+            SetColors(m => {
+                m.Highlight = ConsoleColor.Green;
+                m.Input = ConsoleColor.Magenta;
+            });
+
+            List<string> choices = new() {
                 "One", "Two", "Three"
             };
 
