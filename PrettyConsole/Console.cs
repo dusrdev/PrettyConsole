@@ -195,6 +195,7 @@ namespace PrettyConsole {
             b.ForegroundColor = Colors.Input;
             _ = b.Read();
             b.ForegroundColor = Colors.Primary;
+            b.ResetColor();
         }
 
         /// <summary>
@@ -403,7 +404,7 @@ namespace PrettyConsole {
         /// <summary>
         /// Resets the color properties to the default values, used when the default values were altered to produce and more customizable output.
         /// </summary>
-        public static void ResetColors() {
+        public static void ResetDefaultColors() {
             Colors = new();
         }
 
