@@ -5,7 +5,7 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Authors>David Shnayder</Authors>
     <Company>David Shnayder</Company>
-    <Description>A package used to make console outputs prettier without using advanced ansi protocols to allow support on older machines</Description>
+    <Description>An abstraction over System.Console that adds new input methods and output methods, and generally makes everything prettier. and all that, without using advanced ansi protocols to allow support on older machines</Description>
     <Copyright>David Shnayder</Copyright>
     <PackageTags>Console; Output; Input; ANSI</PackageTags>
     <ImplicitUsings>disable</ImplicitUsings>
