@@ -10,6 +10,9 @@
     <PackageTags>Console; Output; Input; ANSI</PackageTags>
     <ImplicitUsings>disable</ImplicitUsings>
     <PlatformTarget>x64</PlatformTarget>
+    <PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
