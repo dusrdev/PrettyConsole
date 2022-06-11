@@ -3,24 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 
 using b = System.Console;
-using PrettyConsole.Helpers;
 using System.Linq;
 
 namespace PrettyConsole {
     public static class Console {
-        /// <summary>
-        /// Provides easy access to the colors which are used throughout this class
-        /// <para>Using this while optionally changing the default colors will make the interface more streamlined</para>
-        /// </summary>
-        public enum Color {
-            Primary,
-            Secondary,
-            Success,
-            Error,
-            Highlight,
-            Input
-        };
-
         /// <summary>
         /// Converts local colors to use the defaults that can be changed in this class
         /// <para>this allows using different colors even without calling the built in System.ConsoleColor's</para>
@@ -205,8 +191,8 @@ namespace PrettyConsole {
         /// <remarks>
         /// The user can confirm by entering <b>"y"</b>/<b>"yes"</b> or just pressing <b>enter</b>, anything else is regarded as <c>false</c>.
         /// </remarks>
-        public static bool Confirm(string message) {
-            Write((message, Colors.Primary), ("? ", Colors.Highlight), ("[", Colors.Primary), ("y", Colors.Success), 
+        public static bool Confirm(ReadOnlySpan<char> message) {
+            Write((message.ToString(), Colors.Primary), ("? ", Colors.Highlight), ("[", Colors.Primary), ("y", Colors.Success), 
                 ("/", Colors.Primary), ("n", Colors.Error), ("]: ", Colors.Primary)); ;
             b.ForegroundColor = Colors.Input;
             string input = b.ReadLine();
@@ -226,9 +212,9 @@ namespace PrettyConsole {
         /// <remarks>
         /// This validates the input for you.
         /// </remarks>
-        public static string Selection(string title, IEnumerable<string> choices) {
-            if (!string.IsNullOrWhiteSpace(title)) {
-                WriteLine(title, Colors.Highlight);
+        public static string Selection(ReadOnlySpan<char> title, IEnumerable<string> choices) {
+            if (!Extensions.IsEmptyOrWhiteSpace(title)) {
+                WriteLine(title.ToString(), Colors.Highlight);
             }
             Dictionary<int, string> dict = new();
             int i = 1;
@@ -240,7 +226,7 @@ namespace PrettyConsole {
             }
             NewLine();
 
-            int selected = Input<int>("Enter your choice:");
+            int selected = ReadLine<int>("Enter your choice:");
 
             if (!dict.ContainsKey(selected)) {
                 throw new IndexOutOfRangeException(nameof(selected));
@@ -258,9 +244,9 @@ namespace PrettyConsole {
         /// <remarks>
         /// This validates the input for you.
         /// </remarks>
-        public static List<string> MultiSelection(string title, IEnumerable<string> choices) {
-            if (!string.IsNullOrWhiteSpace(title)) {
-                WriteLine(title, Colors.Highlight);
+        public static List<string> MultiSelection(ReadOnlySpan<char> title, IEnumerable<string> choices) {
+            if (!Extensions.IsEmptyOrWhiteSpace(title)) {
+                WriteLine(title.ToString(), Colors.Highlight);
             }
             Dictionary<int, string> dict = new();
             int i = 1;
@@ -273,10 +259,10 @@ namespace PrettyConsole {
             List<string> results = new();
 
             NewLine();
-            string input = Input<string>("Enter your choices separated with spaces:");
+            string input = ReadLine<string>("Enter your choices separated with spaces:");
 
             // get selected indexes from user
-            string[] selected = input.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+            var selected = Extensions.SplitAsSpan(input, ' ');
 
             // evaluate and add selections to results
             foreach (string choice in selected) {
@@ -306,12 +292,12 @@ namespace PrettyConsole {
         /// <remarks>
         /// This validates the input for you.
         /// </remarks>
-        public static (string option, string subOption) TreeMenu(string title, Dictionary<string, List<string>> menu) {
-            if (!string.IsNullOrWhiteSpace(title)) {
-                WriteLine(title, Colors.Highlight);
+        public static (string option, string subOption) TreeMenu(ReadOnlySpan<char> title, Dictionary<string, List<string>> menu) {
+            if (!Extensions.IsEmptyOrWhiteSpace(title)) {
+                WriteLine(title.ToString(), Colors.Highlight);
                 NewLine();
             }
-            var maxMainOption = General.MaxStringLength(menu.Keys); // Used to make sub-tree prefix spaces uniform
+            var maxMainOption = Extensions.MaxStringLength(menu.Keys); // Used to make sub-tree prefix spaces uniform
             var Dict = new Dictionary<int, List<int>>();
             maxMainOption += 10;
             int i = 1, j = 1;
@@ -320,14 +306,14 @@ namespace PrettyConsole {
             foreach (var (mainChoice, subChoices) in menu) {
                 var lst = new List<int>();
                 int prefixLength = i.ToString().Length + 2;
-                Write(($"{i}", Colors.Highlight), ($". {General.SuffixWithSpaces(mainChoice, maxMainOption - prefixLength)}",
+                Write(($"{i}", Colors.Highlight), ($". {Extensions.SuffixWithSpaces(mainChoice, maxMainOption - prefixLength)}",
                     Colors.Primary));
                 foreach (var subChoice in subChoices) {
                     lst.Add(j);
                     if (j is 1) {
                         WriteLine(($"{j}", Colors.Highlight), ($". {subChoice}", Colors.Primary));
                     } else {
-                        WriteLine(($"{General.SuffixWithSpaces(null, maxMainOption)}{j}", Colors.Highlight), ($". {subChoice}", 
+                        WriteLine(($"{Extensions.SuffixWithSpaces(null, maxMainOption)}{j}", Colors.Highlight), ($". {subChoice}", 
                             Colors.Primary));
                     }
                     j++;
@@ -338,13 +324,17 @@ namespace PrettyConsole {
                 NewLine();
             }
 
-            string input = Input<string>("Enter your choice separated with spaces:");
+            string input = ReadLine<string>("Enter your choice separated with spaces:");
 
             // get the 2 arguments, as in tree options and sub-tree option
-            string[] selected = input.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+            var selected = Extensions.SplitAsSpan(input, ' ');
 
-            // trim and clean the arguments
-            var (main, sub) = (selected[0].Trim(), selected[1].Trim());
+            // save the 2 arguments
+            var enumerator = selected.GetEnumerator();
+            enumerator.MoveNext();
+            string main = enumerator.Current;
+            enumerator.MoveNext();
+            string sub = enumerator.Current;
 
             // Validate
             if (!int.TryParse(main, out int mainNum)) {
@@ -378,7 +368,7 @@ namespace PrettyConsole {
         /// <remarks>
         /// For complex types request a string and validate/convert yourself
         /// </remarks>
-        public static T Input<T>(string message) {
+        public static T ReadLine<T>(ReadOnlySpan<char> message) {
             Write($"{message} ", Colors.Primary);
             b.ForegroundColor = Colors.Input;
             string input = b.ReadLine();
