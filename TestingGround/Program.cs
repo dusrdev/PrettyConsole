@@ -12,9 +12,14 @@ namespace TestingGround {
                 "One", "Two", "Three"
             };
 
-            var c = Selection("Select the option you want", choices);
+            Dictionary<string, List<string>> tree = new() {
+                { "first", new() { "one", "two" } },
+                { "second", new() { "three", "four" } },
+            };
 
-            WriteLine(c, Color.Highlight);
+            var results = TreeMenu("Select the option you want", tree);
+
+            WriteLine($"{results.option} - {results.subOption}");
         }
     }
 }
