@@ -14,9 +14,9 @@ And whats more is that by using this package you can write less code, that perfo
 ## Usage
 
 The best way to use this package is to add this using statement:
-`using static PrettyConsole.Console;`
-that will allow you to use the methods directly, which means it won't interfere with `System.Console`
-for convenience, all methods that are abstractions on top of `System.Console` carry the same names, such as: `Write()`, `WriteLine`, `ReadLine` and so on.
+```using static PrettyConsole.Console;```
+that will allow you to use the methods directly, which means it won't interfere with `System.Console`.
+for convenience, all methods that are abstractions on top of `System.Console` carry the same names, such as: `Write()`, `WriteLine()`, `ReadLine()` and so on.
 For more information of these methods and the added ones, check the Wiki.
 
 ## Downloads - For Usage
