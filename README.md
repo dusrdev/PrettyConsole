@@ -6,17 +6,17 @@ An abstraction over System.Console that adds new input methods and output method
 
 ## Target
 
-This package can be very useful to anyone who is interested in creating beautiful cli (command-line) tools in .net.
-It not only provides the default input and output methods, but also has very intuitive color customization options, and
-more advanced input/output combination options like selections, multi-selection and even a tree-menu.
+This package can be very useful to anyone who is interested in creating beautiful cli (command-line) tools in .net.  
+It not only provides the default input and output methods, but also has very intuitive color customization options, and  
+more advanced input/output combination options like selections, multi-selection and even a tree-menu.  
 And whats more is that by using this package you can write less code, that performs better.
 
 ## Usage
 
-The best way to use this package is to add this using statement:
-```using static PrettyConsole.Console;```
-that will allow you to use the methods directly, which means it won't interfere with `System.Console`.
-for convenience, all methods that are abstractions on top of `System.Console` carry the same names, such as: `Write()`, `WriteLine()`, `ReadLine()` and so on.
+The best way to use this package is to add this using statement:  
+`using static PrettyConsole.Console;`  
+that will allow you to use the methods directly, which means it won't interfere with `System.Console`.  
+for convenience, all methods that are abstractions on top of `System.Console` carry the same names, such as: `Write()`, `WriteLine()`, `ReadLine()` and so on.  
 For more information of these methods and the added ones, check the Wiki.
 
 ## Downloads - For Usage
