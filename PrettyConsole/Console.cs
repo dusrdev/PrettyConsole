@@ -6,20 +6,20 @@ using b = System.Console;
 using System.Linq;
 
 namespace PrettyConsole {
-    /// <summary>
-    /// Provides easy access to the colors which are used throughout this class
-    /// <para>Using this while optionally changing the default colors will make the interface more streamlined</para>
-    /// </summary>
-    public enum Color {
-        Primary,
-        Secondary,
-        Success,
-        Error,
-        Highlight,
-        Input
-    };
-
     public static class Console {
+        /// <summary>
+        /// Provides easy access to the colors which are used throughout this class
+        /// <para>Using this while optionally changing the default colors will make the interface more streamlined</para>
+        /// </summary>
+        public enum Color {
+            Primary,
+            Secondary,
+            Success,
+            Error,
+            Highlight,
+            Input
+        };
+
         /// <summary>
         /// Converts local colors to use the defaults that can be changed in this class
         /// <para>this allows using different colors even without calling the built in System.ConsoleColor's</para>
