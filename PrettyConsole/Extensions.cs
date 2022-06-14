@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace PrettyConsole {
-    public static class Extensions {
+    internal static class Extensions {
         /// <summary>
         /// Returns the length of the longest string in the collection
         /// </summary>
