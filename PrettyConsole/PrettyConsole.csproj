@@ -13,6 +13,7 @@
     <PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
