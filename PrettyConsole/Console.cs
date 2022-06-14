@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-
 using b = System.Console;
 using System.Linq;
 
@@ -13,7 +12,7 @@ namespace PrettyConsole {
         /// </summary>
         public enum Color {
             Primary,
-            Secondary,
+            Default,
             Success,
             Error,
             Highlight,
@@ -29,12 +28,12 @@ namespace PrettyConsole {
         private static ConsoleColor ConvertFromColor(Color color) {
             return color switch {
                 Color.Primary => Colors.Primary,
-                Color.Secondary => Colors.Secondary,
+                Color.Default => Colors.Default,
                 Color.Success => Colors.Success,
                 Color.Error => Colors.Error,
                 Color.Highlight => Colors.Highlight,
                 Color.Input => Colors.Input,
-                _ => Colors.Primary,
+                _ => Colors.Default,
             };
         }
 
@@ -66,7 +65,7 @@ namespace PrettyConsole {
         /// To end line, use <b>WriteLine</b> with the same parameters
         /// </remarks>
         public static void Write(object o) {
-            Write(o, Colors.Primary);
+            Write(o, Colors.Default);
         }
 
         /// <summary>
@@ -76,7 +75,7 @@ namespace PrettyConsole {
         /// To write without ending line, use <b>Write</b> with the same parameters
         /// </remarks>
         public static void WriteLine(object o) {
-            WriteLine(o, Colors.Primary);
+            WriteLine(o, Colors.Default);
         }
 
         /// <summary>
