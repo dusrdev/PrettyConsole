@@ -1,23 +1,28 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Authors>David Shnayder</Authors>
-    <Company>David Shnayder</Company>
-    <Description>An abstraction over System.Console that adds new input methods and output methods, and generally makes everything prettier. and all that, without using advanced ansi protocols to allow support on older machines</Description>
-    <Copyright>David Shnayder</Copyright>
-    <PackageTags>Console; Output; Input; ANSI</PackageTags>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <PlatformTarget>x64</PlatformTarget>
-    <PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <Version>1.0.1</Version>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Authors>David Shnayder</Authors>
+		<Company>David Shnayder</Company>
+		<Description>An abstraction over System.Console that adds new input methods and output methods, and generally makes everything prettier. and all that, without using advanced ansi protocols to allow support on older machines</Description>
+		<Copyright>David Shnayder</Copyright>
+		<PackageTags>Console; Output; Input; ANSI</PackageTags>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<PlatformTarget>x64</PlatformTarget>
+		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<Version>1.0.1</Version>
+		<PackageLicenseFile>LICENSE.</PackageLicenseFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Optimize>True</Optimize>
-  </PropertyGroup>
+	<ItemGroup>
+		<None Include="..\\LICENSE." Pack="true" PackagePath="LICENSE."/>
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<Optimize>True</Optimize>
+	</PropertyGroup>
 
 </Project>
