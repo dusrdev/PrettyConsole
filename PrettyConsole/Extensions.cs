@@ -63,5 +63,22 @@ namespace PrettyConsole {
             }
             return output;
         }
+
+        /// <summary>
+        /// Returns a user friendly representation
+        /// </summary>
+        /// <param name="elapsed"></param>
+        /// <returns></returns>
+        public static string ToFriendlyString(this TimeSpan elapsed) {
+            string time;
+            if (elapsed.TotalSeconds < 60) {
+                time = $"{elapsed.TotalSeconds:0.##}s";
+            } else if (elapsed.Minutes < 60) {
+                time = $"{elapsed.TotalMinutes:0.##}m";
+            } else {
+                time = $"{elapsed.TotalHours:0.###}h";
+            }
+            return time;
+        }
     }
 }
