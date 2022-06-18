@@ -592,7 +592,8 @@ namespace PrettyConsole {
         public static void UpdateProgressBar(int percent, ConsoleColor color) {
             b.ResetColor();
             b.ForegroundColor = color;
-            b.Write("\r[");
+            var currentLine = b.CursorTop;
+            b.Write("[");
             var p = (ProgressBarSize * percent) / 100;
             for (var i = 0; i < ProgressBarSize; i++) {
                 if (i >= p) {
@@ -602,6 +603,7 @@ namespace PrettyConsole {
                 }
             }
             b.Write("] {0,3:##0}%", percent);
+            b.SetCursorPosition(0, currentLine);
             b.ResetColor();
         }
 
