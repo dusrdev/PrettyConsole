@@ -5,6 +5,7 @@ using b = System.Console;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 namespace PrettyConsole {
     public static class Console {
@@ -68,7 +69,13 @@ namespace PrettyConsole {
         /// <summary>
         /// Constant pattern containing the characters needed for the indeterminate progress bar
         /// </summary>
-        private static readonly string Twirl = "-\\|/";
+        private const string Twirl = "-\\|/";
+
+        /// <summary>
+        /// A whitespace the length of 10 spaces
+        /// </summary>
+        /// <remarks>Used to fix some issues with remaining characters when updating a certain line, like progress bars</remarks>
+        private const string ExtraBuffer = "          ";
 
         /// <summary>
         /// Write any object to the console in <paramref name="color"/>
@@ -406,7 +413,7 @@ namespace PrettyConsole {
 
             while (!awaiter.IsCompleted) { // Await until the TaskAwaiter informs of completion
                 for (int i = 0; i < Twirl.Length; i++) { // Cycle through the characters of twirl
-                    b.Write($"\r{Twirl[i]}{title}"); // Remove last character and re-write
+                    b.Write($"\r{Twirl[i]}{title}{ExtraBuffer}"); // Remove last character and re-write
                     await Task.Delay(updateRate); // The update rate
                 }
             }
@@ -432,9 +439,93 @@ namespace PrettyConsole {
 
             while (!awaiter.IsCompleted) { // Await until the TaskAwaiter informs of completion
                 for (int i = 0; i < Twirl.Length; i++) { // Cycle through the characters of twirl
-                    b.Write($"\r{Twirl[i]}{title}"); // Remove last character and re-write
+                    b.Write($"\r{Twirl[i]}{title}{ExtraBuffer}"); // Remove last character and re-write
                     await Task.Delay(updateRate); // The update rate
                 }
+            }
+
+            NewLine(); // Break line after completion
+
+            b.ResetColor();
+        }
+
+        /// <summary>
+        /// A simple twirl style indeterminate progress bar to signal the user that the app is not stuck but rather is performing a time consuming task.
+        /// </summary>
+        /// <param name="awaiter">The TaskAwaiter of the background performing task</param>
+        /// <param name="color">The color in which to display the progress bar</param>
+        /// <param name="message">Message to display alongside the progress bar</param>
+        /// <param name="TimeAsMessage">Display elapsed time</param>
+        /// <param name="updateRate">Rate at which the progress bar refreshes in milliseconds</param>
+        /// <returns></returns>
+        public static async Task IndeterminateProgressBar(TaskAwaiter awaiter, ConsoleColor color, string message = "", bool TimeAsMessage = false, int updateRate = 50) {
+            b.ResetColor();
+            b.ForegroundColor = color;
+            Stopwatch stopwatch = null;
+            if (TimeAsMessage) {
+                stopwatch = new Stopwatch();
+                stopwatch.Start();
+            }
+            var lineNum = b.CursorTop;
+
+            string title = string.IsNullOrWhiteSpace(message) ? string.Empty : $" {message}";
+
+            while (!awaiter.IsCompleted) { // Await until the TaskAwaiter informs of completion
+                for (int i = 0; i < Twirl.Length; i++) { // Cycle through the characters of twirl
+                    if (TimeAsMessage) {
+                        b.Write($"{Twirl[i]}{title} [Elapsed: {stopwatch.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
+                    } else {
+                        b.Write($"{Twirl[i]}{title}{ExtraBuffer}"); // Remove last character and re-write
+                    }
+                    b.SetCursorPosition(0, lineNum);
+                    await Task.Delay(updateRate); // The update rate
+                }
+            }
+
+            if (stopwatch is not null) {
+                stopwatch.Stop();
+            }
+
+            NewLine(); // Break line after completion
+
+            b.ResetColor();
+        }
+
+        /// <summary>
+        /// A simple twirl style indeterminate progress bar to signal the user that the app is not stuck but rather is performing a time consuming task.
+        /// </summary>
+        /// <param name="awaiter">The TaskAwaiter of the background performing task</param>
+        /// <param name="color">The color in which to display the progress bar</param>
+        /// <param name="message">Message to display alongside the progress bar</param>
+        /// <param name="TimeAsMessage">Display elapsed time</param>
+        /// <param name="updateRate">Rate at which the progress bar refreshes in milliseconds</param>
+        /// <returns></returns>
+        public static async Task IndeterminateProgressBar<T>(TaskAwaiter<T> awaiter, ConsoleColor color, string message = "", bool TimeAsMessage = false, int updateRate = 50) {
+            b.ResetColor();
+            b.ForegroundColor = color;
+            Stopwatch stopwatch = null;
+            if (TimeAsMessage) {
+                stopwatch = new Stopwatch();
+                stopwatch.Start();
+            }
+            var lineNum = b.CursorTop;
+
+            string title = string.IsNullOrWhiteSpace(message) ? string.Empty : $" {message}";
+
+            while (!awaiter.IsCompleted) { // Await until the TaskAwaiter informs of completion
+                for (int i = 0; i < Twirl.Length; i++) { // Cycle through the characters of twirl
+                    if (TimeAsMessage) {
+                        b.Write($"{Twirl[i]}{title} [Elapsed: {stopwatch.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
+                    } else {
+                        b.Write($"{Twirl[i]}{title}{ExtraBuffer}"); // Remove last character and re-write
+                    }
+                    b.SetCursorPosition(0, lineNum);
+                    await Task.Delay(updateRate); // The update rate
+                }
+            }
+
+            if (stopwatch is not null) {
+                stopwatch.Stop();
             }
 
             NewLine(); // Break line after completion
@@ -464,6 +555,30 @@ namespace PrettyConsole {
         /// <returns></returns>
         public static async Task IndeterminateProgressBar(TaskAwaiter awaiter, string message = "", int updateRate = 50, Color color = Color.Primary) {
             await IndeterminateProgressBar(awaiter, ConvertFromColor(color), message, updateRate);
+        }
+
+        /// <summary>
+        /// A simple twirl style indeterminate progress bar to signal the user that the app is not stuck but rather is performing a time consuming task.
+        /// </summary>
+        /// <param name="awaiter">The TaskAwaiter of the background performing task</param>
+        /// <param name = "TimeAsMessage">Show elapsed time as the message</param>
+        /// <param name="updateRate">Rate at which the progress bar refreshes in milliseconds</param>
+        /// <param name="color">The color in which to display the progress bar</param>
+        /// <returns></returns>
+        public static async Task IndeterminateProgressBar<T>(TaskAwaiter<T> awaiter, string message = "", bool TimeAsMessage = false, int updateRate = 50, Color color = Color.Primary) {
+            await IndeterminateProgressBar(awaiter, ConvertFromColor(color), message, TimeAsMessage, updateRate);
+        }
+
+        /// <summary>
+        /// A simple twirl style indeterminate progress bar to signal the user that the app is not stuck but rather is performing a time consuming task.
+        /// </summary>
+        /// <param name="awaiter">The TaskAwaiter of the background performing task</param>
+        /// <param name = "TimeAsMessage">Show elapsed time as the message</param>
+        /// <param name="updateRate">Rate at which the progress bar refreshes in milliseconds</param>
+        /// <param name="color">The color in which to display the progress bar</param>
+        /// <returns></returns>
+        public static async Task IndeterminateProgressBar(TaskAwaiter awaiter, string message = "", bool TimeAsMessage = false, int updateRate = 50, Color color = Color.Primary) {
+            await IndeterminateProgressBar(awaiter, ConvertFromColor(color), message, TimeAsMessage, updateRate);
         }
 
         /// <summary>
