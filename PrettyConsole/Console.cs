@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using b = System.Console;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace PrettyConsole {
     public static class Console {
@@ -59,24 +61,14 @@ namespace PrettyConsole {
         }
 
         /// <summary>
-        /// Write any object to the console in <b>ColorBase</b>
+        /// Used to have the progress bar change size dynamically to the buffer size
         /// </summary>
-        /// <remarks>
-        /// To end line, use <b>WriteLine</b> with the same parameters
-        /// </remarks>
-        public static void Write(object o) {
-            Write(o, Colors.Default);
-        }
+        private static readonly int ProgressBarSize = b.BufferWidth - 10;
 
         /// <summary>
-        /// Write any object to the console in <b>ColorBase</b> and ends line
+        /// Constant pattern containing the characters needed for the indeterminate progress bar
         /// </summary>
-        /// <remarks>
-        /// To write without ending line, use <b>Write</b> with the same parameters
-        /// </remarks>
-        public static void WriteLine(object o) {
-            WriteLine(o, Colors.Default);
-        }
+        private static readonly string Twirl = "-\\|/";
 
         /// <summary>
         /// Write any object to the console in <paramref name="color"/>
@@ -94,10 +86,11 @@ namespace PrettyConsole {
         /// <summary>
         /// Write any object to the console in <paramref name="color"/>
         /// </summary>
+        /// <param name="color">The color in which the output will be displayed</param>
         /// <remarks>
         /// To end line, use <b>WriteLine</b> with the same parameters
         /// </remarks>
-        public static void Write(object o, Color color) {
+        public static void Write(object o, Color color = Color.Default) {
             b.ResetColor();
             b.ForegroundColor = ConvertFromColor(color);
             b.Write(o);
@@ -118,10 +111,11 @@ namespace PrettyConsole {
         /// <summary>
         /// Write any object to the console in <paramref name="color"/> and ends line
         /// </summary>
+        /// <param name="color">The color in which the output will be displayed</param>
         /// <remarks>
         /// To write without ending line, use <b>Write</b> with the same parameters
         /// </remarks>
-        public static void WriteLine(object o, Color color) {
+        public static void WriteLine(object o, Color color = Color.Default) {
             Write(o, ConvertFromColor(color));
             NewLine();
         }
@@ -394,6 +388,71 @@ namespace PrettyConsole {
                 return (T)converter.ConvertFromString(input);
             }
             return default;
+        }
+
+        /// <summary>
+        /// A simple twirl style indeterminate progress bar to signal the user that the app is not stuck but rather is performing a time consuming task.
+        /// </summary>
+        /// <param name="awaiter">The TaskAwaiter of the background performing task</param>
+        /// <param name="message">Message to display alongside the progress bar</param>
+        /// <param name="updateRate">Rate at which the progress bar refreshes in milliseconds</param>
+        /// <param name="color">The color in which to display the progress bar</param>
+        /// <returns></returns>
+        public static async Task IndeterminateProgressBar<T>(TaskAwaiter<T> awaiter, string message = "", int updateRate = 50, ConsoleColor color = ConsoleColor.White) {
+            string title = string.IsNullOrWhiteSpace(message) ? string.Empty : $" {message}";
+
+            while (!awaiter.IsCompleted) { // Await until the TaskAwaiter informs of completion
+                for (int i = 0; i < Twirl.Length; i++) { // Cycle through the characters of twirl
+                    Write($"\r{Twirl[i]}{title}", color); // Remove last character and re-write
+                    await Task.Delay(updateRate); // The update rate
+                }
+            }
+            NewLine(); // Break line after completion
+        }
+
+        /// <summary>
+        /// A simple twirl style indeterminate progress bar to signal the user that the app is not stuck but rather is performing a time consuming task.
+        /// </summary>
+        /// <param name="awaiter">The TaskAwaiter of the background performing task</param>
+        /// <param name="message">Message to display alongside the progress bar</param>
+        /// <param name="updateRate">Rate at which the progress bar refreshes in milliseconds</param>
+        /// <param name="color">The color in which to display the progress bar</param>
+        /// <returns></returns>
+        public static async Task IndeterminateProgressBar<T>(TaskAwaiter<T> awaiter, string message = "", int updateRate = 50, Color color = Color.Primary) {
+            await IndeterminateProgressBar(awaiter, message, updateRate, ConvertFromColor(color));
+        }
+
+        /// <summary>
+        /// Outputs progress bar filled according to <paramref name="percent"/>
+        /// <para>
+        /// When called consecutively, it overrides the previous
+        /// </para>
+        /// </summary>
+        /// <param name="percent"></param>
+        /// <param name="color">The color you want the progress bar to be</param>
+        public static void UpdateProgressBar(int percent, ConsoleColor color) {
+            Write("\r[", color);
+            var p = (ProgressBarSize * percent) / 100;
+            for (var i = 0; i < ProgressBarSize; i++) {
+                if (i >= p) {
+                    Write(' ', color);
+                } else {
+                    Write('■', color);
+                }
+            }
+            Write("] {0,3:##0}%".Replace("0", percent.ToString()), color);
+        }
+
+        /// <summary>
+        /// Outputs progress bar filled according to <paramref name="percent"/>
+        /// <para>
+        /// When called consecutively, it overrides the previous
+        /// </para>
+        /// </summary>
+        /// <param name="percent"></param>
+        /// <param name="color">The color you want the progress bar to be</param>
+        public static void UpdateProgressBar(int percent, Color color = Color.Primary) {
+            UpdateProgressBar(percent, ConvertFromColor(color));
         }
 
         /// <summary>
