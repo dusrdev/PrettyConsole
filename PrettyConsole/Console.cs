@@ -475,16 +475,19 @@ namespace PrettyConsole {
         /// <param name="percent"></param>
         /// <param name="color">The color you want the progress bar to be</param>
         public static void UpdateProgressBar(int percent, ConsoleColor color) {
-            Write("\r[", color);
+            b.ResetColor();
+            b.ForegroundColor = color;
+            b.Write("\r[");
             var p = (ProgressBarSize * percent) / 100;
             for (var i = 0; i < ProgressBarSize; i++) {
                 if (i >= p) {
-                    Write(' ', color);
+                    b.Write(' ');
                 } else {
-                    Write('■', color);
+                    b.Write('■');
                 }
             }
-            Write("] {0,3:##0}%".Replace("0", percent.ToString()), color);
+            b.Write("] {0,3:##0}%", percent);
+            b.ResetColor();
         }
 
         /// <summary>
