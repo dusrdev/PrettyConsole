@@ -8,17 +8,38 @@ using System.Runtime.CompilerServices;
 using System.Diagnostics;
 
 namespace PrettyConsole {
+    /// <summary>
+    /// The static class the provides the abstraction over System.Console
+    /// </summary>
     public static class Console {
         /// <summary>
         /// Provides easy access to the colors which are used throughout this class
         /// <para>Using this while optionally changing the default colors will make the interface more streamlined</para>
         /// </summary>
         public enum Color {
+            /// <summary>
+            /// The primary color - [Default=White]
+            /// </summary>
             Primary,
+            /// <summary>
+            /// The default color - [Default=Gray]
+            /// </summary>
             Default,
+            /// <summary>
+            /// The color for indicating success - [Default=Green]
+            /// </summary>
             Success,
+            /// <summary>
+            /// The color for indicating error - [Default=Red]
+            /// </summary>
             Error,
+            /// <summary>
+            /// The highlight color - [Default=Blue]
+            /// </summary>
             Highlight,
+            /// <summary>
+            /// The color of the text that the user will type in - [Default=Gray]
+            /// </summary>
             Input
         };
 
@@ -51,30 +72,17 @@ namespace PrettyConsole {
         /// <summary>
         /// Used to set the colors which are used by default in most functions of the class
         /// </summary>
-        /// <param name="primary"></param>
-        /// <param name="secondary"></param>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
-        /// <param name="highlight"></param>
-        /// <param name="input"></param>
         public static void SetColors(Action<Colors> modification) {
             modification.Invoke(Colors);
         }
 
-        /// <summary>
-        /// Used to have the progress bar change size dynamically to the buffer size
-        /// </summary>
+        // Used to have the progress bar change size dynamically to the buffer size
         private static readonly int ProgressBarSize = b.BufferWidth - 10;
 
-        /// <summary>
-        /// Constant pattern containing the characters needed for the indeterminate progress bar
-        /// </summary>
+        // Constant pattern containing the characters needed for the indeterminate progress bar
         private const string Twirl = "-\\|/";
 
-        /// <summary>
-        /// A whitespace the length of 10 spaces
-        /// </summary>
-        /// <remarks>Used to fix some issues with remaining characters when updating a certain line, like progress bars</remarks>
+        // A whitespace the length of 10 spaces
         private const string ExtraBuffer = "          ";
 
         /// <summary>

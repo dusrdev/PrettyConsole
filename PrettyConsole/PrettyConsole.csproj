@@ -15,10 +15,11 @@
 		<RepositoryType>git</RepositoryType>
 		<Version>1.1.0</Version>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="..\\LICENSE.txt" Pack="true" PackagePath="LICENSE.txt"/>
+		<None Include="..\\LICENSE.txt" Pack="true" PackagePath="LICENSE.txt" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
