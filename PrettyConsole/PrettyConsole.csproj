@@ -13,7 +13,7 @@
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>1.1.0</Version>
+		<Version>1.2.0</Version>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>
