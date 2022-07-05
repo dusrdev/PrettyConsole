@@ -12,67 +12,18 @@ namespace PrettyConsole {
     /// </summary>
     public static class Console {
         /// <summary>
-        /// Provides easy access to the colors which are used throughout this class
-        /// <para>Using this while optionally changing the default colors will make the interface more streamlined</para>
-        /// </summary>
-        public enum Color {
-            /// <summary>
-            /// The primary color - [Default=White]
-            /// </summary>
-            Primary,
-            /// <summary>
-            /// The default color - [Default=Gray]
-            /// </summary>
-            Default,
-            /// <summary>
-            /// The color for indicating success - [Default=Green]
-            /// </summary>
-            Success,
-            /// <summary>
-            /// The color for indicating error - [Default=Red]
-            /// </summary>
-            Error,
-            /// <summary>
-            /// The highlight color - [Default=Blue]
-            /// </summary>
-            Highlight,
-            /// <summary>
-            /// The color of the text that the user will type in - [Default=Gray]
-            /// </summary>
-            Input
-        };
-
-        /// <summary>
-        /// Converts local colors to use the defaults that can be changed in this class
-        /// <para>this allows using different colors even without calling the built in System.ConsoleColor's</para>
-        /// </summary>
-        /// <param name="color"></param>
-        /// <returns></returns>
-        private static ConsoleColor ConvertFromColor(Color color) {
-            return color switch {
-                Color.Primary => Colors.Primary,
-                Color.Default => Colors.Default,
-                Color.Success => Colors.Success,
-                Color.Error => Colors.Error,
-                Color.Highlight => Colors.Highlight,
-                Color.Input => Colors.Input,
-                _ => Colors.Default,
-            };
-        }
-
-        /// <summary>
         /// The default color scheme
         /// </summary>
         /// <remarks>
         /// Modify using ConfigureColors
         /// </remarks>
-        public static readonly Colors Colors = new();
+        public static readonly IColors Colors = new Colors();
 
         /// <summary>
         /// Used to set the colors which are used by default in most functions of the class
         /// </summary>
         public static void ConfigureColors(Action<Colors> modification) {
-            modification.Invoke(Colors);
+            modification.Invoke((Colors)Colors);
         }
 
         // Used to have the progress bar change size dynamically to the buffer size
@@ -85,8 +36,21 @@ namespace PrettyConsole {
         private const string ExtraBuffer = "          ";
 
         /// <summary>
+        /// Write any object to the console in the default color
+        /// </summary>
+        /// <param name="o">The object to write</param>
+        /// <remarks>
+        /// To end line, use <b>WriteLine</b> with the same parameters
+        /// </remarks>
+        public static void Write(object o) {
+            Write(o, Colors.Default);
+        }
+
+        /// <summary>
         /// Write any object to the console in <paramref name="color"/>
         /// </summary>
+        /// <param name="o">The object to write</param>
+        /// <param name="color">The color in which the output will be displayed</param>
         /// <remarks>
         /// To end line, use <b>WriteLine</b> with the same parameters
         /// </remarks>
@@ -98,28 +62,14 @@ namespace PrettyConsole {
         }
 
         /// <summary>
-        /// Write any object to the console in <paramref name="color"/>
+        /// Write any object to the console in the default color and ends line
         /// </summary>
         /// <param name="o">The object to write</param>
-        /// <param name="color">The color in which the output will be displayed</param>
-        /// <remarks>
-        /// To end line, use <b>WriteLine</b> with the same parameters
-        /// </remarks>
-        public static void Write(object o, Color color = Color.Default) {
-            b.ResetColor();
-            b.ForegroundColor = ConvertFromColor(color);
-            b.Write(o);
-            b.ResetColor();
-        }
-
-        /// <summary>
-        /// Write any object to the console in <paramref name="color"/> and ends line
-        /// </summary>
         /// <remarks>
         /// To write without ending line, use <b>Write</b> with the same parameters
         /// </remarks>
-        public static void WriteLine(object o, ConsoleColor color) {
-            Write(o, color);
+        public static void WriteLine(object o) {
+            Write(o, Colors.Default);
             NewLine();
         }
 
@@ -131,8 +81,8 @@ namespace PrettyConsole {
         /// <remarks>
         /// To write without ending line, use <b>Write</b> with the same parameters
         /// </remarks>
-        public static void WriteLine(object o, Color color = Color.Default) {
-            Write(o, ConvertFromColor(color));
+        public static void WriteLine(object o, ConsoleColor color) {
+            Write(o, color);
             NewLine();
         }
 
@@ -155,41 +105,12 @@ namespace PrettyConsole {
         }
 
         /// <summary>
-        /// Write tuples of (<b>element</b>, <b>color</b>) to the console
-        /// </summary>
-        /// <remarks>
-        /// To end line, use <b>WriteLine</b> with the same parameters
-        /// </remarks>
-        public static void Write(params (object item, Color color)[] elements) {
-            if (elements is null || elements.Length is 0) {
-                throw new ArgumentException("Invalid parameters");
-            }
-            b.ResetColor();
-            foreach (var (o, c) in elements) {
-                b.ForegroundColor = ConvertFromColor(c);
-                b.Write(o);
-            }
-            b.ResetColor();
-        }
-
-        /// <summary>
         /// Write tuples of (<b>element</b>, <b>color</b>) to the console and ends line
         /// </summary>
         /// <remarks>
         /// To write without ending line, use <b>Write</b> with the same parameters
         /// </remarks>
         public static void WriteLine(params (object item, ConsoleColor color)[] elements) {
-            Write(elements);
-            NewLine();
-        }
-
-        /// <summary>
-        /// Write tuples of (<b>element</b>, <b>color</b>) to the console and ends line
-        /// </summary>
-        /// <remarks>
-        /// To write without ending line, use <b>Write</b> with the same parameters
-        /// </remarks>
-        public static void WriteLine(params (object item, Color color)[] elements) {
             Write(elements);
             NewLine();
         }
@@ -537,9 +458,8 @@ namespace PrettyConsole {
         /// </para>
         /// </summary>
         /// <param name="percent"></param>
-        /// <param name="color">The color you want the progress bar to be</param>
-        public static void UpdateProgressBar(int percent, Color color = Color.Primary) {
-            UpdateProgressBar(percent, ConvertFromColor(color));
+        public static void UpdateProgressBar(int percent) {
+            UpdateProgressBar(percent, Colors.Default);
         }
 
         /// <summary>
