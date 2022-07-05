@@ -3,31 +3,31 @@
 namespace PrettyConsole;
 
 /// <summary>
-/// This is the model that provides the default color that are used in Console
+/// This is the interface that provides the default color that are used in Console
 /// </summary>
-public class Colors : IColors {
+public interface IColors {
     /// <summary>
     /// The primary color
     /// </summary>
-    public ConsoleColor Primary { get; set; } = ConsoleColor.White;
+    public ConsoleColor Primary { get; }
     /// <summary>
     /// The default color
     /// </summary>
-    public ConsoleColor Default { get; set; } = ConsoleColor.Gray;
+    public ConsoleColor Default { get; }
     /// <summary>
     /// The color of the text that is entered by the user when using inputs
     /// </summary>
-    public ConsoleColor Input { get; set; } = ConsoleColor.Gray;
+    public ConsoleColor Input { get; }
     /// <summary>
     /// The color that indicates success
     /// </summary>
-    public ConsoleColor Success { get; set; } = ConsoleColor.Green;
+    public ConsoleColor Success { get; }
     /// <summary>
     /// The color that indicates error
     /// </summary>
-    public ConsoleColor Error { get; set; } = ConsoleColor.Red;
+    public ConsoleColor Error { get; }
     /// <summary>
     /// The color of highlights
     /// </summary>
-    public ConsoleColor Highlight { get; set; } = ConsoleColor.Blue;
+    public ConsoleColor Highlight { get; }
 }
