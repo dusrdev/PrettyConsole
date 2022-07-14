@@ -7,10 +7,6 @@ namespace PrettyConsole;
 /// </summary>
 public interface IColors {
     /// <summary>
-    /// The primary color
-    /// </summary>
-    public ConsoleColor Primary { get; }
-    /// <summary>
     /// The default color
     /// </summary>
     public ConsoleColor Default { get; }

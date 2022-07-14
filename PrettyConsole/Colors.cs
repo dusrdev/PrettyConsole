@@ -7,10 +7,6 @@ namespace PrettyConsole;
 /// </summary>
 public class Colors : IColors {
     /// <summary>
-    /// The primary color
-    /// </summary>
-    public ConsoleColor Primary { get; set; } = ConsoleColor.White;
-    /// <summary>
     /// The default color
     /// </summary>
     public ConsoleColor Default { get; set; } = ConsoleColor.Gray;
