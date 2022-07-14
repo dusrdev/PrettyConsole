@@ -116,14 +116,61 @@ namespace PrettyConsole {
         }
 
         /// <summary>
+        /// Write any object to the console as a label, Colors.Default background - black text
+        /// </summary>
+        /// <param name="o">The object to write</param>
+        /// <remarks>
+        /// To end line, call <b>NewLine()</b> after.
+        /// </remarks>
+        public static void Label(object o) {
+            Label(o, ConsoleColor.Black, Colors.Default);
+        }
+
+        /// <summary>
+        /// Write any object to the console as a label, modified foreground and background
+        /// </summary>
+        /// <param name="o">The object to write</param>
+        /// <param name="foreground">foreground color - i.e: color of the string representation</param>
+        /// <param name="background">background color</param>
+        /// <remarks>
+        /// To end line, call <b>NewLine()</b> after.
+        /// </remarks>
+        public static void Label(object o, ConsoleColor foreground, ConsoleColor background) {
+            b.ResetColor();
+            b.ForegroundColor = foreground;
+            b.BackgroundColor = background;
+            b.Write(o);
+            b.ResetColor();
+        }
+
+        /// <summary>
+        /// Write tuples of (<b>element</b>, <b>color</b>) to the console
+        /// </summary>
+        /// <remarks>
+        /// To end line, use <b>WriteLine</b> with the same parameters
+        /// </remarks>
+        public static void Label(params (object item, ConsoleColor foreground, ConsoleColor background)[] elements) {
+            if (elements is null || elements.Length is 0) {
+                throw new ArgumentException("Invalid parameters");
+            }
+            b.ResetColor();
+            foreach (var (o, foreground, background) in elements) {
+                b.ForegroundColor = foreground;
+                b.BackgroundColor = background;
+                b.Write(o);
+            }
+            b.ResetColor();
+        }
+
+        /// <summary>
         /// Used to wait for user input, you can customize <paramref name="message"/> or leave as default
         /// </summary>
         /// <param name="message"><b>Default value:</b> "Press any key to continue"</param>
         public static void RequestAnyInput(string message = "Press any key to continue") {
-            Write((message, Colors.Primary), ("... ", Colors.Highlight));
+            Write((message, Colors.Default), ("... ", Colors.Highlight));
             b.ForegroundColor = Colors.Input;
             _ = b.Read();
-            b.ForegroundColor = Colors.Primary;
+            b.ForegroundColor = Colors.Default;
             b.ResetColor();
         }
 
@@ -135,15 +182,12 @@ namespace PrettyConsole {
         /// The user can confirm by entering <b>"y"</b>/<b>"yes"</b> or just pressing <b>enter</b>, anything else is regarded as <c>false</c>.
         /// </remarks>
         public static bool Confirm(ReadOnlySpan<char> message) {
-            Write((message.ToString(), Colors.Primary), ("? ", Colors.Highlight), ("[", Colors.Primary), ("y", Colors.Success),
-                ("/", Colors.Primary), ("n", Colors.Error), ("]: ", Colors.Primary)); ;
+            Write((message.ToString(), Colors.Default), ("? ", Colors.Highlight), ("[", Colors.Default), ("y", Colors.Success),
+                ("/", Colors.Default), ("n", Colors.Error), ("]: ", Colors.Default)); ;
             b.ForegroundColor = Colors.Input;
-            string input = b.ReadLine();
+            var input = b.ReadLine();
             b.ResetColor();
-            if (string.IsNullOrEmpty(input) || input.ToLower() is "y" or "yes") {
-                return true;
-            }
-            return false;
+            return string.IsNullOrEmpty(input) || input.ToLower() is "y" or "yes";
         }
 
         /// <summary>
@@ -160,16 +204,16 @@ namespace PrettyConsole {
                 WriteLine(title.ToString(), Colors.Highlight);
             }
             Dictionary<int, string> dict = new();
-            int i = 1;
+            var i = 1;
             // Enumerate list with numbers to allow selection by index
-            foreach (string choice in choices) {
-                WriteLine(($"\t{i}", Colors.Highlight), ($". {choice}", Colors.Primary));
+            foreach (var choice in choices) {
+                WriteLine(($"\t{i}", Colors.Highlight), ($". {choice}", Colors.Default));
                 dict.Add(i, choice);
                 i++;
             }
             NewLine();
 
-            int selected = ReadLine<int>("Enter your choice:");
+            var selected = ReadLine<int>("Enter your choice:");
 
             if (!dict.ContainsKey(selected)) {
                 throw new IndexOutOfRangeException(nameof(selected));
@@ -192,25 +236,25 @@ namespace PrettyConsole {
                 WriteLine(title.ToString(), Colors.Highlight);
             }
             Dictionary<int, string> dict = new();
-            int i = 1;
+            var i = 1;
             // Enumerate list of choices
-            foreach (string choice in choices) {
-                WriteLine(($"\t{i}", Colors.Highlight), ($". {choice}", Colors.Primary));
+            foreach (var choice in choices) {
+                WriteLine(($"\t{i}", Colors.Highlight), ($". {choice}", Colors.Default));
                 dict.Add(i, choice);
                 i++;
             }
             List<string> results = new();
 
             NewLine();
-            string input = ReadLine<string>("Enter your choices separated with spaces:");
+            var input = ReadLine<string>("Enter your choices separated with spaces:");
 
             // get selected indexes from user
             var selected = Extensions.SplitAsSpan(input, ' ');
 
             // evaluate and add selections to results
-            foreach (string choice in selected) {
+            foreach (var choice in selected) {
                 var trimmed = choice.Trim();
-                if (!int.TryParse(trimmed, out int num)) {
+                if (!int.TryParse(trimmed, out var num)) {
                     throw new ArgumentException(nameof(choice));
                 }
                 if (!dict.ContainsKey(num)) {
@@ -248,16 +292,16 @@ namespace PrettyConsole {
             //Enumerate options and sub-options
             foreach (var (mainChoice, subChoices) in menu) {
                 var lst = new List<int>();
-                int prefixLength = i.ToString().Length + 2;
+                var prefixLength = i.ToString().Length + 2;
                 Write(($"{i}", Colors.Highlight), ($". {Extensions.SuffixWithSpaces(mainChoice, maxMainOption - prefixLength)}",
-                    Colors.Primary));
+                    Colors.Default));
                 foreach (var subChoice in subChoices) {
                     lst.Add(j);
                     if (j is 1) {
-                        WriteLine(($"{j}", Colors.Highlight), ($". {subChoice}", Colors.Primary));
+                        WriteLine(($"{j}", Colors.Highlight), ($". {subChoice}", Colors.Default));
                     } else {
                         WriteLine(($"{Extensions.SuffixWithSpaces(null, maxMainOption)}{j}", Colors.Highlight), ($". {subChoice}",
-                            Colors.Primary));
+                            Colors.Default));
                     }
                     j++;
                 }
@@ -267,27 +311,27 @@ namespace PrettyConsole {
                 NewLine();
             }
 
-            string input = ReadLine<string>("Enter your choice separated with spaces:");
+            var input = ReadLine<string>("Enter your choice separated with spaces:");
 
             // get the 2 arguments, as in tree options and sub-tree option
             var selected = Extensions.SplitAsSpan(input, ' ');
 
             // save the 2 arguments
-            var enumerator = selected.GetEnumerator();
+            using var enumerator = selected.GetEnumerator();
             enumerator.MoveNext();
-            string main = enumerator.Current;
+            var main = enumerator.Current;
             enumerator.MoveNext();
-            string sub = enumerator.Current;
+            var sub = enumerator.Current;
 
             // Validate
-            if (!int.TryParse(main, out int mainNum)) {
+            if (!int.TryParse(main, out var mainNum)) {
                 throw new ArgumentException(nameof(mainNum));
             }
             if (!Dict.ContainsKey(mainNum)) {
                 throw new IndexOutOfRangeException(nameof(mainNum));
             }
 
-            if (!int.TryParse(sub, out int subNum)) {
+            if (!int.TryParse(sub, out var subNum)) {
                 throw new ArgumentException(nameof(subNum));
             }
             if (!Dict[mainNum].Contains(subNum)) {
@@ -297,8 +341,8 @@ namespace PrettyConsole {
             b.ResetColor();
 
             // Return matching options
-            string selectedMainOption = menu.Keys.ToArray()[mainNum - 1];
-            string selectedSubOption = menu[selectedMainOption][subNum - 1];
+            var selectedMainOption = menu.Keys.ToArray()[mainNum - 1];
+            var selectedSubOption = menu[selectedMainOption][subNum - 1];
             return (selectedMainOption, selectedSubOption);
         }
 
@@ -312,19 +356,20 @@ namespace PrettyConsole {
         /// For complex types request a string and validate/convert yourself
         /// </remarks>
         public static T ReadLine<T>(ReadOnlySpan<char> message) {
-            Write($"{message} ", Colors.Primary);
+            Write($"{message.ToString()} ", Colors.Default);
             b.ForegroundColor = Colors.Input;
-            string input = b.ReadLine();
+            var input = b.ReadLine();
             b.ResetColor();
+
+            if (string.IsNullOrWhiteSpace(input)) {
+                return default;
+            }
 
             input = input.Trim();
 
             // Convert input to desired type
             var converter = TypeDescriptor.GetConverter(typeof(T));
-            if (converter is not null) {
-                return (T)converter.ConvertFromString(input);
-            }
-            return default;
+            return (T)converter.ConvertFromString(input);
         }
 
         /// <summary>
@@ -341,7 +386,9 @@ namespace PrettyConsole {
                 if (task.Status is not TaskStatus.Running) {
                     task.Start();
                 }
-            } catch { }
+            } catch {
+                //ignore
+            }
 
             b.ResetColor();
             b.ForegroundColor = color;
@@ -355,20 +402,18 @@ namespace PrettyConsole {
             title = string.IsNullOrWhiteSpace(title) ? string.Empty : $"{title} ";
 
             while (!task.IsCompleted) { // Await until the TaskAwaiter informs of completion
-                for (int i = 0; i < Twirl.Length; i++) { // Cycle through the characters of twirl
+                foreach (char c in Twirl) { // Cycle through the characters of twirl
                     if (displayElapsedTime) {
-                        b.Write($"{title}{Twirl[i]} [Elapsed: {stopwatch.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
+                        b.Write($"{title}{c} [Elapsed: {stopwatch.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
                     } else {
-                        b.Write($"{title}{Twirl[i]}{ExtraBuffer}"); // Remove last character and re-write
+                        b.Write($"{title}{c}{ExtraBuffer}"); // Remove last character and re-write
                     }
                     b.SetCursorPosition(0, lineNum);
                     await Task.Delay(updateRate); // The update rate
                 }
             }
 
-            if (stopwatch is not null) {
-                stopwatch.Stop();
-            }
+            stopwatch?.Stop();
 
             NewLine(); // Break line after completion
 
@@ -391,7 +436,9 @@ namespace PrettyConsole {
                 if (task.Status is not TaskStatus.Running) {
                     task.Start();
                 }
-            } catch { }
+            } catch {
+                //ignore
+            }
 
             b.ResetColor();
             b.ForegroundColor = color;
@@ -405,20 +452,18 @@ namespace PrettyConsole {
             title = string.IsNullOrWhiteSpace(title) ? string.Empty : $"{title} ";
 
             while (!task.IsCompleted) { // Await until the TaskAwaiter informs of completion
-                for (int i = 0; i < Twirl.Length; i++) { // Cycle through the characters of twirl
+                foreach (char c in Twirl) { // Cycle through the characters of twirl
                     if (displayElapsedTime) {
-                        b.Write($"{title}{Twirl[i]} [Elapsed: {stopwatch.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
+                        b.Write($"{title}{c} [Elapsed: {stopwatch.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
                     } else {
-                        b.Write($"{title}{Twirl[i]}{ExtraBuffer}"); // Remove last character and re-write
+                        b.Write($"{title}{c}{ExtraBuffer}"); // Remove last character and re-write
                     }
                     b.SetCursorPosition(0, lineNum);
                     await Task.Delay(updateRate); // The update rate
                 }
             }
 
-            if (stopwatch is not null) {
-                stopwatch.Stop();
-            }
+            stopwatch?.Stop();
 
             NewLine(); // Break line after completion
 
@@ -440,11 +485,7 @@ namespace PrettyConsole {
             b.Write("[");
             var p = (ProgressBarSize * percent) / 100;
             for (var i = 0; i < ProgressBarSize; i++) {
-                if (i >= p) {
-                    b.Write(' ');
-                } else {
-                    b.Write('■');
-                }
+                b.Write(i >= p ? ' ' : '■');
             }
             b.Write("] {0,3:##0}%", percent);
             b.SetCursorPosition(0, currentLine);
