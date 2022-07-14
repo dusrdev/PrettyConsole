@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace PrettyConsole {
     internal static class Extensions {
         // Returns the length of the longest string in the collection
-        public static int MaxStringLength(IEnumerable<string> col) {
-            int max = 0;
-            foreach (var value in col) {
-                if (max < value.Length) {
-                    max = value.Length;
-                }
-            }
-            return max;
-        }
+        public static int MaxStringLength(IEnumerable<string> col) => col.Max(s => s.Length);
 
         // Returns a string completed with spaces to fill a certain length
         public static string SuffixWithSpaces(ReadOnlySpan<char> str, int maxLength) {
@@ -32,13 +25,16 @@ namespace PrettyConsole {
             List<string> output = new();
             foreach (var c in str) {
                 if (c.Equals(seperator)) {
-                    if (builder.Length > 0) {
-                        output.Add(builder.ToString().Trim());
-                        builder.Clear();
+                    if (builder.Length <= 0) {
+                        continue;
                     }
-                } else {
-                    builder.Append(c);
+
+                    output.Add(builder.ToString().Trim());
+                    builder.Clear();
+                    continue;
                 }
+
+                builder.Append(c);
             }
             if (builder.Length > 0) {
                 output.Add(builder.ToString().Trim());
