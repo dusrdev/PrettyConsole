@@ -38,51 +38,76 @@ namespace PrettyConsole {
         /// <summary>
         /// Write any object to the console in the default color
         /// </summary>
-        /// <param name="o">The object to write</param>
+        /// <param name="item">The item which value to write to the console</param>
         /// <remarks>
         /// To end line, use <b>WriteLine</b> with the same parameters
         /// </remarks>
-        public static void Write(object o) {
-            Write(o, Colors.Default);
+        public static void Write<T>(T item) {
+            Write(item, Colors.Default);
+        }
+
+        /// <summary>
+        /// Write any object to the console in the default color
+        /// </summary>
+        /// <param name="output">Output</param>
+        /// <remarks>
+        /// To end line, use <b>WriteLine</b> with the same parameters
+        /// </remarks>
+        public static void Write(string output) {
+            Write(output, Colors.Default);
         }
 
         /// <summary>
         /// Write any object to the console in <paramref name="color"/>
         /// </summary>
-        /// <param name="o">The object to write</param>
+        /// <param name="item">The item which value to write to the console</param>
         /// <param name="color">The color in which the output will be displayed</param>
         /// <remarks>
         /// To end line, use <b>WriteLine</b> with the same parameters
         /// </remarks>
-        public static void Write(object o, ConsoleColor color) {
+        public static void Write<T>(T item, ConsoleColor color) {
             b.ResetColor();
             b.ForegroundColor = color;
-            b.Write(o);
+            if (item is string output) {
+                b.Write(output);
+            } else {
+                b.Write(item.ToString());
+            }
             b.ResetColor();
         }
 
         /// <summary>
         /// Write any object to the console in the default color and ends line
         /// </summary>
-        /// <param name="o">The object to write</param>
+        /// <param name="item">The item which value to write to the console</param>
         /// <remarks>
+        /// <para>
         /// To write without ending line, use <b>Write</b> with the same parameters
+        /// </para>
+        /// <para>
+        /// This internally uses Write(string) to avoid boxing
+        /// </para>
         /// </remarks>
-        public static void WriteLine(object o) {
-            Write(o, Colors.Default);
+        public static void WriteLine<T>(T item) {
+            Write(item.ToString(), Colors.Default);
             NewLine();
         }
 
         /// <summary>
         /// Write any object to the console in <paramref name="color"/> and ends line
         /// </summary>
-        /// <param name="o">The object to write</param>
+        /// <param name="item">The item which value to write to the console</param>
         /// <param name="color">The color in which the output will be displayed</param>
         /// <remarks>
+        /// <para>
         /// To write without ending line, use <b>Write</b> with the same parameters
+        /// </para>
+        /// <para>
+        /// This internally uses Write(string) to avoid boxing
+        /// </para>
         /// </remarks>
-        public static void WriteLine(object o, ConsoleColor color) {
-            Write(o, color);
+        public static void WriteLine<T>(T item, ConsoleColor color) {
+            Write(item.ToString(), color);
             NewLine();
         }
 
@@ -92,7 +117,26 @@ namespace PrettyConsole {
         /// <remarks>
         /// To end line, use <b>WriteLine</b> with the same parameters
         /// </remarks>
+        [Obsolete("Use method with (string,color) tuples!")]
         public static void Write(params (object item, ConsoleColor color)[] elements) {
+            if (elements is null || elements.Length is 0) {
+                throw new ArgumentException("Invalid parameters");
+            }
+            b.ResetColor();
+            foreach (var (o, c) in elements) {
+                b.ForegroundColor = c;
+                b.Write(o);
+            }
+            b.ResetColor();
+        }
+
+        /// <summary>
+        /// Write tuples of (<b>element</b>, <b>color</b>) to the console
+        /// </summary>
+        /// <remarks>
+        /// To end line, use <b>WriteLine</b> with the same parameters
+        /// </remarks>
+        public static void Write(params (string item, ConsoleColor color)[] elements) {
             if (elements is null || elements.Length is 0) {
                 throw new ArgumentException("Invalid parameters");
             }
@@ -110,7 +154,19 @@ namespace PrettyConsole {
         /// <remarks>
         /// To write without ending line, use <b>Write</b> with the same parameters
         /// </remarks>
+        [Obsolete("Use method with (string,color) tuples!")]
         public static void WriteLine(params (object item, ConsoleColor color)[] elements) {
+            Write(elements);
+            NewLine();
+        }
+
+        /// <summary>
+        /// Write tuples of (<b>element</b>, <b>color</b>) to the console and ends line
+        /// </summary>
+        /// <remarks>
+        /// To write without ending line, use <b>Write</b> with the same parameters
+        /// </remarks>
+        public static void WriteLine(params (string item, ConsoleColor color)[] elements) {
             Write(elements);
             NewLine();
         }
@@ -118,28 +174,32 @@ namespace PrettyConsole {
         /// <summary>
         /// Write any object to the console as a label, Colors.Default background - black text
         /// </summary>
-        /// <param name="o">The object to write</param>
+        /// <param name="item">The item which value to write to the console</param>
         /// <remarks>
         /// To end line, call <b>NewLine()</b> after.
         /// </remarks>
-        public static void Label(object o) {
-            Label(o, ConsoleColor.Black, Colors.Default);
+        public static void Label<T>(T item) {
+            Label(item, ConsoleColor.Black, Colors.Default);
         }
 
         /// <summary>
         /// Write any object to the console as a label, modified foreground and background
         /// </summary>
-        /// <param name="o">The object to write</param>
+        /// <param name="item">The item which value to write to the console</param>
         /// <param name="foreground">foreground color - i.e: color of the string representation</param>
         /// <param name="background">background color</param>
         /// <remarks>
         /// To end line, call <b>NewLine()</b> after.
         /// </remarks>
-        public static void Label(object o, ConsoleColor foreground, ConsoleColor background) {
+        public static void Label<T>(T item, ConsoleColor foreground, ConsoleColor background) {
             b.ResetColor();
             b.ForegroundColor = foreground;
             b.BackgroundColor = background;
-            b.Write(o);
+            if (item is string output) {
+                b.Write(output);
+            } else {
+                b.Write(item.ToString());
+            }
             b.ResetColor();
         }
 
@@ -149,7 +209,27 @@ namespace PrettyConsole {
         /// <remarks>
         /// To end line, use <b>WriteLine</b> with the same parameters
         /// </remarks>
+        [Obsolete("Use method with (string,foreground,background) tuples!")]
         public static void Label(params (object item, ConsoleColor foreground, ConsoleColor background)[] elements) {
+            if (elements is null || elements.Length is 0) {
+                throw new ArgumentException("Invalid parameters");
+            }
+            b.ResetColor();
+            foreach (var (o, foreground, background) in elements) {
+                b.ForegroundColor = foreground;
+                b.BackgroundColor = background;
+                b.Write(o);
+            }
+            b.ResetColor();
+        }
+
+        /// <summary>
+        /// Write tuples of (<b>element</b>, <b>color</b>) to the console
+        /// </summary>
+        /// <remarks>
+        /// To end line, use <b>WriteLine</b> with the same parameters
+        /// </remarks>
+        public static void Label(params (string item, ConsoleColor foreground, ConsoleColor background)[] elements) {
             if (elements is null || elements.Length is 0) {
                 throw new ArgumentException("Invalid parameters");
             }
@@ -181,8 +261,8 @@ namespace PrettyConsole {
         /// <remarks>
         /// The user can confirm by entering <b>"y"</b>/<b>"yes"</b> or just pressing <b>enter</b>, anything else is regarded as <c>false</c>.
         /// </remarks>
-        public static bool Confirm(ReadOnlySpan<char> message) {
-            Write((message.ToString(), Colors.Default), ("? ", Colors.Highlight), ("[", Colors.Default), ("y", Colors.Success),
+        public static bool Confirm(string message) {
+            Write((message, Colors.Default), ("? ", Colors.Highlight), ("[", Colors.Default), ("y", Colors.Success),
                 ("/", Colors.Default), ("n", Colors.Error), ("]: ", Colors.Default)); ;
             b.ForegroundColor = Colors.Input;
             var input = b.ReadLine();
@@ -199,9 +279,9 @@ namespace PrettyConsole {
         /// <remarks>
         /// This validates the input for you.
         /// </remarks>
-        public static string Selection(ReadOnlySpan<char> title, IEnumerable<string> choices) {
+        public static string Selection(string title, IEnumerable<string> choices) {
             if (!Extensions.IsEmptyOrWhiteSpace(title)) {
-                WriteLine(title.ToString(), Colors.Highlight);
+                WriteLine(title, Colors.Highlight);
             }
             Dictionary<int, string> dict = new();
             var i = 1;
@@ -231,9 +311,9 @@ namespace PrettyConsole {
         /// <remarks>
         /// This validates the input for you.
         /// </remarks>
-        public static List<string> MultiSelection(ReadOnlySpan<char> title, IEnumerable<string> choices) {
+        public static List<string> MultiSelection(string title, IEnumerable<string> choices) {
             if (!Extensions.IsEmptyOrWhiteSpace(title)) {
-                WriteLine(title.ToString(), Colors.Highlight);
+                WriteLine(title, Colors.Highlight);
             }
             Dictionary<int, string> dict = new();
             var i = 1;
@@ -279,9 +359,9 @@ namespace PrettyConsole {
         /// <remarks>
         /// This validates the input for you.
         /// </remarks>
-        public static (string option, string subOption) TreeMenu(ReadOnlySpan<char> title, Dictionary<string, List<string>> menu) {
+        public static (string option, string subOption) TreeMenu(string title, Dictionary<string, List<string>> menu) {
             if (!Extensions.IsEmptyOrWhiteSpace(title)) {
-                WriteLine(title.ToString(), Colors.Highlight);
+                WriteLine(title, Colors.Highlight);
                 NewLine();
             }
             var maxMainOption = Extensions.MaxStringLength(menu.Keys); // Used to make sub-tree prefix spaces uniform
@@ -355,8 +435,8 @@ namespace PrettyConsole {
         /// <remarks>
         /// For complex types request a string and validate/convert yourself
         /// </remarks>
-        public static T ReadLine<T>(ReadOnlySpan<char> message) {
-            Write($"{message.ToString()} ", Colors.Default);
+        public static T ReadLine<T>(string message) {
+            Write(message, Colors.Default);
             b.ForegroundColor = Colors.Input;
             var input = b.ReadLine();
             b.ResetColor();
