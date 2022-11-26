@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Diagnostics.CodeAnalysis;
 using PrettyConsole.Models;
+using System.Threading;
 
 namespace PrettyConsole;
 /// <summary>
@@ -547,6 +548,7 @@ public static class Console {
     /// <remarks>
     /// For complex types request a string and validate/convert yourself
     /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T ReadLine<T>(string message, Type type, ConsoleColor outputColor, ConsoleColor inputColor) {
         var input = ReadLine(message, outputColor, inputColor);
         return (T)Convert.ChangeType(input, type);
@@ -593,6 +595,7 @@ public static class Console {
     /// For complex types request a string and validate/convert yourself
     /// </remarks>
     [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T ReadLine<T>(string message, ConsoleColor outputColor, ConsoleColor inputColor) {
         var input = ReadLine(message, outputColor, inputColor);
 
@@ -637,6 +640,7 @@ public static class Console {
     /// <param name="outputColor"></param>
     /// <param name="inputColor"></param>
     /// <returns>Trimmed string</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ReadLine(string message, ConsoleColor outputColor, ConsoleColor inputColor) {
         Write(message, outputColor);
         ogConsole.ForegroundColor = inputColor;
@@ -727,8 +731,9 @@ public static class Console {
     /// <param name="title">Message to display alongside the progress bar</param>
     /// <param name="displayElapsedTime">Display elapsed time</param>
     /// <param name="updateRate">Rate at which the progress bar refreshes in milliseconds</param>
+    /// <param name="token">So you can cancel the progress bar and end it any time</param>
     /// <returns></returns>
-    public static async Task IndeterminateProgressBar(Task task, ConsoleColor color, string title, bool displayElapsedTime, int updateRate = 50) {
+    public static async Task IndeterminateProgressBar(Task task, ConsoleColor color, string title, bool displayElapsedTime, int updateRate = 50, CancellationToken token = default) {
         try {
             if (task.Status is not TaskStatus.Running) {
                 task.Start();
@@ -756,8 +761,20 @@ public static class Console {
                     ogConsole.Write($"{title}{c}{ExtraBuffer}"); // Remove last character and re-write
                 }
                 ogConsole.SetCursorPosition(0, lineNum);
-                await Task.Delay(updateRate); // The update rate
+                await Task.Delay(updateRate, token); // The update rate
+                ogConsole.Write(EmptyLine);
+                ogConsole.SetCursorPosition(0, lineNum);
+                if (token.IsCancellationRequested) {
+                    ogConsole.Write(EmptyLine);
+                    ogConsole.SetCursorPosition(0, lineNum);
+                    return;
+                }
             }
+        }
+
+        if (token.IsCancellationRequested) {
+            ogConsole.Write(EmptyLine);
+            ogConsole.SetCursorPosition(0, lineNum);
         }
 
         stopwatch?.Stop();
