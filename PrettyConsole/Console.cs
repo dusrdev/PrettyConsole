@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Diagnostics.CodeAnalysis;
+using PrettyConsole.Models;
 
 namespace PrettyConsole;
 /// <summary>
@@ -21,8 +22,6 @@ public static class Console {
     /// </remarks>
     public static readonly IColors Colors = new Colors();
 
-    //private readonly static object _lock = new object();
-
     /// <summary>
     /// Used to set the colors which are used by default in most functions of the class
     /// </summary>
@@ -32,6 +31,9 @@ public static class Console {
 
     // Used to have the progress bar change size dynamically to the buffer size
     private static readonly int ProgressBarSize = ogConsole.BufferWidth - 10;
+
+    // Gets an entire bufferlength string full with whitespaces, used to override lines when using the progressbar
+    private static readonly string EmptyLine = Extensions.GetWhiteSpaces(ogConsole.BufferWidth);
 
     // Constant pattern containing the characters needed for the indeterminate progress bar
     private const string Twirl = "-\\|/";
@@ -75,9 +77,9 @@ public static class Console {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = color;
         if (item is string output) {
-            ogConsole.Out.Write(output);
+            ogConsole.Write(output);
         } else {
-            ogConsole.Out.Write(item.ToString());
+            ogConsole.Write(item.ToString());
         }
         ogConsole.ResetColor();
         //}
@@ -202,7 +204,7 @@ public static class Console {
         ogConsole.ResetColor();
         foreach (var (o, c) in elements) {
             ogConsole.ForegroundColor = c;
-            ogConsole.Out.Write(o);
+            ogConsole.Write(o);
         }
         ogConsole.ResetColor();
         //}
@@ -223,7 +225,7 @@ public static class Console {
         ogConsole.ResetColor();
         foreach (var (o, c) in elements) {
             ogConsole.ForegroundColor = c;
-            ogConsole.Out.Write(o);
+            ogConsole.Write(o);
         }
         ogConsole.ResetColor();
         //}
@@ -279,9 +281,33 @@ public static class Console {
         ogConsole.ForegroundColor = foreground;
         ogConsole.BackgroundColor = background;
         if (item is string output) {
-            ogConsole.Out.Write(output);
+            ogConsole.Write(output);
         } else {
-            ogConsole.Out.Write(item.ToString());
+            ogConsole.Write(item.ToString());
+        }
+        ogConsole.ResetColor();
+        //}
+    }
+
+    /// <summary>
+    /// Write any object to the error console as a label, modified foreground and background
+    /// </summary>
+    /// <param name="item">The item which value to write to the console</param>
+    /// <param name="foreground">foreground color - i.e: color of the string representation</param>
+    /// <param name="background">background color</param>
+    /// <remarks>
+    /// To end line, call <ogConsole>NewLine()</ogConsole> after.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    public static void ErrorLabel<T>(T item, ConsoleColor foreground, ConsoleColor background) {
+        //lock (_lock) {
+        ogConsole.ResetColor();
+        ogConsole.ForegroundColor = foreground;
+        ogConsole.BackgroundColor = background;
+        if (item is string output) {
+            ogConsole.Error.Write(output);
+        } else {
+            ogConsole.Error.Write(item.ToString());
         }
         ogConsole.ResetColor();
         //}
@@ -304,7 +330,7 @@ public static class Console {
         foreach (var (o, foreground, background) in elements) {
             ogConsole.ForegroundColor = foreground;
             ogConsole.BackgroundColor = background;
-            ogConsole.Out.Write(o);
+            ogConsole.Write(o);
         }
         ogConsole.ResetColor();
         //}
@@ -326,7 +352,7 @@ public static class Console {
         foreach (var (o, foreground, background) in elements) {
             ogConsole.ForegroundColor = foreground;
             ogConsole.BackgroundColor = background;
-            ogConsole.Out.Write(o);
+            ogConsole.Write(o);
         }
         ogConsole.ResetColor();
         //}
@@ -355,7 +381,7 @@ public static class Console {
         Write((message, Colors.Default), ("? ", Colors.Highlight), ("[", Colors.Default), ("y", Colors.Success),
             ("/", Colors.Default), ("n", Colors.Error), ("]: ", Colors.Default)); ;
         ogConsole.ForegroundColor = Colors.Input;
-        var input = ogConsole.In.ReadLine();
+        var input = ogConsole.ReadLine();
         ogConsole.ResetColor();
         return string.IsNullOrEmpty(input) || input.ToLower() is "y" or "yes";
     }
@@ -512,28 +538,126 @@ public static class Console {
     /// <summary>
     /// Used to request user input, validates and converts common types.
     /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="message"></param>
+    /// <param name="type"></param>
+    /// <param name="outputColor"></param>
+    /// <param name="inputColor"></param>
+    /// <returns>Converted input</returns>
+    /// <remarks>
+    /// For complex types request a string and validate/convert yourself
+    /// </remarks>
+    public static T ReadLine<T>(string message, Type type, ConsoleColor outputColor, ConsoleColor inputColor) {
+        var input = ReadLine(message, outputColor, inputColor);
+        return (T)Convert.ChangeType(input, type);
+    }
+
+    /// <summary>
+    /// Used to request user input, validates and converts common types.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="message"></param>
+    /// <param name="type"></param>
+    /// <param name="inputColor"></param>
+    /// <returns>Converted input</returns>
+    /// <remarks>
+    /// For complex types request a string and validate/convert yourself
+    /// </remarks>
+    public static T ReadLine<T>(string message, Type type, ConsoleColor inputColor) {
+        return ReadLine<T>(message, type, Colors.Default, inputColor);
+    }
+
+    /// <summary>
+    /// Used to request user input, validates and converts common types.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="message"></param>
+    /// <param name="type"></param>
+    /// <returns>Converted input</returns>
+    /// <remarks>
+    /// For complex types request a string and validate/convert yourself
+    /// </remarks>
+    public static T ReadLine<T>(string message, Type type) {
+        return ReadLine<T>(message, type, Colors.Default, Colors.Input);
+    }
+
+    /// <summary>
+    /// Used to request user input, validates and converts common types.
+    /// </summary>
+    /// <typeparam name="T">Any common type</typeparam>
+    /// <param name="message">Request title</param>
+    /// <param name="outputColor"></param>
+    /// <param name="inputColor"></param>
+    /// <returns>Converted input</returns>
+    /// <remarks>
+    /// For complex types request a string and validate/convert yourself
+    /// </remarks>
+    [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
+    public static T ReadLine<T>(string message, ConsoleColor outputColor, ConsoleColor inputColor) {
+        var input = ReadLine(message, outputColor, inputColor);
+
+        // Convert input to desired type
+        var converter = TypeDescriptor.GetConverter(typeof(T));
+        return (T)converter.ConvertFromString(input);
+    }
+
+    /// <summary>
+    /// Used to request user input, validates and converts common types.
+    /// </summary>
+    /// <typeparam name="T">Any common type</typeparam>
+    /// <param name="message">Request title</param>
+    /// <param name="inputColor"></param>
+    /// <returns>Converted input</returns>
+    /// <remarks>
+    /// For complex types request a string and validate/convert yourself
+    /// </remarks>
+    [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
+    public static T ReadLine<T>(string message, ConsoleColor inputColor) {
+        return ReadLine<T>(message, Colors.Default, inputColor);
+    }
+
+    /// <summary>
+    /// Used to request user input, validates and converts common types.
+    /// </summary>
     /// <typeparam name="T">Any common type</typeparam>
     /// <param name="message">Request title</param>
     /// <returns>Converted input</returns>
     /// <remarks>
     /// For complex types request a string and validate/convert yourself
     /// </remarks>
-    [RequiresUnreferencedCode("If trimming is unavoidable Use string overload instead", Url = "http://help/unreferencedcode")]
+    [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
     public static T ReadLine<T>(string message) {
-        Write(message, Colors.Default);
-        ogConsole.ForegroundColor = Colors.Input;
-        var input = ogConsole.In.ReadLine();
+        return ReadLine<T>(message, Colors.Default, Colors.Input);
+    }
+
+    /// <summary>
+    /// Used to request user input
+    /// </summary>
+    /// <param name="message">Request title</param>
+    /// <param name="outputColor"></param>
+    /// <param name="inputColor"></param>
+    /// <returns>Trimmed string</returns>
+    public static string ReadLine(string message, ConsoleColor outputColor, ConsoleColor inputColor) {
+        Write(message, outputColor);
+        ogConsole.ForegroundColor = inputColor;
+        var input = ogConsole.ReadLine();
         ogConsole.ResetColor();
 
         if (string.IsNullOrWhiteSpace(input)) {
             return default;
         }
 
-        input = input.Trim();
+        return input.Trim();
+    }
 
-        // Convert input to desired type
-        var converter = TypeDescriptor.GetConverter(typeof(T));
-        return (T)converter.ConvertFromString(input);
+    /// <summary>
+    /// Used to request user input
+    /// </summary>
+    /// <param name="message">Request title</param>
+    /// <param name="inputColor"></param>
+    /// <returns>Trimmed string</returns>
+    public static string ReadLine(string message, ConsoleColor inputColor) {
+        return ReadLine(message, Colors.Default, inputColor);
     }
 
     /// <summary>
@@ -542,16 +666,7 @@ public static class Console {
     /// <param name="message">Request title</param>
     /// <returns>Trimmed string</returns>
     public static string ReadLine(string message) {
-        Write(message, Colors.Default);
-        ogConsole.ForegroundColor = Colors.Input;
-        var input = ogConsole.In.ReadLine();
-        ogConsole.ResetColor();
-
-        if (string.IsNullOrWhiteSpace(input)) {
-            return default;
-        }
-
-        return input.Trim();
+        return ReadLine(message, Colors.Default, Colors.Input);
     }
 
     /// <summary>
@@ -586,9 +701,9 @@ public static class Console {
         while (!task.IsCompleted) { // Await until the TaskAwaiter informs of completion
             foreach (char c in Twirl) { // Cycle through the characters of twirl
                 if (displayElapsedTime) {
-                    ogConsole.Out.Write($"{title}{c} [Elapsed: {stopwatch.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
+                    ogConsole.Write($"{title}{c} [Elapsed: {stopwatch.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
                 } else {
-                    ogConsole.Out.Write($"{title}{c}{ExtraBuffer}"); // Remove last character and re-write
+                    ogConsole.Write($"{title}{c}{ExtraBuffer}"); // Remove last character and re-write
                 }
                 ogConsole.SetCursorPosition(0, lineNum);
                 await Task.Delay(updateRate); // The update rate
@@ -636,9 +751,9 @@ public static class Console {
         while (!task.IsCompleted) { // Await until the TaskAwaiter informs of completion
             foreach (char c in Twirl) { // Cycle through the characters of twirl
                 if (displayElapsedTime) {
-                    ogConsole.Out.Write($"{title}{c} [Elapsed: {stopwatch.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
+                    ogConsole.Write($"{title}{c} [Elapsed: {stopwatch.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
                 } else {
-                    ogConsole.Out.Write($"{title}{c}{ExtraBuffer}"); // Remove last character and re-write
+                    ogConsole.Write($"{title}{c}{ExtraBuffer}"); // Remove last character and re-write
                 }
                 ogConsole.SetCursorPosition(0, lineNum);
                 await Task.Delay(updateRate); // The update rate
@@ -661,15 +776,66 @@ public static class Console {
     /// <param name="percent"></param>
     /// <param name="color">The color you want the progress bar to be</param>
     public static void UpdateProgressBar(int percent, ConsoleColor color) {
+        UpdateProgressBar(percent, color, color);
+    }
+
+    /// <summary>
+    /// Outputs progress bar filled according to <paramref name="percent"/>
+    /// <para>
+    /// When called consecutively, it overrides the previous
+    /// </para>
+    /// </summary>
+    /// <param name="percent"></param>
+    /// <param name="foregound">color of the bounds and percentage</param>
+    /// <param name="progress">color of the progress bar fill</param>
+    public static void UpdateProgressBar(int percent, ConsoleColor foregound, ConsoleColor progress) {
         ogConsole.ResetColor();
-        ogConsole.ForegroundColor = color;
+        ogConsole.ForegroundColor = foregound;
         var currentLine = ogConsole.CursorTop;
-        ogConsole.Out.Write("[");
+        ogConsole.WriteLine(EmptyLine);
+        ogConsole.SetCursorPosition(0, currentLine);
+        ogConsole.Write("[");
         var p = (ProgressBarSize * percent) / 100;
+        ogConsole.ForegroundColor = progress;
         for (var i = 0; i < ProgressBarSize; i++) {
-            ogConsole.Out.Write(i >= p ? ' ' : '■');
+            ogConsole.Write(i >= p ? ' ' : '■');
         }
-        ogConsole.Out.Write("] {0,3:##0}%", percent);
+        ogConsole.ForegroundColor = foregound;
+        ogConsole.Write("] {0,5:##0.##}%", percent);
+        ogConsole.SetCursorPosition(0, currentLine);
+        ogConsole.ResetColor();
+    }
+
+    /// <summary>
+    /// Outputs progress bar filled according to <paramref name="display"/>
+    /// <para>
+    /// When called consecutively, it overrides the previous
+    /// </para>
+    /// <para>Make sure to print a new line after the last call, otherwise your outputs will override the progress bar</para>
+    /// </summary>
+    /// <remarks>
+    /// <para>Test before usage in release, when updated too quickly, the progress bar may fail to override previous lines and will make a mess</para>
+    /// <para>If that happens, consider restricting the updates yourself by wrapping the call</para>
+    /// </remarks>
+    /// <param name="display"></param>
+    public static void UpdateProgressBar(ProgressBarDisplay display) {
+        ogConsole.ResetColor();
+        ogConsole.ForegroundColor = display.Foreground;
+        var currentLine = ogConsole.CursorTop;
+        ogConsole.WriteLine(EmptyLine);
+        ogConsole.WriteLine(EmptyLine);
+        ogConsole.SetCursorPosition(0, currentLine);
+        if (!string.IsNullOrWhiteSpace(display.Header)) {
+            ogConsole.Write($"{display.Header}\n");
+        }
+        ogConsole.Write("[");
+        var p = ProgressBarSize * (int)display.Percentage / 100;
+        ogConsole.ForegroundColor = display.Progress;
+        for (var i = 0; i < ProgressBarSize; i++) {
+            ogConsole.Write(i >= p ? ' ' : '■');
+        }
+        ogConsole.ForegroundColor = display.Foreground;
+        ogConsole.Write("] {0,5:##0.##}%", display.Percentage);
         ogConsole.SetCursorPosition(0, currentLine);
         ogConsole.ResetColor();
     }
@@ -696,6 +862,6 @@ public static class Console {
     /// Used to end current line or write an empty one, depends whether the current line has any text
     /// </summary>
     public static void NewLine() {
-        ogConsole.Out.WriteLine();
+        ogConsole.WriteLine();
     }
 }
