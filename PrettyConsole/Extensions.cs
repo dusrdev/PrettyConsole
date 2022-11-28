@@ -39,10 +39,10 @@ internal static class Extensions {
 
             builder.Append(c);
         }
-        if (builder.Length > 0) {
-            yield return builder.ToString().Trim();
+        var rest = builder.ToString().Trim();
+        if (!string.IsNullOrWhiteSpace(rest)) {
+            yield return rest;
         }
-        yield return string.Empty;
     }
 
     // Returns a user friendly representation
