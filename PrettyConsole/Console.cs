@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Diagnostics.CodeAnalysis;
 using PrettyConsole.Models;
 using System.Threading;
+using System.Diagnostics.Contracts;
 
 namespace PrettyConsole;
 /// <summary>
@@ -49,6 +50,7 @@ public static class Console {
     /// <remarks>
     /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
     /// </remarks>
+    [Pure]
     public static void Write<T>(T item) {
         Write(item, Colors.Default);
     }
@@ -60,6 +62,7 @@ public static class Console {
     /// <remarks>
     /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
     /// </remarks>
+    [Pure]
     public static void Write(string output) {
         Write(output, Colors.Default);
     }
@@ -73,6 +76,7 @@ public static class Console {
     /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    [Pure]
     public static void Write<T>(T item, ConsoleColor color) {
         //lock (_lock) {
         ogConsole.ResetColor();
@@ -93,6 +97,7 @@ public static class Console {
     /// <remarks>
     /// To end line, use <ogConsole>WriteLineError</ogConsole> with the same parameters
     /// </remarks>
+    [Pure]
     public static void WriteError<T>(T item) {
         WriteError(item.ToString(), Colors.Error);
     }
@@ -106,6 +111,7 @@ public static class Console {
     /// To end line, use <ogConsole>WriteLineError</ogConsole> with the same parameters
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    [Pure]
     public static void WriteError<T>(T item, ConsoleColor color) {
         //lock (_lock) {
         ogConsole.ResetColor();
@@ -131,6 +137,7 @@ public static class Console {
     /// This internally uses Write(string) to avoid boxing
     /// </para>
     /// </remarks>
+    [Pure]
     public static void WriteLine<T>(T item) {
         Write(item.ToString(), Colors.Default);
         NewLine();
@@ -149,6 +156,7 @@ public static class Console {
     /// This internally uses Write(string) to avoid boxing
     /// </para>
     /// </remarks>
+    [Pure]
     public static void WriteLine<T>(T item, ConsoleColor color) {
         Write(item.ToString(), color);
         NewLine();
@@ -166,6 +174,7 @@ public static class Console {
     /// This internally uses Write(string) to avoid boxing
     /// </para>
     /// </remarks>
+    [Pure]
     public static void WriteLineError<T>(T item) {
         WriteError(item.ToString(), Colors.Error);
         ogConsole.Error.WriteLine();
@@ -184,6 +193,7 @@ public static class Console {
     /// This internally uses Write(string) to avoid boxing
     /// </para>
     /// </remarks>
+    [Pure]
     public static void WriteLineError<T>(T item, ConsoleColor color) {
         WriteError(item.ToString(), color);
         ogConsole.Error.WriteLine();
@@ -197,6 +207,7 @@ public static class Console {
     /// </remarks>
     [Obsolete("Use method with (string,color) tuples!")]
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    [Pure]
     public static void Write(params (object item, ConsoleColor color)[] elements) {
         //lock (_lock) {
         if (elements is null || elements.Length is 0) {
@@ -218,6 +229,7 @@ public static class Console {
     /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    [Pure]
     public static void Write(params (string item, ConsoleColor color)[] elements) {
         //lock (_lock) {
         if (elements is null || elements.Length is 0) {
@@ -239,6 +251,7 @@ public static class Console {
     /// To write without ending line, use <ogConsole>Write</ogConsole> with the same parameters
     /// </remarks>
     [Obsolete("Use method with (string,color) tuples!")]
+    [Pure]
     public static void WriteLine(params (object item, ConsoleColor color)[] elements) {
         Write(elements);
         NewLine();
@@ -250,6 +263,7 @@ public static class Console {
     /// <remarks>
     /// To write without ending line, use <ogConsole>Write</ogConsole> with the same parameters
     /// </remarks>
+    [Pure]
     public static void WriteLine(params (string item, ConsoleColor color)[] elements) {
         Write(elements);
         NewLine();
@@ -262,6 +276,7 @@ public static class Console {
     /// <remarks>
     /// To end line, call <ogConsole>NewLine()</ogConsole> after.
     /// </remarks>
+    [Pure]
     public static void Label<T>(T item) {
         Label(item, ConsoleColor.Black, Colors.Default);
     }
@@ -276,6 +291,7 @@ public static class Console {
     /// To end line, call <ogConsole>NewLine()</ogConsole> after.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    [Pure]
     public static void Label<T>(T item, ConsoleColor foreground, ConsoleColor background) {
         //lock (_lock) {
         ogConsole.ResetColor();
@@ -300,6 +316,7 @@ public static class Console {
     /// To end line, call <ogConsole>NewLine()</ogConsole> after.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    [Pure]
     public static void ErrorLabel<T>(T item, ConsoleColor foreground, ConsoleColor background) {
         //lock (_lock) {
         ogConsole.ResetColor();
@@ -322,6 +339,7 @@ public static class Console {
     /// </remarks>
     [Obsolete("Use method with (string,foreground,background) tuples!")]
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    [Pure]
     public static void Label(params (object item, ConsoleColor foreground, ConsoleColor background)[] elements) {
         //lock (_lock) {
         if (elements is null || elements.Length is 0) {
@@ -344,6 +362,7 @@ public static class Console {
     /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    [Pure]
     public static void Label(params (string item, ConsoleColor foreground, ConsoleColor background)[] elements) {
         //lock (_lock) {
         if (elements is null || elements.Length is 0) {
@@ -363,6 +382,7 @@ public static class Console {
     /// Used to wait for user input, you can customize <paramref name="message"/> or leave as default
     /// </summary>
     /// <param name="message"><ogConsole>Default value:</ogConsole> "Press any key to continue"</param>
+    [Pure]
     public static void RequestAnyInput(string message = "Press any key to continue") {
         Write((message, Colors.Default), ("... ", Colors.Highlight));
         ogConsole.ForegroundColor = Colors.Input;
@@ -378,6 +398,7 @@ public static class Console {
     /// <remarks>
     /// The user can confirm by entering <ogConsole>"y"</ogConsole>/<ogConsole>"yes"</ogConsole> or just pressing <ogConsole>enter</ogConsole>, anything else is regarded as <c>false</c>.
     /// </remarks>
+    [Pure]
     public static bool Confirm(string message) {
         Write((message, Colors.Default), ("? ", Colors.Highlight), ("[", Colors.Default), ("y", Colors.Success),
             ("/", Colors.Default), ("n", Colors.Error), ("]: ", Colors.Default)); ;
@@ -396,6 +417,7 @@ public static class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
+    [Pure]
     public static string Selection(string title, IEnumerable<string> choices) {
         if (!Extensions.IsEmptyOrWhiteSpace(title)) {
             WriteLine(title, Colors.Highlight);
@@ -410,7 +432,7 @@ public static class Console {
         }
         NewLine();
 
-        var selected = int.Parse(ReadLine("Enter your choice:"));
+        var selected = ReadLine<int>("Enter your choice: ", typeof(int));
 
         if (!dict.ContainsKey(selected)) {
             throw new IndexOutOfRangeException(nameof(selected));
@@ -428,6 +450,7 @@ public static class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
+    [Pure]
     public static List<string> MultiSelection(string title, IEnumerable<string> choices) {
         if (!Extensions.IsEmptyOrWhiteSpace(title)) {
             WriteLine(title, Colors.Highlight);
@@ -443,13 +466,10 @@ public static class Console {
         List<string> results = new();
 
         NewLine();
-        var input = ReadLine("Enter your choices separated with spaces:");
-
-        // get selected indexes from user
-        var selected = Extensions.Split(input, ' ');
+        var input = ReadLine("Enter your choices separated with spaces: ");
 
         // evaluate and add selections to results
-        foreach (var choice in selected) {
+        foreach (var choice in Extensions.Split(input, ' ')) {
             if (!int.TryParse(choice, out var num)) {
                 throw new ArgumentException(nameof(choice));
             }
@@ -475,6 +495,7 @@ public static class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
+    [Pure]
     public static (string option, string subOption) TreeMenu(string title, Dictionary<string, List<string>> menu) {
         if (!Extensions.IsEmptyOrWhiteSpace(title)) {
             WriteLine(title, Colors.Highlight);
@@ -507,7 +528,7 @@ public static class Console {
             NewLine();
         }
 
-        var input = ReadLine("Enter your choice separated with spaces:");
+        var input = ReadLine("Enter your main choice and sub choice separated with space: ");
 
         var selected = Extensions.Split(input, ' ').Take(2).ToArray();
 
@@ -549,6 +570,7 @@ public static class Console {
     /// For complex types request a string and validate/convert yourself
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public static T ReadLine<T>(string message, Type type, ConsoleColor outputColor, ConsoleColor inputColor) {
         var input = ReadLine(message, outputColor, inputColor);
         return (T)Convert.ChangeType(input, type);
@@ -565,6 +587,7 @@ public static class Console {
     /// <remarks>
     /// For complex types request a string and validate/convert yourself
     /// </remarks>
+    [Pure]
     public static T ReadLine<T>(string message, Type type, ConsoleColor inputColor) {
         return ReadLine<T>(message, type, Colors.Default, inputColor);
     }
@@ -579,6 +602,7 @@ public static class Console {
     /// <remarks>
     /// For complex types request a string and validate/convert yourself
     /// </remarks>
+    [Pure]
     public static T ReadLine<T>(string message, Type type) {
         return ReadLine<T>(message, type, Colors.Default, Colors.Input);
     }
@@ -596,6 +620,7 @@ public static class Console {
     /// </remarks>
     [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public static T ReadLine<T>(string message, ConsoleColor outputColor, ConsoleColor inputColor) {
         var input = ReadLine(message, outputColor, inputColor);
 
@@ -615,6 +640,7 @@ public static class Console {
     /// For complex types request a string and validate/convert yourself
     /// </remarks>
     [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
+    [Pure]
     public static T ReadLine<T>(string message, ConsoleColor inputColor) {
         return ReadLine<T>(message, Colors.Default, inputColor);
     }
@@ -629,6 +655,7 @@ public static class Console {
     /// For complex types request a string and validate/convert yourself
     /// </remarks>
     [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
+    [Pure]
     public static T ReadLine<T>(string message) {
         return ReadLine<T>(message, Colors.Default, Colors.Input);
     }
@@ -641,6 +668,7 @@ public static class Console {
     /// <param name="inputColor"></param>
     /// <returns>Trimmed string</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public static string ReadLine(string message, ConsoleColor outputColor, ConsoleColor inputColor) {
         Write(message, outputColor);
         ogConsole.ForegroundColor = inputColor;
@@ -660,6 +688,7 @@ public static class Console {
     /// <param name="message">Request title</param>
     /// <param name="inputColor"></param>
     /// <returns>Trimmed string</returns>
+    [Pure]
     public static string ReadLine(string message, ConsoleColor inputColor) {
         return ReadLine(message, Colors.Default, inputColor);
     }
@@ -675,14 +704,22 @@ public static class Console {
 
     /// <summary>
     /// A simple twirl style indeterminate progress bar to signal the user that the app is not stuck but rather is performing a time consuming task.
+    /// <para>
+    /// The output is cleared so the next line will be written on the same line as the progress bar was.
+    /// </para>
     /// </summary>
-    /// <param name="task">The TaskAwaiter of the background performing task</param>
+    /// <param name="task">The task you want to await on, it will not be modified, only the state is observed</param>
     /// <param name="color">The color in which to display the progress bar</param>
     /// <param name="title">Message to display alongside the progress bar</param>
     /// <param name="displayElapsedTime">Display elapsed time</param>
     /// <param name="updateRate">Rate at which the progress bar refreshes in milliseconds</param>
-    /// <returns></returns>
-    public static async Task<T> IndeterminateProgressBar<T>(Task<T> task, ConsoleColor color, string title, bool displayElapsedTime, int updateRate = 50) {
+    /// <param name="token">So you can cancel the progress bar and end it any time</param>
+    /// <remarks>
+    /// <para>The cancellation token parameter is to be used if you want to cancel the progress bar and end it any time.</para>
+    /// <para>It can also be used when you to display it while non-task actions are running, simply set the task to Task.Delay(-1) and cancel with the token when you want to</para>
+    /// </remarks>
+    [Pure]
+    public static async Task<T> IndeterminateProgressBar<T>(Task<T> task, ConsoleColor color, string title, bool displayElapsedTime, int updateRate = 50, CancellationToken token = default) {
         try {
             if (task.Status is not TaskStatus.Running) {
                 task.Start();
@@ -710,7 +747,14 @@ public static class Console {
                     ogConsole.Write($"{title}{c}{ExtraBuffer}"); // Remove last character and re-write
                 }
                 ogConsole.SetCursorPosition(0, lineNum);
-                await Task.Delay(updateRate); // The update rate
+                await Task.Delay(updateRate, token); // The update rate
+                ogConsole.Write(EmptyLine);
+                ogConsole.SetCursorPosition(0, lineNum);
+                if (token.IsCancellationRequested) {
+                    ogConsole.Write(EmptyLine);
+                    ogConsole.SetCursorPosition(0, lineNum);
+                    return default;
+                }
             }
         }
 
@@ -725,14 +769,21 @@ public static class Console {
 
     /// <summary>
     /// A simple twirl style indeterminate progress bar to signal the user that the app is not stuck but rather is performing a time consuming task.
+    /// <para>
+    /// The output is cleared so the next line will be written on the same line as the progress bar was.
+    /// </para>
     /// </summary>
-    /// <param name="task">The TaskAwaiter of the background performing task</param>
+    /// <param name="task">The task you want to await on, it will not be modified, only the state is observed</param>
     /// <param name="color">The color in which to display the progress bar</param>
     /// <param name="title">Message to display alongside the progress bar</param>
     /// <param name="displayElapsedTime">Display elapsed time</param>
     /// <param name="updateRate">Rate at which the progress bar refreshes in milliseconds</param>
     /// <param name="token">So you can cancel the progress bar and end it any time</param>
-    /// <returns></returns>
+    /// <remarks>
+    /// <para>The cancellation token parameter is to be used if you want to cancel the progress bar and end it any time.</para>
+    /// <para>It can also be used when you to display it while non-task actions are running, simply set the task to Task.Delay(-1) and cancel with the token when you want to</para>
+    /// </remarks>
+    [Pure]
     public static async Task IndeterminateProgressBar(Task task, ConsoleColor color, string title, bool displayElapsedTime, int updateRate = 50, CancellationToken token = default) {
         try {
             if (task.Status is not TaskStatus.Running) {
@@ -772,11 +823,6 @@ public static class Console {
             }
         }
 
-        if (token.IsCancellationRequested) {
-            ogConsole.Write(EmptyLine);
-            ogConsole.SetCursorPosition(0, lineNum);
-        }
-
         stopwatch?.Stop();
 
         NewLine(); // Break line after completion
@@ -792,6 +838,7 @@ public static class Console {
     /// </summary>
     /// <param name="percent"></param>
     /// <param name="color">The color you want the progress bar to be</param>
+    [Pure]
     public static void UpdateProgressBar(int percent, ConsoleColor color) {
         UpdateProgressBar(percent, color, color);
     }
@@ -805,6 +852,7 @@ public static class Console {
     /// <param name="percent"></param>
     /// <param name="foregound">color of the bounds and percentage</param>
     /// <param name="progress">color of the progress bar fill</param>
+    [Pure]
     public static void UpdateProgressBar(int percent, ConsoleColor foregound, ConsoleColor progress) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = foregound;
@@ -835,6 +883,7 @@ public static class Console {
     /// <para>If that happens, consider restricting the updates yourself by wrapping the call</para>
     /// </remarks>
     /// <param name="display"></param>
+    [Pure]
     public static void UpdateProgressBar(ProgressBarDisplay display) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = display.Foreground;
@@ -864,6 +913,7 @@ public static class Console {
     /// </para>
     /// </summary>
     /// <param name="percent"></param>
+    [Pure]
     public static void UpdateProgressBar(int percent) {
         UpdateProgressBar(percent, Colors.Default);
     }
