@@ -50,13 +50,14 @@ public static class Console {
     /// <remarks>
     /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
     /// </remarks>
+    [RequiresUnreferencedCode("If trimming is unavoidable use regular string overload", Url = "http://help/unreferencedcode")]
     [Pure]
     public static void Write<T>(T item) {
-        Write(item, Colors.Default);
+        Write(item.ToString(), Colors.Default);
     }
 
     /// <summary>
-    /// Write any object to the console in the default color
+    /// Write a string to the console in the default color
     /// </summary>
     /// <param name="output">Output</param>
     /// <remarks>
@@ -68,59 +69,51 @@ public static class Console {
     }
 
     /// <summary>
-    /// Write any object to the console in <paramref name="color"/>
+    /// Write a string to the console in <paramref name="color"/>
     /// </summary>
-    /// <param name="item">The item which value to write to the console</param>
+    /// <param name="output">content</param>
     /// <param name="color">The color in which the output will be displayed</param>
     /// <remarks>
     /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
     [Pure]
-    public static void Write<T>(T item, ConsoleColor color) {
+    public static void Write(string output, ConsoleColor color) {
         //lock (_lock) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = color;
-        if (item is string output) {
-            ogConsole.Write(output);
-        } else {
-            ogConsole.Write(item.ToString());
-        }
+        ogConsole.Write(output);
         ogConsole.ResetColor();
         //}
     }
 
     /// <summary>
-    /// Write any object to the error console in Colors.Error
+    /// Write a string to the error console in Colors.Error
     /// </summary>
-    /// <param name="item">The item which value to write to the console</param>
+    /// <param name="output">content</param>
     /// <remarks>
     /// To end line, use <ogConsole>WriteLineError</ogConsole> with the same parameters
     /// </remarks>
     [Pure]
-    public static void WriteError<T>(T item) {
-        WriteError(item.ToString(), Colors.Error);
+    public static void WriteError(string output) {
+        WriteError(output, Colors.Error);
     }
 
     /// <summary>
-    /// Write any object to the error console in <paramref name="color"/>
+    /// Write a string to the error console in <paramref name="color"/>
     /// </summary>
-    /// <param name="item">The item which value to write to the console</param>
+    /// <param name="output">content</param>
     /// <param name="color">The color in which the output will be displayed</param>
     /// <remarks>
     /// To end line, use <ogConsole>WriteLineError</ogConsole> with the same parameters
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
     [Pure]
-    public static void WriteError<T>(T item, ConsoleColor color) {
+    public static void WriteError(string output, ConsoleColor color) {
         //lock (_lock) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = color;
-        if (item is string output) {
-            ogConsole.Error.Write(output);
-        } else {
-            ogConsole.Error.Write(item.ToString());
-        }
+        ogConsole.Error.Write(output);
         ogConsole.ResetColor();
         //}
     }
@@ -137,9 +130,37 @@ public static class Console {
     /// This internally uses Write(string) to avoid boxing
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("If trimming is unavoidable use regular string overload", Url = "http://help/unreferencedcode")]
     [Pure]
     public static void WriteLine<T>(T item) {
-        Write(item.ToString(), Colors.Default);
+        WriteLine(item.ToString(), Colors.Default);
+    }
+
+    /// <summary>
+    /// Write a stringto the console in the default color
+    /// </summary>
+    /// <param name="output">content</param>
+    /// <remarks>
+    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    [Pure]
+    public static void WriteLine(string output) {
+        WriteLine(output, Colors.Default);
+    }
+
+    /// <summary>
+    /// Write a string to the console in <paramref name="color"/>
+    /// </summary>
+    /// <param name="output">content</param>
+    /// <param name="color">The color in which the output will be displayed</param>
+    /// <remarks>
+    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    [Pure]
+    public static void WriteLine(string output, ConsoleColor color) {
+        Write(output, color);
         NewLine();
     }
 
@@ -156,14 +177,32 @@ public static class Console {
     /// This internally uses Write(string) to avoid boxing
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("If trimming is unavoidable use regular string overload", Url = "http://help/unreferencedcode")]
     [Pure]
     public static void WriteLine<T>(T item, ConsoleColor color) {
-        Write(item.ToString(), color);
-        NewLine();
+        WriteLine(item.ToString(), color);
     }
 
     /// <summary>
-    /// Write any object to the error console in the Colors.Error and ends line
+    /// Write a string to the error console in the default color and ends line
+    /// </summary>
+    /// <param name="output">content</param>
+    /// <remarks>
+    /// <para>
+    /// To write without ending line, use <ogConsole>WriteError</ogConsole> with the same parameters
+    /// </para>
+    /// <para>
+    /// This internally uses Write(string) to avoid boxing
+    /// </para>
+    /// </remarks>
+    [Pure]
+    public static void WriteLineError(string output) {
+        WriteError(output, Colors.Default);
+        ogConsole.Error.WriteLine();
+    }
+
+    /// <summary>
+    /// Write a string to the error console in the Colors.Error and ends line
     /// </summary>
     /// <param name="item">The item which value to write to the console</param>
     /// <remarks>
@@ -174,9 +213,29 @@ public static class Console {
     /// This internally uses Write(string) to avoid boxing
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("If trimming is unavoidable use regular string overload", Url = "http://help/unreferencedcode")]
     [Pure]
     public static void WriteLineError<T>(T item) {
         WriteError(item.ToString(), Colors.Error);
+        ogConsole.Error.WriteLine();
+    }
+
+    /// <summary>
+    /// Write any object to the error console in <paramref name="color"/> and ends line
+    /// </summary>
+    /// <param name="output">content</param>
+    /// <param name="color">The color in which the output will be displayed</param>
+    /// <remarks>
+    /// <para>
+    /// To write without ending line, use <ogConsole>WriteError</ogConsole> with the same parameters
+    /// </para>
+    /// <para>
+    /// This internally uses Write(string) to avoid boxing
+    /// </para>
+    /// </remarks>
+    [Pure]
+    public static void WriteLineError(string output, ConsoleColor color) {
+        WriteError(output, color);
         ogConsole.Error.WriteLine();
     }
 
@@ -193,6 +252,7 @@ public static class Console {
     /// This internally uses Write(string) to avoid boxing
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("If trimming is unavoidable use regular string overload", Url = "http://help/unreferencedcode")]
     [Pure]
     public static void WriteLineError<T>(T item, ConsoleColor color) {
         WriteError(item.ToString(), color);
@@ -272,19 +332,19 @@ public static class Console {
     /// <summary>
     /// Write any object to the console as a label, Colors.Default background - black text
     /// </summary>
-    /// <param name="item">The item which value to write to the console</param>
+    /// <param name="output">content</param>
     /// <remarks>
     /// To end line, call <ogConsole>NewLine()</ogConsole> after.
     /// </remarks>
     [Pure]
-    public static void Label<T>(T item) {
-        Label(item, ConsoleColor.Black, Colors.Default);
+    public static void Label(string output) {
+        Label(output, ConsoleColor.Black, Colors.Default);
     }
 
     /// <summary>
     /// Write any object to the console as a label, modified foreground and background
     /// </summary>
-    /// <param name="item">The item which value to write to the console</param>
+    /// <param name="output">content</param>
     /// <param name="foreground">foreground color - i.e: color of the string representation</param>
     /// <param name="background">background color</param>
     /// <remarks>
@@ -292,16 +352,12 @@ public static class Console {
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
     [Pure]
-    public static void Label<T>(T item, ConsoleColor foreground, ConsoleColor background) {
+    public static void Label(string output, ConsoleColor foreground, ConsoleColor background) {
         //lock (_lock) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = foreground;
         ogConsole.BackgroundColor = background;
-        if (item is string output) {
-            ogConsole.Write(output);
-        } else {
-            ogConsole.Write(item.ToString());
-        }
+        ogConsole.Write(output);
         ogConsole.ResetColor();
         //}
     }
@@ -309,7 +365,7 @@ public static class Console {
     /// <summary>
     /// Write any object to the error console as a label, modified foreground and background
     /// </summary>
-    /// <param name="item">The item which value to write to the console</param>
+    /// <param name="output">content</param>
     /// <param name="foreground">foreground color - i.e: color of the string representation</param>
     /// <param name="background">background color</param>
     /// <remarks>
@@ -317,16 +373,12 @@ public static class Console {
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
     [Pure]
-    public static void ErrorLabel<T>(T item, ConsoleColor foreground, ConsoleColor background) {
+    public static void ErrorLabel(string output, ConsoleColor foreground, ConsoleColor background) {
         //lock (_lock) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = foreground;
         ogConsole.BackgroundColor = background;
-        if (item is string output) {
-            ogConsole.Error.Write(output);
-        } else {
-            ogConsole.Error.Write(item.ToString());
-        }
+        ogConsole.Error.Write(output);
         ogConsole.ResetColor();
         //}
     }
@@ -718,6 +770,7 @@ public static class Console {
     /// <para>The cancellation token parameter is to be used if you want to cancel the progress bar and end it any time.</para>
     /// <para>It can also be used when you to display it while non-task actions are running, simply set the task to Task.Delay(-1) and cancel with the token when you want to</para>
     /// </remarks>
+    [RequiresUnreferencedCode("If trimming is unavoidable try the regular task overload", Url = "http://help/unreferencedcode")]
     [Pure]
     public static async Task<T> IndeterminateProgressBar<T>(Task<T> task, ConsoleColor color, string title, bool displayElapsedTime, int updateRate = 50, CancellationToken token = default) {
         try {
