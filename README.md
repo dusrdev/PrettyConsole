@@ -21,7 +21,7 @@ An abstraction over `System.Console` that adds new input and output methods, col
 
 ## 📺 Output Examples
 
-![Github combo](https://user-images.githubusercontent.com/8972626/205509917-d47e8967-a4b6-4fdb-bae1-32f0adfb4f91.png)
+![Github combo](https://user-images.githubusercontent.com/8972626/205510891-3f53e471-b731-4ce1-82aa-90e1f0015961.png)
 
 ## Usage
 
