@@ -1,30 +1,33 @@
 # PrettyConsole
 
-## Description
+An abstraction over `System.Console` that adds new input and output methods, colors and advanced outputs like progress bars and menus. And everything is ansi supported so it works on legacy systems and terminals.
 
-An abstraction over System.Console that adds new input methods and output methods, and generally makes everything prettier. and all that, without using advanced ansi protocols to allow support on older machines
+## Features
 
-## Installation
+* 🚀 High performance, Low memory usage and allocation
+* 🪶 Very lightweight (No extenal dependencies)
+* Easy to use (no need to learn a new syntax while still writing less boilerplate code)
+* 🔌 Plug and play (most of the time you don't need to change your code much)
+* 💾 Supports legacy ansi terminals (like Windows 7)
+* ✂ Trimming friendly (documented trim warnings and working alternatives for everything)
+* Supports all platforms (Windows, Linux, Mac)
+* 😎 Beautifully uniform out of the box (Default colors that can be customized)
+* ⛓ Uses original output pipes, so that your cli's can be piped properly.
 
-you can download this package to use in these two methods:
+## ⬇ Installation
 
 * The last stable release will be available in the releases section in a .dll format.
-* Get it from nuget package manager
+* Nuget   [![](https://img.shields.io/nuget/dt/PrettyConsole?label=Downloads)](https://www.nuget.org/packages/PrettyConsole/)
 
-## Target
+## 📺 Output Examples
 
-This package can be very useful to anyone who is interested in creating beautiful cli (command-line) tools in .net.  
-It not only provides the default input and output methods, but also has very intuitive color customization options, and  
-more advanced input/output combination options like selections, multi-selection and even a tree-menu.  
-And whats more is that by using this package you can write less code, that performs better.
+![Github combo](https://user-images.githubusercontent.com/8972626/205509917-d47e8967-a4b6-4fdb-bae1-32f0adfb4f91.png)
 
 ## Usage
 
-The best way to use this package is to add this using statement:  
-`using static PrettyConsole.Console;`  
-that will allow you to use the methods directly, which means it won't interfere with `System.Console`.  
-for convenience, all methods that are abstractions on top of `System.Console` carry the same names, such as: `Write()`, `WriteLine()`, `ReadLine()` and so on.  
-For more information of these methods and the added ones, check the Wiki.
+The most convinient way to use this package is to add this using statement: `using static PrettyConsole.Console;`  
+Than use most of the default method signatures such as `Write`, `WriteLine`, `ReadLine` and so on, conviniently they are named exactly the same as the regular c# versions.  
+For more information about these methods and the platora of additinal ones, check the [Wiki](https://github.com/dusrdev/PrettyConsole/wiki).
 
 ## Source Code
 
