@@ -16,7 +16,7 @@ public readonly ref struct ProgressBarDisplay {
     /// </summary>
     /// <remarks>Recommended to round up to 2 digits</remarks>
     public required readonly double Percentage { get; init; }
-    
+
     /// <summary>
     /// The color of the header, progress bar bounds and percentage
     /// </summary>
