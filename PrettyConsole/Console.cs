@@ -12,6 +12,9 @@ using System.Threading;
 using System.Diagnostics.Contracts;
 
 namespace PrettyConsole;
+
+#nullable enable
+
 /// <summary>
 /// The static class the provides the abstraction over System.Console
 /// </summary>
@@ -51,8 +54,8 @@ public static class Console {
     /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
     /// </remarks>
     [RequiresUnreferencedCode("If trimming is unavoidable use regular string overload", Url = "http://help/unreferencedcode")]
-    [Pure]
     public static void Write<T>(T item) {
+        ArgumentNullException.ThrowIfNull(item);
         Write(item.ToString(), Colors.Default);
     }
 
@@ -63,8 +66,7 @@ public static class Console {
     /// <remarks>
     /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
     /// </remarks>
-    [Pure]
-    public static void Write(string output) {
+    public static void Write(string? output) {
         Write(output, Colors.Default);
     }
 
@@ -77,14 +79,50 @@ public static class Console {
     /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-    [Pure]
-    public static void Write(string output, ConsoleColor color) {
-        //lock (_lock) {
+    public static void Write(string? output, ConsoleColor color) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = color;
         ogConsole.Write(output);
         ogConsole.ResetColor();
-        //}
+    }
+
+    /// <summary>
+    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console
+    /// </summary>
+    /// <remarks>
+    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
+    /// </remarks>
+    [Obsolete("Use method with (string,color) tuples!")]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    public static void Write(params (object item, ConsoleColor color)[] elements) {
+        if (elements is null || elements.Length is 0) {
+            throw new ArgumentException("Invalid parameters");
+        }
+        ogConsole.ResetColor();
+        foreach (var (o, c) in elements) {
+            ogConsole.ForegroundColor = c;
+            ogConsole.Write(o);
+        }
+        ogConsole.ResetColor();
+    }
+
+    /// <summary>
+    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console
+    /// </summary>
+    /// <remarks>
+    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    public static void Write(params (string item, ConsoleColor color)[] elements) {
+        if (elements is null || elements.Length is 0) {
+            throw new ArgumentException("Invalid parameters");
+        }
+        ogConsole.ResetColor();
+        foreach (var (o, c) in elements) {
+            ogConsole.ForegroundColor = c;
+            ogConsole.Write(o);
+        }
+        ogConsole.ResetColor();
     }
 
     /// <summary>
@@ -94,8 +132,7 @@ public static class Console {
     /// <remarks>
     /// To end line, use <ogConsole>WriteLineError</ogConsole> with the same parameters
     /// </remarks>
-    [Pure]
-    public static void WriteError(string output) {
+    public static void WriteError(string? output) {
         WriteError(output, Colors.Error);
     }
 
@@ -108,14 +145,11 @@ public static class Console {
     /// To end line, use <ogConsole>WriteLineError</ogConsole> with the same parameters
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-    [Pure]
-    public static void WriteError(string output, ConsoleColor color) {
-        //lock (_lock) {
+    public static void WriteError(string? output, ConsoleColor color) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = color;
         ogConsole.Error.Write(output);
         ogConsole.ResetColor();
-        //}
     }
 
     /// <summary>
@@ -131,8 +165,8 @@ public static class Console {
     /// </para>
     /// </remarks>
     [RequiresUnreferencedCode("If trimming is unavoidable use regular string overload", Url = "http://help/unreferencedcode")]
-    [Pure]
     public static void WriteLine<T>(T item) {
+        ArgumentNullException.ThrowIfNull(item);
         WriteLine(item.ToString(), Colors.Default);
     }
 
@@ -144,8 +178,7 @@ public static class Console {
     /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-    [Pure]
-    public static void WriteLine(string output) {
+    public static void WriteLine(string? output) {
         WriteLine(output, Colors.Default);
     }
 
@@ -158,8 +191,7 @@ public static class Console {
     /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-    [Pure]
-    public static void WriteLine(string output, ConsoleColor color) {
+    public static void WriteLine(string? output, ConsoleColor color) {
         Write(output, color);
         NewLine();
     }
@@ -178,9 +210,32 @@ public static class Console {
     /// </para>
     /// </remarks>
     [RequiresUnreferencedCode("If trimming is unavoidable use regular string overload", Url = "http://help/unreferencedcode")]
-    [Pure]
     public static void WriteLine<T>(T item, ConsoleColor color) {
+        ArgumentNullException.ThrowIfNull(item);
         WriteLine(item.ToString(), color);
+    }
+
+    /// <summary>
+    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console and ends line
+    /// </summary>
+    /// <remarks>
+    /// To write without ending line, use <ogConsole>Write</ogConsole> with the same parameters
+    /// </remarks>
+    [Obsolete("Use method with (string,color) tuples!")]
+    public static void WriteLine(params (object item, ConsoleColor color)[] elements) {
+        Write(elements);
+        NewLine();
+    }
+
+    /// <summary>
+    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console and ends line
+    /// </summary>
+    /// <remarks>
+    /// To write without ending line, use <ogConsole>Write</ogConsole> with the same parameters
+    /// </remarks>
+    public static void WriteLine(params (string item, ConsoleColor color)[] elements) {
+        Write(elements);
+        NewLine();
     }
 
     /// <summary>
@@ -195,8 +250,7 @@ public static class Console {
     /// This internally uses Write(string) to avoid boxing
     /// </para>
     /// </remarks>
-    [Pure]
-    public static void WriteLineError(string output) {
+    public static void WriteLineError(string? output) {
         WriteError(output, Colors.Default);
         ogConsole.Error.WriteLine();
     }
@@ -214,8 +268,8 @@ public static class Console {
     /// </para>
     /// </remarks>
     [RequiresUnreferencedCode("If trimming is unavoidable use regular string overload", Url = "http://help/unreferencedcode")]
-    [Pure]
     public static void WriteLineError<T>(T item) {
+        ArgumentNullException.ThrowIfNull(item);
         WriteError(item.ToString(), Colors.Error);
         ogConsole.Error.WriteLine();
     }
@@ -233,8 +287,7 @@ public static class Console {
     /// This internally uses Write(string) to avoid boxing
     /// </para>
     /// </remarks>
-    [Pure]
-    public static void WriteLineError(string output, ConsoleColor color) {
+    public static void WriteLineError(string? output, ConsoleColor color) {
         WriteError(output, color);
         ogConsole.Error.WriteLine();
     }
@@ -253,80 +306,10 @@ public static class Console {
     /// </para>
     /// </remarks>
     [RequiresUnreferencedCode("If trimming is unavoidable use regular string overload", Url = "http://help/unreferencedcode")]
-    [Pure]
     public static void WriteLineError<T>(T item, ConsoleColor color) {
+        ArgumentNullException.ThrowIfNull(item);
         WriteError(item.ToString(), color);
         ogConsole.Error.WriteLine();
-    }
-
-    /// <summary>
-    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console
-    /// </summary>
-    /// <remarks>
-    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
-    /// </remarks>
-    [Obsolete("Use method with (string,color) tuples!")]
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-    [Pure]
-    public static void Write(params (object item, ConsoleColor color)[] elements) {
-        //lock (_lock) {
-        if (elements is null || elements.Length is 0) {
-            throw new ArgumentException("Invalid parameters");
-        }
-        ogConsole.ResetColor();
-        foreach (var (o, c) in elements) {
-            ogConsole.ForegroundColor = c;
-            ogConsole.Write(o);
-        }
-        ogConsole.ResetColor();
-        //}
-    }
-
-    /// <summary>
-    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console
-    /// </summary>
-    /// <remarks>
-    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
-    /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-    [Pure]
-    public static void Write(params (string item, ConsoleColor color)[] elements) {
-        //lock (_lock) {
-        if (elements is null || elements.Length is 0) {
-            throw new ArgumentException("Invalid parameters");
-        }
-        ogConsole.ResetColor();
-        foreach (var (o, c) in elements) {
-            ogConsole.ForegroundColor = c;
-            ogConsole.Write(o);
-        }
-        ogConsole.ResetColor();
-        //}
-    }
-
-    /// <summary>
-    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console and ends line
-    /// </summary>
-    /// <remarks>
-    /// To write without ending line, use <ogConsole>Write</ogConsole> with the same parameters
-    /// </remarks>
-    [Obsolete("Use method with (string,color) tuples!")]
-    [Pure]
-    public static void WriteLine(params (object item, ConsoleColor color)[] elements) {
-        Write(elements);
-        NewLine();
-    }
-
-    /// <summary>
-    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console and ends line
-    /// </summary>
-    /// <remarks>
-    /// To write without ending line, use <ogConsole>Write</ogConsole> with the same parameters
-    /// </remarks>
-    [Pure]
-    public static void WriteLine(params (string item, ConsoleColor color)[] elements) {
-        Write(elements);
-        NewLine();
     }
 
     /// <summary>
@@ -336,8 +319,7 @@ public static class Console {
     /// <remarks>
     /// To end line, call <ogConsole>NewLine()</ogConsole> after.
     /// </remarks>
-    [Pure]
-    public static void Label(string output) {
+    public static void Label(string? output) {
         Label(output, ConsoleColor.Black, Colors.Default);
     }
 
@@ -351,15 +333,53 @@ public static class Console {
     /// To end line, call <ogConsole>NewLine()</ogConsole> after.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-    [Pure]
-    public static void Label(string output, ConsoleColor foreground, ConsoleColor background) {
-        //lock (_lock) {
+    public static void Label(string? output, ConsoleColor foreground, ConsoleColor background) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = foreground;
         ogConsole.BackgroundColor = background;
         ogConsole.Write(output);
         ogConsole.ResetColor();
-        //}
+    }
+
+    /// <summary>
+    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console
+    /// </summary>
+    /// <remarks>
+    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
+    /// </remarks>
+    [Obsolete("Use method with (string,foreground,background) tuples!")]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    public static void Label(params (object item, ConsoleColor foreground, ConsoleColor background)[] elements) {
+        if (elements is null || elements.Length is 0) {
+            throw new ArgumentException("Invalid parameters");
+        }
+        ogConsole.ResetColor();
+        foreach (var (o, foreground, background) in elements) {
+            ogConsole.ForegroundColor = foreground;
+            ogConsole.BackgroundColor = background;
+            ogConsole.Write(o);
+        }
+        ogConsole.ResetColor();
+    }
+
+    /// <summary>
+    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console
+    /// </summary>
+    /// <remarks>
+    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+    public static void Label(params (string item, ConsoleColor foreground, ConsoleColor background)[] elements) {
+        if (elements is null || elements.Length is 0) {
+            throw new ArgumentException("Invalid parameters");
+        }
+        ogConsole.ResetColor();
+        foreach (var (o, foreground, background) in elements) {
+            ogConsole.ForegroundColor = foreground;
+            ogConsole.BackgroundColor = background;
+            ogConsole.Write(o);
+        }
+        ogConsole.ResetColor();
     }
 
     /// <summary>
@@ -372,69 +392,18 @@ public static class Console {
     /// To end line, call <ogConsole>NewLine()</ogConsole> after.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-    [Pure]
-    public static void ErrorLabel(string output, ConsoleColor foreground, ConsoleColor background) {
-        //lock (_lock) {
+    public static void ErrorLabel(string? output, ConsoleColor foreground, ConsoleColor background) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = foreground;
         ogConsole.BackgroundColor = background;
         ogConsole.Error.Write(output);
         ogConsole.ResetColor();
-        //}
-    }
-
-    /// <summary>
-    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console
-    /// </summary>
-    /// <remarks>
-    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
-    /// </remarks>
-    [Obsolete("Use method with (string,foreground,background) tuples!")]
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-    [Pure]
-    public static void Label(params (object item, ConsoleColor foreground, ConsoleColor background)[] elements) {
-        //lock (_lock) {
-        if (elements is null || elements.Length is 0) {
-            throw new ArgumentException("Invalid parameters");
-        }
-        ogConsole.ResetColor();
-        foreach (var (o, foreground, background) in elements) {
-            ogConsole.ForegroundColor = foreground;
-            ogConsole.BackgroundColor = background;
-            ogConsole.Write(o);
-        }
-        ogConsole.ResetColor();
-        //}
-    }
-
-    /// <summary>
-    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console
-    /// </summary>
-    /// <remarks>
-    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
-    /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-    [Pure]
-    public static void Label(params (string item, ConsoleColor foreground, ConsoleColor background)[] elements) {
-        //lock (_lock) {
-        if (elements is null || elements.Length is 0) {
-            throw new ArgumentException("Invalid parameters");
-        }
-        ogConsole.ResetColor();
-        foreach (var (o, foreground, background) in elements) {
-            ogConsole.ForegroundColor = foreground;
-            ogConsole.BackgroundColor = background;
-            ogConsole.Write(o);
-        }
-        ogConsole.ResetColor();
-        //}
     }
 
     /// <summary>
     /// Used to wait for user input, you can customize <paramref name="message"/> or leave as default
     /// </summary>
     /// <param name="message"><ogConsole>Default value:</ogConsole> "Press any key to continue"</param>
-    [Pure]
     public static void RequestAnyInput(string message = "Press any key to continue") {
         Write((message, Colors.Default), ("... ", Colors.Highlight));
         ogConsole.ForegroundColor = Colors.Input;
@@ -453,7 +422,7 @@ public static class Console {
     [Pure]
     public static bool Confirm(string message) {
         Write((message, Colors.Default), ("? ", Colors.Highlight), ("[", Colors.Default), ("y", Colors.Success),
-            ("/", Colors.Default), ("n", Colors.Error), ("]: ", Colors.Default)); ;
+            ("/", Colors.Default), ("n", Colors.Error), ("]: ", Colors.Default));
         ogConsole.ForegroundColor = Colors.Input;
         var input = ogConsole.ReadLine();
         ogConsole.ResetColor();
@@ -465,12 +434,12 @@ public static class Console {
     /// </summary>
     /// <param name="title"><ogConsole>Optional</ogConsole>, null or whitespace will not be displayed</param>
     /// <param name="choices">Any collection of strings</param>
-    /// <returns>The selected string</returns>
+    /// <returns>The selected string, or null if the choice was invalid.</returns>
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
     [Pure]
-    public static string Selection(string title, IEnumerable<string> choices) {
+    public static string? Selection(string title, IEnumerable<string> choices) {
         if (!Extensions.IsEmptyOrWhiteSpace(title)) {
             WriteLine(title, Colors.Highlight);
         }
@@ -487,7 +456,7 @@ public static class Console {
         var selected = ReadLine<int>("Enter your choice: ", typeof(int));
 
         if (!dict.ContainsKey(selected)) {
-            throw new IndexOutOfRangeException(nameof(selected));
+            return null;
         }
 
         return dict[selected];
@@ -498,12 +467,12 @@ public static class Console {
     /// </summary>
     /// <param name="title"><ogConsole>Optional</ogConsole>, null or whitespace will not be displayed</param>
     /// <param name="choices">Any collection of strings</param>
-    /// <returns>A list containing any selected choices by order of selection</returns>
+    /// <returns>A list containing any selected choices by order of selection, or default if choice is invalid</returns>
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
     [Pure]
-    public static List<string> MultiSelection(string title, IEnumerable<string> choices) {
+    public static List<string>? MultiSelection(string title, IEnumerable<string> choices) {
         if (!Extensions.IsEmptyOrWhiteSpace(title)) {
             WriteLine(title, Colors.Highlight);
         }
@@ -526,7 +495,7 @@ public static class Console {
                 throw new ArgumentException(nameof(choice));
             }
             if (!dict.ContainsKey(num)) {
-                throw new IndexOutOfRangeException(nameof(choice));
+                return default;
             }
             results.Add(dict[num]);
         }
@@ -553,7 +522,10 @@ public static class Console {
             WriteLine(title, Colors.Highlight);
             NewLine();
         }
-        var maxMainOption = menu.Keys.ToList().Max(static x => x.Length); // Used to make sub-tree prefix spaces uniform
+        var menuKeys = menu.Keys.ToList();
+        var maxMainOption =
+            menuKeys
+            .Max(static x => x.Length); // Used to make sub-tree prefix spaces uniform
         var Dict = new Dictionary<int, List<int>>();
         maxMainOption += 10;
         int i = 1, j = 1;
@@ -587,24 +559,17 @@ public static class Console {
         var (sub, main) = (selected[0], selected[1]);
 
         // Validate
-        if (!int.TryParse(main, out var mainNum)) {
+        if (!int.TryParse(main, out var mainNum) || !Dict.ContainsKey(mainNum)) {
             throw new ArgumentException(nameof(mainNum));
         }
-        if (!Dict.ContainsKey(mainNum)) {
-            throw new IndexOutOfRangeException(nameof(mainNum));
-        }
 
-        if (!int.TryParse(sub, out var subNum)) {
+        if (!int.TryParse(sub, out var subNum) || !Dict[mainNum].Contains(subNum)) {
             throw new ArgumentException(nameof(subNum));
-        }
-        if (!Dict[mainNum].Contains(subNum)) {
-            throw new IndexOutOfRangeException(nameof(subNum));
         }
 
         ogConsole.ResetColor();
 
-        // Return matching options
-        var selectedMainOption = menu.Keys.ToArray()[mainNum - 1];
+        var selectedMainOption = menuKeys[mainNum - 1];
         var selectedSubOption = menu[selectedMainOption][subNum - 1];
         return (selectedMainOption, selectedSubOption);
     }
@@ -623,9 +588,9 @@ public static class Console {
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public static T ReadLine<T>(string message, Type type, ConsoleColor outputColor, ConsoleColor inputColor) {
+    public static T? ReadLine<T>(string message, Type type, ConsoleColor outputColor, ConsoleColor inputColor) {
         var input = ReadLine(message, outputColor, inputColor);
-        return (T)Convert.ChangeType(input, type);
+        return (T?)Convert.ChangeType(input, type);
     }
 
     /// <summary>
@@ -640,8 +605,8 @@ public static class Console {
     /// For complex types request a string and validate/convert yourself
     /// </remarks>
     [Pure]
-    public static T ReadLine<T>(string message, Type type, ConsoleColor inputColor) {
-        return ReadLine<T>(message, type, Colors.Default, inputColor);
+    public static T? ReadLine<T>(string message, Type type, ConsoleColor inputColor) {
+        return ReadLine<T?>(message, type, Colors.Default, inputColor);
     }
 
     /// <summary>
@@ -655,8 +620,8 @@ public static class Console {
     /// For complex types request a string and validate/convert yourself
     /// </remarks>
     [Pure]
-    public static T ReadLine<T>(string message, Type type) {
-        return ReadLine<T>(message, type, Colors.Default, Colors.Input);
+    public static T? ReadLine<T>(string message, Type type) {
+        return ReadLine<T?>(message, type, Colors.Default, Colors.Input);
     }
 
     /// <summary>
@@ -673,12 +638,14 @@ public static class Console {
     [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public static T ReadLine<T>(string message, ConsoleColor outputColor, ConsoleColor inputColor) {
+    public static T? ReadLine<T>(string message, ConsoleColor outputColor, ConsoleColor inputColor) {
         var input = ReadLine(message, outputColor, inputColor);
+
+        ArgumentNullException.ThrowIfNull(input);
 
         // Convert input to desired type
         var converter = TypeDescriptor.GetConverter(typeof(T));
-        return (T)converter.ConvertFromString(input);
+        return (T?)converter.ConvertFromString(input!);
     }
 
     /// <summary>
@@ -693,8 +660,8 @@ public static class Console {
     /// </remarks>
     [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
     [Pure]
-    public static T ReadLine<T>(string message, ConsoleColor inputColor) {
-        return ReadLine<T>(message, Colors.Default, inputColor);
+    public static T? ReadLine<T>(string message, ConsoleColor inputColor) {
+        return ReadLine<T?>(message, Colors.Default, inputColor);
     }
 
     /// <summary>
@@ -708,8 +675,8 @@ public static class Console {
     /// </remarks>
     [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
     [Pure]
-    public static T ReadLine<T>(string message) {
-        return ReadLine<T>(message, Colors.Default, Colors.Input);
+    public static T? ReadLine<T>(string message) {
+        return ReadLine<T?>(message, Colors.Default, Colors.Input);
     }
 
     /// <summary>
@@ -718,7 +685,7 @@ public static class Console {
     /// <param name="message">Request title</param>
     /// <param name="outputColor"></param>
     /// <param name="inputColor"></param>
-    /// <returns>Trimmed string</returns>
+    /// <returns>Trimmed string, or empty if the input was empty</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public static string ReadLine(string message, ConsoleColor outputColor, ConsoleColor inputColor) {
@@ -728,7 +695,7 @@ public static class Console {
         ogConsole.ResetColor();
 
         if (string.IsNullOrWhiteSpace(input)) {
-            return default;
+            return string.Empty;
         }
 
         return input.Trim();
@@ -783,7 +750,7 @@ public static class Console {
 
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = color;
-        Stopwatch stopwatch = null;
+        Stopwatch? stopwatch = null;
         if (displayElapsedTime) {
             stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -795,7 +762,7 @@ public static class Console {
         while (!task.IsCompleted) { // Await until the TaskAwaiter informs of completion
             foreach (char c in Twirl) { // Cycle through the characters of twirl
                 if (displayElapsedTime) {
-                    ogConsole.Write($"{title}{c} [Elapsed: {stopwatch.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
+                    ogConsole.Write($"{title}{c} [Elapsed: {stopwatch!.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
                 } else {
                     ogConsole.Write($"{title}{c}{ExtraBuffer}"); // Remove last character and re-write
                 }
@@ -836,7 +803,6 @@ public static class Console {
     /// <para>The cancellation token parameter is to be used if you want to cancel the progress bar and end it any time.</para>
     /// <para>It can also be used when you to display it while non-task actions are running, simply set the task to Task.Delay(-1) and cancel with the token when you want to</para>
     /// </remarks>
-    [Pure]
     public static async Task IndeterminateProgressBar(Task task, ConsoleColor color, string title, bool displayElapsedTime, int updateRate = 50, CancellationToken token = default) {
         try {
             if (task.Status is not TaskStatus.Running) {
@@ -848,7 +814,7 @@ public static class Console {
 
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = color;
-        Stopwatch stopwatch = null;
+        Stopwatch? stopwatch = null;
         if (displayElapsedTime) {
             stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -860,7 +826,7 @@ public static class Console {
         while (!task.IsCompleted) { // Await until the TaskAwaiter informs of completion
             foreach (char c in Twirl) { // Cycle through the characters of twirl
                 if (displayElapsedTime) {
-                    ogConsole.Write($"{title}{c} [Elapsed: {stopwatch.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
+                    ogConsole.Write($"{title}{c} [Elapsed: {stopwatch!.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
                 } else {
                     ogConsole.Write($"{title}{c}{ExtraBuffer}"); // Remove last character and re-write
                 }
@@ -891,7 +857,6 @@ public static class Console {
     /// </summary>
     /// <param name="percent"></param>
     /// <param name="color">The color you want the progress bar to be</param>
-    [Pure]
     public static void UpdateProgressBar(int percent, ConsoleColor color) {
         UpdateProgressBar(percent, color, color);
     }
@@ -905,7 +870,6 @@ public static class Console {
     /// <param name="percent"></param>
     /// <param name="foregound">color of the bounds and percentage</param>
     /// <param name="progress">color of the progress bar fill</param>
-    [Pure]
     public static void UpdateProgressBar(int percent, ConsoleColor foregound, ConsoleColor progress) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = foregound;
@@ -936,7 +900,6 @@ public static class Console {
     /// <para>If that happens, consider restricting the updates yourself by wrapping the call</para>
     /// </remarks>
     /// <param name="display"></param>
-    [Pure]
     public static void UpdateProgressBar(ProgressBarDisplay display) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = display.Foreground;
@@ -966,7 +929,6 @@ public static class Console {
     /// </para>
     /// </summary>
     /// <param name="percent"></param>
-    [Pure]
     public static void UpdateProgressBar(int percent) {
         UpdateProgressBar(percent, Colors.Default);
     }
