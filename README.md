@@ -5,7 +5,7 @@ An abstraction over `System.Console` that adds new input and output methods, col
 ## Features
 
 * 🚀 High performance, Low memory usage and allocation
-* 🪶 Very lightweight (No extenal dependencies)
+* 🪶 Very lightweight (No external dependencies)
 * Easy to use (no need to learn a new syntax while still writing less boilerplate code)
 * 🔌 Plug and play (most of the time you don't need to change your code much)
 * 💾 Supports legacy ansi terminals (like Windows 7)
@@ -25,10 +25,10 @@ An abstraction over `System.Console` that adds new input and output methods, col
 
 ## Usage
 
-The most convinient way to use this package is to add this using statement: `using static PrettyConsole.Console;`  
+The most convenient way to use this package is to add this using statement: `using static PrettyConsole.Console;`  
 Then use most of the default method signatures such as `Write`, `WriteLine`, `ReadLine` and so on, conveniently they are named exactly the same as the regular C# counterparts.
 
-For more information about these methods and the platora of additinal ones, check the [Wiki](https://github.com/dusrdev/PrettyConsole/wiki).
+For more information about these methods and additional ones, check the [Wiki](https://github.com/dusrdev/PrettyConsole/wiki).
 
 ## Source Code
 
