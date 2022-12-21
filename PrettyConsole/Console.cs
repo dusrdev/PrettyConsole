@@ -37,7 +37,7 @@ public static class Console {
     // Used to have the progress bar change size dynamically to the buffer size
     private static readonly int ProgressBarSize = ogConsole.BufferWidth - 10;
 
-    // Gets an entire bufferlength string full with whitespaces, used to override lines when using the progressbar
+    // Gets an entire buffer length string full with whitespaces, used to override lines when using the progressbar
     private static readonly string EmptyLine = Extensions.GetWhiteSpaces(ogConsole.BufferWidth);
 
     // Constant pattern containing the characters needed for the indeterminate progress bar
@@ -773,7 +773,7 @@ public static class Console {
                 if (token.IsCancellationRequested) {
                     ogConsole.Write(EmptyLine);
                     ogConsole.SetCursorPosition(0, lineNum);
-                    return default;
+                    return await task;
                 }
             }
         }
@@ -856,6 +856,17 @@ public static class Console {
     /// </para>
     /// </summary>
     /// <param name="percent"></param>
+    public static void UpdateProgressBar(int percent) {
+        UpdateProgressBar(percent, Colors.Default);
+    }
+
+    /// <summary>
+    /// Outputs progress bar filled according to <paramref name="percent"/>
+    /// <para>
+    /// When called consecutively, it overrides the previous
+    /// </para>
+    /// </summary>
+    /// <param name="percent"></param>
     /// <param name="color">The color you want the progress bar to be</param>
     public static void UpdateProgressBar(int percent, ConsoleColor color) {
         UpdateProgressBar(percent, color, color);
@@ -874,6 +885,7 @@ public static class Console {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = foregound;
         var currentLine = ogConsole.CursorTop;
+        ogConsole.SetCursorPosition(0, currentLine);
         ogConsole.WriteLine(EmptyLine);
         ogConsole.SetCursorPosition(0, currentLine);
         ogConsole.Write("[");
@@ -898,14 +910,16 @@ public static class Console {
     /// <remarks>
     /// <para>Test before usage in release, when updated too quickly, the progress bar may fail to override previous lines and will make a mess</para>
     /// <para>If that happens, consider restricting the updates yourself by wrapping the call</para>
+    /// <para>If the progress bar is interrupted, you clear the used lines with ClearNextLines()</para>
     /// </remarks>
     /// <param name="display"></param>
     public static void UpdateProgressBar(ProgressBarDisplay display) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = display.Foreground;
         var currentLine = ogConsole.CursorTop;
-        ogConsole.WriteLine(EmptyLine);
-        ogConsole.WriteLine(EmptyLine);
+        ogConsole.SetCursorPosition(0, currentLine);
+        ogConsole.Write(EmptyLine);
+        ogConsole.Write(EmptyLine);
         ogConsole.SetCursorPosition(0, currentLine);
         if (!string.IsNullOrWhiteSpace(display.Header)) {
             ogConsole.Write($"{display.Header}\n");
@@ -923,14 +937,44 @@ public static class Console {
     }
 
     /// <summary>
-    /// Outputs progress bar filled according to <paramref name="percent"/>
-    /// <para>
-    /// When called consecutively, it overrides the previous
-    /// </para>
+    /// Clears the current line and overrides it with <paramref name="output"/>
     /// </summary>
-    /// <param name="percent"></param>
-    public static void UpdateProgressBar(int percent) {
-        UpdateProgressBar(percent, Colors.Default);
+    /// <param name="output"></param>
+    public static void OverrideCurrentLine(string output) {
+        OverrideCurrentLine(output, Colors.Default);
+    }
+
+    /// <summary>
+    /// Clears the current line and overrides it with <paramref name="output"/>
+    /// </summary>
+    /// <param name="output"></param>
+    /// <param name="color">foreground color (i.e text color)</param>
+    public static void OverrideCurrentLine(string output, ConsoleColor color) {
+        ogConsole.ResetColor();
+        ogConsole.ForegroundColor = color;
+        var currentLine = ogConsole.CursorTop;
+        ogConsole.SetCursorPosition(0, currentLine);
+        ogConsole.Write(EmptyLine);
+        ogConsole.SetCursorPosition(0, currentLine);
+        ogConsole.Write(output);
+        ogConsole.ResetColor();
+    }
+
+    /// <summary>
+    /// Clears the next <paramref name="lines"/>
+    /// </summary>
+    /// <param name="lines">Amount of lines to clear</param>
+    /// <remarks>
+    /// Useful for clearing output of overriding functions, like the ProgressBar
+    /// </remarks>
+    public static void ClearNextLines(int lines) {
+        ogConsole.ResetColor();
+        var currentLine = ogConsole.CursorTop;
+        ogConsole.SetCursorPosition(0, currentLine);
+        for (int i = 0; i < lines; i++) {
+            ogConsole.Write(EmptyLine);
+        }
+        ogConsole.SetCursorPosition(0, currentLine);
     }
 
     /// <summary>
