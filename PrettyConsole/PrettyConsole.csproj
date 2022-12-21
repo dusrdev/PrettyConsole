@@ -5,7 +5,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Authors>David Shnayder</Authors>
 		<Company>David Shnayder</Company>
-		<Description>An abstraction over System.Console that adds new input methods and output methods, and generally makes everything prettier. and all that, without using advanced ansi protocols to allow support on older machines</Description>
+		<Description>High performance, feature rich and easy to use wrap over System.Console</Description>
 		<Copyright>David Shnayder</Copyright>
 		<PackageTags>Console; Output; Input; ANSI</PackageTags>
 		<ImplicitUsings>disable</ImplicitUsings>
@@ -13,7 +13,7 @@
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>1.5.0</Version>
+		<Version>1.5.1</Version>
 		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
