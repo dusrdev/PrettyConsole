@@ -2,6 +2,7 @@
 
 ## v1.5.2
 
+* **FROM THIS VERSION ON, THE PACKAGE WILL BE SIGNED**
 * Updated many string interpolation instances to use `string.Concat` instead to improve performance
 * Modified calculations in progress bars to use functions which are more hardware optimized
 * Modified evaluated strings in progress bars to only be printed when done
