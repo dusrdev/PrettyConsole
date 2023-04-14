@@ -880,6 +880,7 @@ public static class Console {
     /// <param name="percent"></param>
     /// <param name="foreground">color of the bounds and percentage</param>
     /// <param name="progress">color of the progress bar fill</param>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public static void UpdateProgressBar(int percent, ConsoleColor foreground, ConsoleColor progress) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = foreground;
