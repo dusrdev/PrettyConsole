@@ -16,7 +16,8 @@ An abstraction over `System.Console` that adds new input and output methods, col
 
 ## ⬇ Installation
 
-* The last stable release will be available in the releases section in a .dll format.
+To keep build pipelines simple, since version 1.5.2, the new packages will only be available in **Nuget**.
+
 * Nuget   [![](https://img.shields.io/nuget/dt/PrettyConsole?label=Downloads)](https://www.nuget.org/packages/PrettyConsole/)
 
 ## 📺 Output Examples
