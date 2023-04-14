@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using ogConsole = System.Console;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Diagnostics.CodeAnalysis;
-using PrettyConsole.Models;
-using System.Threading;
 using System.Diagnostics.Contracts;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+using PrettyConsole.Models;
+
+using ogConsole = System.Console;
 
 namespace PrettyConsole;
 
@@ -171,7 +173,7 @@ public static class Console {
     }
 
     /// <summary>
-    /// Write a stringto the console in the default color
+    /// Write a string to the console in the default color
     /// </summary>
     /// <param name="output">content</param>
     /// <remarks>
@@ -447,7 +449,7 @@ public static class Console {
         var i = 1;
         // Enumerate list with numbers to allow selection by index
         foreach (var choice in choices) {
-            WriteLine(($"\t{i}", Colors.Highlight), ($". {choice}", Colors.Default));
+            WriteLine((string.Concat("\t", i.ToString()), Colors.Highlight), (string.Concat(". ", choice), Colors.Default));
             dict.Add(i, choice);
             i++;
         }
@@ -455,11 +457,7 @@ public static class Console {
 
         var selected = ReadLine<int>("Enter your choice: ", typeof(int));
 
-        if (!dict.ContainsKey(selected)) {
-            return null;
-        }
-
-        return dict[selected];
+        return !dict.TryGetValue(selected, out var value) ? null : value;
     }
 
     /// <summary>
@@ -480,7 +478,7 @@ public static class Console {
         var i = 1;
         // Enumerate list of choices
         foreach (var choice in choices) {
-            WriteLine(($"\t{i}", Colors.Highlight), ($". {choice}", Colors.Default));
+            WriteLine((string.Concat("\t", i.ToString()), Colors.Highlight), (string.Concat(". ", choice), Colors.Default));
             dict.Add(i, choice);
             i++;
         }
@@ -494,10 +492,11 @@ public static class Console {
             if (!int.TryParse(choice, out var num)) {
                 throw new ArgumentException(nameof(choice));
             }
-            if (!dict.ContainsKey(num)) {
+
+            if (!dict.TryGetValue(num, out var c)) {
                 return default;
             }
-            results.Add(dict[num]);
+            results.Add(c);
         }
 
         ogConsole.ResetColor();
@@ -526,7 +525,7 @@ public static class Console {
         var maxMainOption =
             menuKeys
             .Max(static x => x.Length); // Used to make sub-tree prefix spaces uniform
-        var Dict = new Dictionary<int, List<int>>();
+        var dict = new Dictionary<int, List<int>>();
         maxMainOption += 10;
         int i = 1, j = 1;
 
@@ -534,19 +533,19 @@ public static class Console {
         foreach (var (mainChoice, subChoices) in menu) {
             var lst = new List<int>();
             var prefixLength = i.ToString().Length + 2;
-            Write(($"{i}", Colors.Highlight), ($". {Extensions.SuffixWithSpaces(mainChoice, maxMainOption - prefixLength)}",
+            Write((i.ToString(), Colors.Highlight), (string.Concat(". ", Extensions.SuffixWithSpaces(mainChoice, maxMainOption - prefixLength)),
                 Colors.Default));
             foreach (var subChoice in subChoices) {
                 lst.Add(j);
                 if (j is 1) {
-                    WriteLine(($"{j}", Colors.Highlight), ($". {subChoice}", Colors.Default));
+                    WriteLine((j.ToString(), Colors.Highlight), (string.Concat(". ", subChoice), Colors.Default));
                 } else {
-                    WriteLine(($"{Extensions.SuffixWithSpaces(null, maxMainOption)}{j}", Colors.Highlight), ($". {subChoice}",
+                    WriteLine((string.Concat(Extensions.SuffixWithSpaces(null, maxMainOption), j), Colors.Highlight), (string.Concat(". ", subChoice),
                         Colors.Default));
                 }
                 j++;
             }
-            Dict.Add(i, lst);
+            dict.Add(i, lst);
             j = 1;
             i++;
             NewLine();
@@ -559,11 +558,11 @@ public static class Console {
         var (sub, main) = (selected[0], selected[1]);
 
         // Validate
-        if (!int.TryParse(main, out var mainNum) || !Dict.ContainsKey(mainNum)) {
+        if (!int.TryParse(main, out var mainNum) || !dict.ContainsKey(mainNum)) {
             throw new ArgumentException(nameof(mainNum));
         }
 
-        if (!int.TryParse(sub, out var subNum) || !Dict[mainNum].Contains(subNum)) {
+        if (!int.TryParse(sub, out var subNum) || !dict[mainNum].Contains(subNum)) {
             throw new ArgumentException(nameof(subNum));
         }
 
@@ -757,7 +756,7 @@ public static class Console {
         }
         var lineNum = ogConsole.CursorTop;
 
-        title = string.IsNullOrWhiteSpace(title) ? string.Empty : $"{title} ";
+        title = string.IsNullOrWhiteSpace(title) ? string.Empty : string.Concat(title, " ");
 
         while (!task.IsCompleted) { // Await until the TaskAwaiter informs of completion
             foreach (char c in Twirl) { // Cycle through the characters of twirl
@@ -821,14 +820,14 @@ public static class Console {
         }
         var lineNum = ogConsole.CursorTop;
 
-        title = string.IsNullOrWhiteSpace(title) ? string.Empty : $"{title} ";
+        title = string.IsNullOrWhiteSpace(title) ? string.Empty : string.Concat(title, " ");
 
         while (!task.IsCompleted) { // Await until the TaskAwaiter informs of completion
             foreach (char c in Twirl) { // Cycle through the characters of twirl
                 if (displayElapsedTime) {
                     ogConsole.Write($"{title}{c} [Elapsed: {stopwatch!.Elapsed.ToFriendlyString()}]{ExtraBuffer}"); // Remove last character and re-write
                 } else {
-                    ogConsole.Write($"{title}{c}{ExtraBuffer}"); // Remove last character and re-write
+                    ogConsole.Write(string.Concat(title, c.ToString(), ExtraBuffer)); // Remove last character and re-write
                 }
                 ogConsole.SetCursorPosition(0, lineNum);
                 await Task.Delay(updateRate, token); // The update rate
@@ -879,22 +878,23 @@ public static class Console {
     /// </para>
     /// </summary>
     /// <param name="percent"></param>
-    /// <param name="foregound">color of the bounds and percentage</param>
+    /// <param name="foreground">color of the bounds and percentage</param>
     /// <param name="progress">color of the progress bar fill</param>
-    public static void UpdateProgressBar(int percent, ConsoleColor foregound, ConsoleColor progress) {
+    public static void UpdateProgressBar(int percent, ConsoleColor foreground, ConsoleColor progress) {
         ogConsole.ResetColor();
-        ogConsole.ForegroundColor = foregound;
+        ogConsole.ForegroundColor = foreground;
         var currentLine = ogConsole.CursorTop;
         ogConsole.SetCursorPosition(0, currentLine);
         ogConsole.WriteLine(EmptyLine);
         ogConsole.SetCursorPosition(0, currentLine);
         ogConsole.Write("[");
-        var p = (ProgressBarSize * percent) / 100;
+        var p = (int)(ProgressBarSize * percent * 0.01);
         ogConsole.ForegroundColor = progress;
-        for (var i = 0; i < ProgressBarSize; i++) {
-            ogConsole.Write(i >= p ? ' ' : '■');
-        }
-        ogConsole.ForegroundColor = foregound;
+        var full = new string('■', p);
+        var empty = new string(' ', ProgressBarSize - p);
+        ogConsole.Write(full);
+        ogConsole.Write(empty);
+        ogConsole.ForegroundColor = foreground;
         ogConsole.Write("] {0,5:##0.##}%", percent);
         ogConsole.SetCursorPosition(0, currentLine);
         ogConsole.ResetColor();
@@ -913,6 +913,7 @@ public static class Console {
     /// <para>If the progress bar is interrupted, you clear the used lines with ClearNextLines()</para>
     /// </remarks>
     /// <param name="display"></param>
+    [MethodImpl(MethodImplOptions.Synchronized)]
     public static void UpdateProgressBar(ProgressBarDisplay display) {
         ogConsole.ResetColor();
         ogConsole.ForegroundColor = display.Foreground;
@@ -922,14 +923,15 @@ public static class Console {
         ogConsole.Write(EmptyLine);
         ogConsole.SetCursorPosition(0, currentLine);
         if (!string.IsNullOrWhiteSpace(display.Header)) {
-            ogConsole.Write($"{display.Header}\n");
+            ogConsole.WriteLine(display.Header);
         }
         ogConsole.Write("[");
-        var p = ProgressBarSize * (int)display.Percentage / 100;
+        var p = (int)(ProgressBarSize * display.Percentage * 0.01);
         ogConsole.ForegroundColor = display.Progress;
-        for (var i = 0; i < ProgressBarSize; i++) {
-            ogConsole.Write(i >= p ? ' ' : '■');
-        }
+        var full = new string('■', p);
+        var empty = new string(' ', ProgressBarSize - p);
+        ogConsole.Write(full);
+        ogConsole.Write(empty);
         ogConsole.ForegroundColor = display.Foreground;
         ogConsole.Write("] {0,5:##0.##}%", display.Percentage);
         ogConsole.SetCursorPosition(0, currentLine);
@@ -971,9 +973,8 @@ public static class Console {
         ogConsole.ResetColor();
         var currentLine = ogConsole.CursorTop;
         ogConsole.SetCursorPosition(0, currentLine);
-        for (int i = 0; i < lines; i++) {
-            ogConsole.Write(EmptyLine);
-        }
+        var emptyLines = new string(' ', lines * ogConsole.BufferWidth);
+        ogConsole.Write(emptyLines);
         ogConsole.SetCursorPosition(0, currentLine);
     }
 

@@ -16,7 +16,7 @@ internal static class Extensions {
         if (IsEmptyOrWhiteSpace(str) || str.Length > maxLength) {
             return new string(' ', maxLength);
         }
-        return $"{str}{new string(' ', maxLength - str.Length)}";
+        return string.Concat(str, GetWhiteSpaces(maxLength - str.Length));
     }
 
     // Checks whether the ReadOnlySpan is empty or only contains whitespace characters
@@ -24,10 +24,10 @@ internal static class Extensions {
     public static bool IsEmptyOrWhiteSpace(ReadOnlySpan<char> str) => str.IsEmpty || str.IsWhiteSpace();
 
     // A faster and more memory efficient implementation of string.split
-    public static IEnumerable<string> Split(string str, char seperator) {
+    public static IEnumerable<string> Split(string str, char separator) {
         StringBuilder builder = new();
         foreach (var c in str) {
-            if (c.Equals(seperator)) {
+            if (c.Equals(separator)) {
                 if (builder.Length <= 0) {
                     continue;
                 }
