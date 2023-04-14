@@ -5,22 +5,25 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Authors>David Shnayder</Authors>
 		<Company>David Shnayder</Company>
+		<Title>PrettyConsole</Title>
 		<Description>High performance, feature rich and easy to use wrap over System.Console</Description>
 		<Copyright>David Shnayder</Copyright>
 		<PackageTags>Console; Output; Input; ANSI</PackageTags>
 		<ImplicitUsings>disable</ImplicitUsings>
-		<PlatformTarget>x64</PlatformTarget>
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>1.5.1</Version>
+		<Version>1.5.2</Version>
 		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="..\\LICENSE.txt" Pack="true" PackagePath="LICENSE.txt" />
+		<None Include="README.md" Pack="true" PackagePath="\"/>
+		<None Include="CHANGELOG.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
