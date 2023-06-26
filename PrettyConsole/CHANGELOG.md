@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v1.6.0
+
+* Re-structured `Console` as a `static partial class` into many files to separate the code into categorized section for better maintainability and improved workflow for adding new features
+* Removed `synchronized method` compiler enforcements that could in some case limit usage flexibility when intentionally using `Task`s, if that feature is needed, simply create your own wrapper method with the attribute
+* Update all places where the color of the output is changed to use `try-finally` block to ensure color reset even if an exception was thrown, which before could cause bugged colors
+* Added more safeguards in key places
+* Improved performance of various methods
+* Merged closely related method implementations to reduce possibility of future errors
+* **[POSSIBLE BREAKING CHANGE]** `ProgressBarDisplay` has been restructured to safeguard against improper initialization. Also a `ProgressChar` property was added to allow further customization of the progress bar look
+* Added `TypeWrite` and `TypeWriteLine` methods that provide a simple type-writer effect for text.
+* Fixed issue in `RequestAnyInput` that could read a pre-existing character from the input stream and accept it, basically skipping the entire request.
+
 ## v1.5.2
 
 * **FROM THIS VERSION ON, THE PACKAGE WILL BE SIGNED**
