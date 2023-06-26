@@ -14,6 +14,12 @@ An abstraction over `System.Console` that adds new input and output methods, col
 * 😎 Beautifully uniform out of the box (Default colors that can be customized)
 * ⛓ Uses original output pipes, so that your cli's can be piped properly.
 
+## Roadmap
+
+* Improve performance after release of .NET 8
+
+**If you have any other suggestions or feature request, please open an issue on [GitHub](https://github.com/dusrdev/PrettyConsole/issues)**
+
 ## ⬇ Installation
 
 To keep build pipelines simple, since version 1.5.2, the new packages will only be available in **Nuget**.
@@ -26,7 +32,8 @@ To keep build pipelines simple, since version 1.5.2, the new packages will only 
 
 ## Usage
 
-The most convenient way to use this package is to add this using statement: `using static PrettyConsole.Console;`  
+The most convenient way to use this package is to add this using statement: `using static PrettyConsole.Console;`
+
 Then use most of the default method signatures such as `Write`, `WriteLine`, `ReadLine` and so on, conveniently they are named exactly the same as the regular C# counterparts.
 
 For more information about these methods and additional ones, check the [Wiki](https://github.com/dusrdev/PrettyConsole/wiki).
