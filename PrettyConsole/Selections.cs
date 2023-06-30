@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
-using ogConsole = System.Console;
+using PrettyConsole.Models;
 
 namespace PrettyConsole;
 
@@ -26,7 +26,8 @@ public static partial class Console {
         var i = 1;
         // Enumerate list with numbers to allow selection by index
         foreach (var choice in choices) {
-            WriteLine((string.Concat("\t", i.ToString()), Colors.Highlight), (string.Concat(". ", choice), Colors.Default));
+            WriteLine(new TextRenderingScheme((string.Concat("\t", i.ToString()), Colors.Highlight),
+                                              (string.Concat(". ", choice), Colors.Default)));
             dict.Add(i, choice);
             i++;
         }
@@ -55,7 +56,8 @@ public static partial class Console {
         var i = 1;
         // Enumerate list of choices
         foreach (var choice in choices) {
-            WriteLine((string.Concat("\t", i.ToString()), Colors.Highlight), (string.Concat(". ", choice), Colors.Default));
+            WriteLine(new TextRenderingScheme((string.Concat("\t", i.ToString()), Colors.Highlight),
+                                              (string.Concat(". ", choice), Colors.Default)));
             dict.Add(i, choice);
             i++;
         }
@@ -110,15 +112,18 @@ public static partial class Console {
         foreach (var (mainChoice, subChoices) in menu) {
             var lst = new List<int>();
             var prefixLength = i.ToString().Length + 2;
-            Write((i.ToString(), Colors.Highlight), (string.Concat(". ", Extensions.SuffixWithSpaces(mainChoice, maxMainOption - prefixLength)),
-                Colors.Default));
+            Write(new TextRenderingScheme((i.ToString(), Colors.Highlight),
+                                          (string.Concat(
+                                              ". ",
+                                              Extensions.SuffixWithSpaces(mainChoice, maxMainOption -           prefixLength)), Colors.Default)));
             foreach (var subChoice in subChoices) {
                 lst.Add(j);
                 if (j is 1) {
-                    WriteLine((j.ToString(), Colors.Highlight), (string.Concat(". ", subChoice), Colors.Default));
+                    WriteLine(new TextRenderingScheme((j.ToString(), Colors.Highlight),
+                                                      (string.Concat(". ", subChoice), Colors.Default)));
                 } else {
-                    WriteLine((string.Concat(Extensions.SuffixWithSpaces(null, maxMainOption), j), Colors.Highlight), (string.Concat(". ", subChoice),
-                        Colors.Default));
+                    WriteLine(new TextRenderingScheme((string.Concat(Extensions.SuffixWithSpaces(null, maxMainOption), j), Colors.Highlight), (string.Concat(". ", subChoice),
+                        Colors.Default)));
                 }
                 j++;
             }
