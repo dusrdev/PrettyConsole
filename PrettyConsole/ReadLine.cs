@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
+using PrettyConsole.Models;
+
 using ogConsole = System.Console;
 
 namespace PrettyConsole;
@@ -124,12 +126,14 @@ public static partial class Console {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public static string ReadLine(string message, ConsoleColor outputColor, ConsoleColor inputColor) {
-        Write(message, outputColor);
-        ogConsole.ForegroundColor = inputColor;
-        var input = ogConsole.ReadLine();
-        ogConsole.ResetColor();
-
-        return string.IsNullOrWhiteSpace(input) ? string.Empty : input.Trim();
+        try {
+            Write(message, outputColor);
+            ogConsole.ForegroundColor = inputColor;
+            var input = ogConsole.ReadLine();
+            return string.IsNullOrWhiteSpace(input) ? string.Empty : input.Trim();
+        } finally {
+            ogConsole.ResetColor();
+        }
     }
 
     /// <summary>
@@ -144,10 +148,40 @@ public static partial class Console {
     }
 
     /// <summary>
+    /// Used to request user input with a custom text rendering scheme with the default input color.
+    /// </summary>
+    /// <param name="scheme">The text rendering scheme to use for the output.</param>
+    /// <returns>Trimmed string, or empty if the input was empty</returns>
+    [Pure]
+    public static string ReadLine(TextRenderingScheme scheme) {
+        return ReadLine(scheme, Colors.Input);
+    }
+
+    /// <summary>
+    /// Used to request user input with a custom text rendering scheme and input color.
+    /// </summary>
+    /// <param name="scheme">The text rendering scheme to use for the output.</param>
+    /// <param name="inputColor">The color to use for the user input.</param>
+    /// <returns>Trimmed string, or empty if the input was empty</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public static string ReadLine(TextRenderingScheme scheme, ConsoleColor inputColor) {
+        try {
+            Write(scheme);
+            ogConsole.ForegroundColor = inputColor;
+            var input = ogConsole.ReadLine();
+            return string.IsNullOrWhiteSpace(input) ? string.Empty : input.Trim();
+        } finally {
+            ogConsole.ResetColor();
+        }
+    }
+
+    /// <summary>
     /// Used to request user input
     /// </summary>
     /// <param name="message">Request title</param>
     /// <returns>Trimmed string</returns>
+    [Pure]
     public static string ReadLine(string message) {
         return ReadLine(message, Colors.Default, Colors.Input);
     }
