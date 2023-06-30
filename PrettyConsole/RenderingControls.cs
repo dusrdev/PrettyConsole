@@ -1,3 +1,5 @@
+using System.Diagnostics.Contracts;
+
 using ogConsole = System.Console;
 
 namespace PrettyConsole;
@@ -10,6 +12,7 @@ public static partial class Console {
     /// <remarks>
     /// Useful for clearing output of overriding functions, like the ProgressBar
     /// </remarks>
+    [Pure]
     public static void ClearNextLines(int lines) {
         ogConsole.ResetColor();
         var currentLine = ogConsole.CursorTop;

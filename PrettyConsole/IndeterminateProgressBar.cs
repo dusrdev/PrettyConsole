@@ -86,6 +86,7 @@ public static partial class Console {
     /// <para>The cancellation token parameter is to be used if you want to cancel the progress bar and end it any time.</para>
     /// <para>It can also be used when you to display it while non-task actions are running, simply set the task to Task.Delay(-1) and cancel with the token when you want to</para>
     /// </remarks>
+    [Pure]
     public static async Task IndeterminateProgressBar(Task task, ConsoleColor color, string title, bool displayElapsedTime, int updateRate = 50, CancellationToken token = default) {
         var wrapped = Task.Run(async () => {
             await task;

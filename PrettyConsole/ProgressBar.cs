@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.Contracts;
 
 using PrettyConsole.Models;
 
@@ -14,6 +15,7 @@ public static partial class Console {
     /// </para>
     /// </summary>
     /// <param name="percent"></param>
+    [Pure]
     public static void UpdateProgressBar(int percent) {
         UpdateProgressBar(percent, Colors.Default);
     }
@@ -26,6 +28,7 @@ public static partial class Console {
     /// </summary>
     /// <param name="percent"></param>
     /// <param name="color">The color you want the progress bar to be</param>
+    [Pure]
     public static void UpdateProgressBar(int percent, ConsoleColor color) {
         UpdateProgressBar(percent, color, color);
     }
@@ -39,6 +42,7 @@ public static partial class Console {
     /// <param name="percent"></param>
     /// <param name="foreground">color of the bounds and percentage</param>
     /// <param name="progress">color of the progress bar fill</param>
+    [Pure]
     public static void UpdateProgressBar(int percent, ConsoleColor foreground, ConsoleColor progress) {
         UpdateProgressBar(new ProgressBarDisplay(percent, foreground, progress));
     }
@@ -56,6 +60,7 @@ public static partial class Console {
     /// <para>If the progress bar is interrupted, you clear the used lines with ClearNextLines()</para>
     /// </remarks>
     /// <param name="display"></param>
+    [Pure]
     public static void UpdateProgressBar(ProgressBarDisplay display) {
         try {
             ogConsole.ResetColor();
