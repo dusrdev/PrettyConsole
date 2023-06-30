@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v1.6.1
+
+* `TextRenderingScheme` type was added for better handling of outputs consisting of mixed colors
+* `TypeWrite` now has a `TextRenderingScheme` overload and the `delay` in all overloads was increased to 200 (ms) to look more natural
+* `Write`, `WriteLine`, `ReadLine` and `OverrideCurrentLine` now also have overloads with `TextRenderingScheme`, and they are the recommended ones for mixed color use, using them instead of the `params array` overload may allow further optimization during JIT compilation
+* `Write` and `WriteLine` now have overloads for `ReadOnlySpan<char>` for even better performance
+* More `try-finally` blocks have been implemented to further reduce the possibility of render failure upon exceptions
+* More methods have been re-implemented to call their overloads for better maintainability and consistency
+* More methods were marked as `Pure` to provide more information to the end users
+* After testing it became rather clear, the best way to avoid glitches in frequently updated outputs inside event handlers, such as `ProgressBar`, `OverrideCurrentLine` and the likes is to firstly create an early return based on elapsed time after previous render, secondly, Use the `[MethodImpl(MethodImplOptions.Synchronized)]` On the event, and if the output is a Task, use `.Wait` instead of making the event async and awaiting it
+* `ProgressBarDisplay` was modified to be a `record struct` instead of `ref struct`, This is aimed to increase usage flexibility which is limited with `ref struct`s, Also it may increase performance in edge cases due to higher potential for compiler optimization
+
 ## v1.6.0
 
 * Re-structured `Console` as a `static partial class` into many files to separate the code into categorized section for better maintainability and improved workflow for adding new features
