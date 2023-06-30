@@ -5,7 +5,7 @@ namespace PrettyConsole.Models;
 /// <summary>
 /// Used as input parameter in an overload of the ProgressBar method.
 /// </summary>
-public readonly ref struct ProgressBarDisplay {
+public readonly record struct ProgressBarDisplay {
     /// <summary>
     /// Header text -> this is where you could write an updatable status message.
     /// </summary>
