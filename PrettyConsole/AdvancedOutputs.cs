@@ -27,6 +27,7 @@ public static partial class Console {
     [Pure]
     public static void OverrideCurrentLine(string output, ConsoleColor color) {
         OverrideCurrentLine(output.AsSpan(), color);
+        ColoredOutput a = "Hello" & Color.Red / Colors.White;
     }
 
     /// <summary>

@@ -16,7 +16,7 @@ An abstraction over `System.Console` that adds new input and output methods, col
 
 ## Usage
 
-The most convenient way to use this package is to add this using statement: `using static PrettyConsole.Console;`  
+The most convenient way to use this package is to add this using statement: `using static PrettyConsole.Console;`
 Then use most of the default method signatures such as `Write`, `WriteLine`, `ReadLine` and so on, conveniently they are named exactly the same as the regular C# counterparts.
 
 For more information about these methods and additional ones, check the [Wiki](https://github.com/dusrdev/PrettyConsole/wiki).
