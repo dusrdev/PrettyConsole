@@ -5,20 +5,7 @@ namespace PrettyConsole.Models;
 /// <summary>
 /// Represents a color used for console output.
 /// </summary>
-public readonly ref struct Color {
-	/// <summary>
-	/// Gets the <see cref="ConsoleColor"/> value associated with this color.
-	/// </summary>
-	public ConsoleColor ConsoleColor { get; init; }
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="Color"/> struct with the specified <see cref="ConsoleColor"/>.
-	/// </summary>
-	/// <param name="color">The <see cref="ConsoleColor"/> value to associate with this color.</param>
-	public Color(ConsoleColor color) {
-		ConsoleColor = color;
-	}
-
+public readonly record struct Color(ConsoleColor ConsoleColor) {
 	/// <summary>
 	/// Implicitly converts a <see cref="Color"/> to a <see cref="ConsoleColor"/>.
 	/// </summary>

@@ -1,39 +1,22 @@
-using System.Runtime.CompilerServices;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
 using PrettyConsole.Models;
 
 using ogConsole = System.Console;
-using System.Diagnostics.Contracts;
 
 namespace PrettyConsole;
 
 public static partial class Console {
     /// <summary>
-    /// Write any object to the console in the default color
-    /// </summary>
-    /// <param name="item">The item which value to write to the console</param>
-    /// <remarks>
-    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
-    /// </remarks>
-    [RequiresUnreferencedCode("If trimming is unavoidable use regular string overload", Url = "http://help/unreferencedcode")]
-    [Pure]
-    public static void Write<T>(T item) {
-        ArgumentNullException.ThrowIfNull(item);
-        Write(item.ToString(), Colors.Default);
-    }
-
-    /// <summary>
-    /// Write a read-only span of characters to the console in the default color as set by <see cref="Colors.Default"/>.
+    /// Write a read-only span of characters to the console in the default color as set by <see cref="Color.Default"/>.
     /// </summary>
     /// <param name="buffer">The read-only span of characters to write to the console.</param>
     /// <remarks>
     /// To end line, use <see cref="WriteLine(ReadOnlySpan{char})"/> with the same parameters.
     /// </remarks>
-    [Pure]
     public static void Write(ReadOnlySpan<char> buffer) {
-        Write(buffer, Colors.Default);
+        Write(buffer, Color.Default);
     }
 
     /// <summary>
@@ -44,8 +27,6 @@ public static partial class Console {
     /// <remarks>
     /// To end line, use <see cref="WriteLine(ReadOnlySpan{char}, ConsoleColor)"/> with the same parameters.
     /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
     public static void Write(ReadOnlySpan<char> buffer, ConsoleColor color) {
         try {
             ogConsole.ResetColor();
@@ -57,105 +38,100 @@ public static partial class Console {
     }
 
     /// <summary>
-    /// Write a string to the console in the default color
+    /// Write a <see cref="ColoredOutput"/> to the error console
     /// </summary>
-    /// <param name="output">Output</param>
+    /// <param name="output"/>
     /// <remarks>
-    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
+    /// To end line, use <see cref="WriteLine(ColoredOutput)"/>
     /// </remarks>
-    [Pure]
-    public static void Write(string? output) {
-        Write(output.AsSpan(), Colors.Default);
-    }
-
-    /// <summary>
-    /// Write a string to the console in <paramref name="color"/>
-    /// </summary>
-    /// <param name="output">content</param>
-    /// <param name="color">The color in which the output will be displayed</param>
-    /// <remarks>
-    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
-    /// </remarks>
-    [Pure]
-    public static void Write(string? output, ConsoleColor color) {
-        Write(output.AsSpan(), color);
-    }
-
-    /// <summary>
-    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console
-    /// </summary>
-    /// <remarks>
-    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
-    /// </remarks>
-    [Obsolete("Use method with TextRenderingScheme parameter")]
-    [Pure]
-    public static void Write(params (object item, ConsoleColor color)[] elements) {
-        var newElements = new (string, ConsoleColor)[elements.Length];
-        for (int i = 0; i < elements.Length; i++) {
-            newElements[i] = (elements[i].item.ToString() ?? string.Empty, elements[i].color);
-        }
-        Write(new TextRenderingScheme(newElements));
-    }
-
-    /// <summary>
-    /// Write tuples of (<ogConsole>element</ogConsole>, <ogConsole>color</ogConsole>) to the console
-    /// </summary>
-    /// <remarks>
-    /// To end line, use <ogConsole>WriteLine</ogConsole> with the same parameters
-    /// </remarks>
-    [Pure]
-    public static void Write(params (string item, ConsoleColor color)[] elements) {
-        Write(new TextRenderingScheme(elements));
-    }
-
-    /// <summary>
-    /// Write the specified <paramref name="scheme"/> to the console, rendering each element with its corresponding color.
-    /// </summary>
-    /// <param name="scheme">The <see cref="TextRenderingScheme"/> to write to the console.</param>
-    /// <exception cref="ArgumentException">Thrown when the <paramref name="scheme"/> contains no elements.</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public static void Write(TextRenderingScheme scheme) {
-        if (scheme.Segments is { Length: 0 }) {
-            throw new ArgumentException("Invalid parameters");
-        }
-        ogConsole.ResetColor();
+    public static void Write(ColoredOutput output) {
         try {
-            foreach (var (t, c) in scheme.Segments) {
-                ogConsole.ForegroundColor = c;
-                ogConsole.Write(t);
-            }
+            ogConsole.ResetColor();
+            ogConsole.ForegroundColor = output.ForegroundColor;
+            ogConsole.BackgroundColor = output.BackgroundColor;
+            ogConsole.Out.Write(output.Value);
         } finally {
             ogConsole.ResetColor();
         }
     }
 
     /// <summary>
-    /// Write a string to the error console in Colors.Error
+    /// Write a number of <see cref="ColoredOutput"/> to the console
     /// </summary>
-    /// <param name="output">content</param>
-    /// <remarks>
-    /// To end line, use <ogConsole>WriteLineError</ogConsole> with the same parameters
-    /// </remarks>
-    [Pure]
-    public static void WriteError(string? output) {
-        WriteError(output, Colors.Error);
+    public static void Write(ColoredOutput output1, ColoredOutput output2) {
+        Write(output1);
+        Write(output2);
     }
 
     /// <summary>
-    /// Write a string to the error console in <paramref name="color"/>
+    /// Write a number of <see cref="ColoredOutput"/> to the console
     /// </summary>
-    /// <param name="output">content</param>
-    /// <param name="color">The color in which the output will be displayed</param>
+    public static void Write(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3) {
+        Write(output1);
+        Write(output2);
+        Write(output3);
+    }
+
+    /// <summary>
+    /// Write a number of <see cref="ColoredOutput"/> to the console
+    /// </summary>
+    public static void Write(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3, ColoredOutput output4) {
+        Write(output1);
+        Write(output2);
+        Write(output3);
+        Write(output4);
+    }
+
+    /// <summary>
+    /// Write a number of <see cref="ColoredOutput"/> to the console
+    /// </summary>
+    public static void Write(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3, ColoredOutput output4, ColoredOutput output5) {
+        Write(output1);
+        Write(output2);
+        Write(output3);
+        Write(output4);
+        Write(output5);
+    }
+
+    /// <summary>
+    /// Write a number of <see cref="ColoredOutput"/> to the console
+    /// </summary>
+    public static void Write(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3, ColoredOutput output4, ColoredOutput output5, ColoredOutput output6) {
+        Write(output1);
+        Write(output2);
+        Write(output3);
+        Write(output4);
+        Write(output5);
+        Write(output6);
+    }
+
+    /// <summary>
+    /// Write a number of <see cref="ColoredOutput"/> to the console
+    /// </summary>
+    public static void Write(params ColoredOutput[] outputs) => Write(new ReadOnlySpan<ColoredOutput>(outputs));
+
+    /// <summary>
+    /// Write a number of <see cref="ColoredOutput"/> to the console
+    /// </summary>
+    public static void Write(ReadOnlySpan<ColoredOutput> outputs) {
+        foreach (var output in outputs) {
+            Write(output);
+        }
+    }
+
+    /// <summary>
+    /// Write a <see cref="ColoredOutput"/> to the error console
+    /// </summary>
+    /// <param name="output"/>
     /// <remarks>
-    /// To end line, use <ogConsole>WriteLineError</ogConsole> with the same parameters
+    /// To end line, use <see cref="WriteLineError(ColoredOutput)"/>
     /// </remarks>
-    [Pure]
-    public static void WriteError(string? output, ConsoleColor color) {
+    public static void WriteError([NotNull] ColoredOutput output) {
         try {
             ogConsole.ResetColor();
-            ogConsole.ForegroundColor = color;
-            ogConsole.Error.Write(output);
+            ogConsole.ForegroundColor = output.ForegroundColor;
+            ogConsole.BackgroundColor = output.BackgroundColor;
+            ogConsole.Error.Write(output.Value);
         } finally {
             ogConsole.ResetColor();
         }

@@ -20,6 +20,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<AotCompatible>true</AotCompatible>
 	</PropertyGroup>
 
 	<ItemGroup>

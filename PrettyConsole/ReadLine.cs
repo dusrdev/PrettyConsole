@@ -1,8 +1,4 @@
 using System;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
-using System.Runtime.CompilerServices;
 
 using PrettyConsole.Models;
 
@@ -14,123 +10,60 @@ public static partial class Console {
     /// <summary>
     /// Used to request user input, validates and converts common types.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="message"></param>
-    /// <param name="type"></param>
-    /// <param name="outputColor"></param>
-    /// <param name="inputColor"></param>
-    /// <returns>Converted input</returns>
-    /// <remarks>
-    /// For complex types request a string and validate/convert yourself
-    /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public static T? ReadLine<T>(string message, Type type, ConsoleColor outputColor, ConsoleColor inputColor) {
-        var input = ReadLine(message, outputColor, inputColor);
-        return (T?)Convert.ChangeType(input, type);
+    public static bool TryReadLine<T>(ColoredOutput message, out T? result) where T : IParsable<T> {
+        Write(message);
+        var input = ogConsole.ReadLine();
+        return T.TryParse(input, null, out result);
     }
 
     /// <summary>
     /// Used to request user input, validates and converts common types.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="message"></param>
-    /// <param name="type"></param>
-    /// <param name="inputColor"></param>
-    /// <returns>Converted input</returns>
-    /// <remarks>
-    /// For complex types request a string and validate/convert yourself
-    /// </remarks>
-    [Pure]
-    public static T? ReadLine<T>(string message, Type type, ConsoleColor inputColor) {
-        return ReadLine<T?>(message, type, Colors.Default, inputColor);
-    }
+    public static bool TryReadLine<T>(ColoredOutput message, ConsoleColor inputColor, out T? result) where T : IParsable<T>
+        => TryReadLine(message, inputColor, ConsoleColor.Black, out result);
 
     /// <summary>
     /// Used to request user input, validates and converts common types.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="message"></param>
-    /// <param name="type"></param>
-    /// <returns>Converted input</returns>
-    /// <remarks>
-    /// For complex types request a string and validate/convert yourself
-    /// </remarks>
-    [Pure]
-    public static T? ReadLine<T>(string message, Type type) {
-        return ReadLine<T?>(message, type, Colors.Default, Colors.Input);
-    }
-
-    /// <summary>
-    /// Used to request user input, validates and converts common types.
-    /// </summary>
-    /// <typeparam name="T">Any common type</typeparam>
-    /// <param name="message">Request title</param>
-    /// <param name="outputColor"></param>
-    /// <param name="inputColor"></param>
-    /// <returns>Converted input</returns>
-    /// <remarks>
-    /// For complex types request a string and validate/convert yourself
-    /// </remarks>
-    [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public static T? ReadLine<T>(string message, ConsoleColor outputColor, ConsoleColor inputColor) {
-        var input = ReadLine(message, outputColor, inputColor);
-
-        ArgumentNullException.ThrowIfNull(input);
-
-        // Convert input to desired type
-        var converter = TypeDescriptor.GetConverter(typeof(T));
-        return (T?)converter.ConvertFromString(input!);
-    }
-
-    /// <summary>
-    /// Used to request user input, validates and converts common types.
-    /// </summary>
-    /// <typeparam name="T">Any common type</typeparam>
-    /// <param name="message">Request title</param>
-    /// <param name="inputColor"></param>
-    /// <returns>Converted input</returns>
-    /// <remarks>
-    /// For complex types request a string and validate/convert yourself
-    /// </remarks>
-    [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
-    [Pure]
-    public static T? ReadLine<T>(string message, ConsoleColor inputColor) {
-        return ReadLine<T?>(message, Colors.Default, inputColor);
-    }
-
-    /// <summary>
-    /// Used to request user input, validates and converts common types.
-    /// </summary>
-    /// <typeparam name="T">Any common type</typeparam>
-    /// <param name="message">Request title</param>
-    /// <returns>Converted input</returns>
-    /// <remarks>
-    /// For complex types request a string and validate/convert yourself
-    /// </remarks>
-    [RequiresUnreferencedCode("If trimming is unavoidable add the output type or use string overload instead", Url = "http://help/unreferencedcode")]
-    [Pure]
-    public static T? ReadLine<T>(string message) {
-        return ReadLine<T?>(message, Colors.Default, Colors.Input);
-    }
-
-    /// <summary>
-    /// Used to request user input
-    /// </summary>
-    /// <param name="message">Request title</param>
-    /// <param name="outputColor"></param>
-    /// <param name="inputColor"></param>
-    /// <returns>Trimmed string, or empty if the input was empty</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public static string ReadLine(string message, ConsoleColor outputColor, ConsoleColor inputColor) {
+    public static bool TryReadLine<T>(ColoredOutput message, ConsoleColor inputColor, ConsoleColor inputBackgroundColor, out T? result) where T : IParsable<T> {
+        Write(message);
         try {
-            Write(message, outputColor);
             ogConsole.ForegroundColor = inputColor;
+            ogConsole.BackgroundColor = inputBackgroundColor;
             var input = ogConsole.ReadLine();
-            return string.IsNullOrWhiteSpace(input) ? string.Empty : input.Trim();
+            return T.TryParse(input, null, out result);
+        } finally {
+            ogConsole.ResetColor();
+        }
+    }
+
+    /// <summary>
+    /// Used to request user input without any prepended message
+    /// </summary>
+    /// <remarks>
+    /// You can use <see cref="Write(ColoredOutput)"/> or it's overloads in conjunction with this to create more complex input requests.
+    /// </remarks>
+    public static string? ReadLine() => ogConsole.ReadLine();
+
+    /// <summary>
+    /// Used to request user input without any prepended message
+    /// </summary>
+    /// <remarks>
+    /// You can use <see cref="Write(ColoredOutput)"/> or it's overloads in conjunction with this to create more complex input requests.
+    /// </remarks>
+    public static string? ReadLine(ConsoleColor inputColor) => ReadLine(inputColor, ConsoleColor.Black);
+
+    /// <summary>
+    /// Used to request user input without any prepended message
+    /// </summary>
+    /// <remarks>
+    /// You can use <see cref="Write(ColoredOutput)"/> or it's overloads in conjunction with this to create more complex input requests.
+    /// </remarks>
+    public static string? ReadLine(ConsoleColor inputColor, ConsoleColor inputBackgroundColor) {
+        try {
+            ogConsole.ForegroundColor = inputColor;
+            ogConsole.BackgroundColor = inputBackgroundColor;
+            return ogConsole.ReadLine();
         } finally {
             ogConsole.ResetColor();
         }
@@ -139,50 +72,52 @@ public static partial class Console {
     /// <summary>
     /// Used to request user input
     /// </summary>
-    /// <param name="message">Request title</param>
-    /// <param name="inputColor"></param>
-    /// <returns>Trimmed string</returns>
-    [Pure]
-    public static string ReadLine(string message, ConsoleColor inputColor) {
-        return ReadLine(message, Colors.Default, inputColor);
+    public static string? ReadLine(ColoredOutput message) {
+        Write(message);
+        return ogConsole.ReadLine();
     }
 
     /// <summary>
-    /// Used to request user input with a custom text rendering scheme with the default input color.
+    /// Used to request user input
     /// </summary>
-    /// <param name="scheme">The text rendering scheme to use for the output.</param>
-    /// <returns>Trimmed string, or empty if the input was empty</returns>
-    [Pure]
-    public static string ReadLine(TextRenderingScheme scheme) {
-        return ReadLine(scheme, Colors.Input);
-    }
+    public static string? ReadLine(ColoredOutput message, ConsoleColor inputColor)
+    => ReadLine(message, inputColor, ConsoleColor.Black);
 
     /// <summary>
-    /// Used to request user input with a custom text rendering scheme and input color.
+    /// Used to request user input
     /// </summary>
-    /// <param name="scheme">The text rendering scheme to use for the output.</param>
-    /// <param name="inputColor">The color to use for the user input.</param>
-    /// <returns>Trimmed string, or empty if the input was empty</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public static string ReadLine(TextRenderingScheme scheme, ConsoleColor inputColor) {
+    public static string? ReadLine(ColoredOutput message, ConsoleColor inputColor, ConsoleColor inputBackgroundColor) {
+        Write(message);
         try {
-            Write(scheme);
             ogConsole.ForegroundColor = inputColor;
-            var input = ogConsole.ReadLine();
-            return string.IsNullOrWhiteSpace(input) ? string.Empty : input.Trim();
+            ogConsole.BackgroundColor = inputBackgroundColor;
+            return ogConsole.ReadLine();
         } finally {
             ogConsole.ResetColor();
         }
     }
 
     /// <summary>
-    /// Used to request user input
+    /// Used to request user input, validates and converts common types.
     /// </summary>
-    /// <param name="message">Request title</param>
-    /// <returns>Trimmed string</returns>
-    [Pure]
-    public static string ReadLine(string message) {
-        return ReadLine(message, Colors.Default, Colors.Input);
+    public static T? ReadLine<T>(ColoredOutput message) where T : IParsable<T> {
+        _ = TryReadLine(message, out T? result);
+        return result;
+    }
+
+    /// <summary>
+    /// Used to request user input, validates and converts common types.
+    /// </summary>
+    public static T? ReadLine<T>(ColoredOutput message, ConsoleColor inputColor) where T : IParsable<T> {
+        _ = TryReadLine(message, inputColor, out T? result);
+        return result;
+    }
+
+    /// <summary>
+    /// Used to request user input, validates and converts common types.
+    /// </summary>
+    public static T? ReadLine<T>(ColoredOutput message, ConsoleColor inputColor, ConsoleColor inputBackgroundColor) where T : IParsable<T> {
+        _ = TryReadLine(message, inputColor, inputBackgroundColor, out T? result);
+        return result;
     }
 }

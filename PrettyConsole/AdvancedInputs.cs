@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.Contracts;
 
 using PrettyConsole.Models;
@@ -11,8 +12,7 @@ public static partial class Console {
     /// Used to wait for user input, you can customize <paramref name="message"/> or leave as default
     /// </summary>
     /// <param name="message"><ogConsole>Default value:</ogConsole> "Press any key to continue"</param>
-    [Pure]
-    public static void RequestAnyInput(string message = "Press any key to continue") {
+    public static void RequestAnyInput(string message = "Press any key to continue...") {
         try {
             Write(new TextRenderingScheme((message, Colors.Default), ("... ", Colors.Highlight)));
             ogConsole.ForegroundColor = Colors.Input;
@@ -23,6 +23,10 @@ public static partial class Console {
         }
     }
 
+    public static void RequestAnyInput(ColoredOutput output) {
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Used to get user confirmation
     /// </summary>
@@ -30,7 +34,6 @@ public static partial class Console {
     /// <remarks>
     /// The user can confirm by entering <ogConsole>"y"</ogConsole>/<ogConsole>"yes"</ogConsole> or just pressing <ogConsole>enter</ogConsole>, anything else is regarded as <c>false</c>.
     /// </remarks>
-    [Pure]
     public static bool Confirm(string message) {
         try {
             Write(new TextRenderingScheme((message, Colors.Default), ("? ", Colors.Highlight), ("[", Colors.Default), ("y", Colors.Success),
