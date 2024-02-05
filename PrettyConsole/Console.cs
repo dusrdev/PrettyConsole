@@ -12,7 +12,7 @@ public static partial class Console {
     private static readonly int ProgressBarSize = ogConsole.BufferWidth - 10;
 
     // Gets an entire buffer length string full with white-spaces, used to override lines when using the progress-bar
-    private static readonly string EmptyLine = Extensions.GetWhiteSpaces(ogConsole.BufferWidth);
+    private static readonly string EmptyLine = new string(' ', ogConsole.BufferWidth);
 
     // Constant pattern containing the characters needed for the indeterminate progress bar
     private const string Twirl = "-\\|/";
