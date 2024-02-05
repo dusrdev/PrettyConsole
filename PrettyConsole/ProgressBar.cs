@@ -40,6 +40,8 @@ public static partial class Console {
     public static void UpdateProgressBar(int percent, ConsoleColor foreground, ConsoleColor progress)
     => UpdateProgressBar(new ProgressBarDisplay(percent, foreground, progress));
 
+    private static readonly char[] ProgressBarBuffer = GC.AllocateUninitializedArray<char>(ProgressBarSize);
+
     /// <summary>
     /// Outputs progress bar filled according to <paramref name="display"/>
     /// <para>
@@ -69,9 +71,10 @@ public static partial class Console {
             ogConsole.Out.Write("[");
             var p = (int)(ProgressBarSize * display.Percentage * 0.01);
             ogConsole.ForegroundColor = display.Progress;
-            Span<char> full = stackalloc char[p];
+            Span<char> span = ProgressBarBuffer;
+            Span<char> full = span[..p];
             full.Fill(display.ProgressChar);
-            Span<char> empty = stackalloc char[ProgressBarSize - p];
+            Span<char> empty = span[p..];
             empty.Fill(' ');
             ogConsole.Out.Write(full);
             ogConsole.Out.Write(empty);
