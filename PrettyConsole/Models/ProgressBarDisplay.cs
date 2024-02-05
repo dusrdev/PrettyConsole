@@ -9,28 +9,28 @@ public readonly record struct ProgressBarDisplay {
     /// <summary>
     /// Header text -> this is where you could write an updatable status message.
     /// </summary>
-    public readonly string Header { get; init; }
+    public string Header { get; init; }
 
     /// <summary>
     /// The current progress value.
     /// </summary>
     /// <remarks>Recommended to round up to 2 digits</remarks>
-    public readonly double Percentage { get; init; }
+    public double Percentage { get; init; }
 
     /// <summary>
     /// The character used to represent the filled progress bar.
     /// </summary>
-    public readonly char ProgressChar { get; init; }
+    public char ProgressChar { get; init; }
 
     /// <summary>
     /// The color of the header, progress bar bounds and percentage
     /// </summary>
-    public readonly ConsoleColor Foreground { get; init; }
+    public ConsoleColor Foreground { get; init; }
 
     /// <summary>
     /// The color of the filled progress bar
     /// </summary>
-    public readonly ConsoleColor Progress { get; init; }
+    public ConsoleColor Progress { get; init; }
 
     /// <summary>
     /// Constructor for the ProgressBarDisplay struct.
@@ -46,14 +46,11 @@ public readonly record struct ProgressBarDisplay {
         ProgressChar = progressChar;
         Foreground = foreground;
         Progress = progress;
-        if (percentage < 0D || percentage > 100D) {
+        if (percentage is < 0D or > 100D) {
             throw new ArgumentOutOfRangeException(nameof(percentage), "Percentage must be between 0 and 100");
         }
-        if (progressChar == ' ') {
+        if (progressChar is ' ') {
             throw new ArgumentException("Progress char cannot be a space", nameof(progressChar));
-        }
-        if (foreground == default && foreground == progress) {
-            throw new ArgumentException("Foreground and progress colors cannot be the same if one of them is the default of ConsoleColor", nameof(progress));
         }
     }
 
