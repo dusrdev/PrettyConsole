@@ -22,6 +22,12 @@ public readonly record struct ColoredOutput(string Value, ConsoleColor Foregroun
 	public static implicit operator ColoredOutput(string value) => new(value);
 
 	/// <summary>
+	/// Implicitly converts a <see cref="ReadOnlySpan{T}"/> to a <see cref="ColoredOutput"/> with default colors.
+	/// </summary>
+
+	public static implicit operator ColoredOutput(ReadOnlySpan<char> buffer) => new(new string(buffer));
+
+	/// <summary>
 	/// Creates a new instance of <see cref="ColoredOutput"/> with a different background color
 	/// </summary>
 	public static ColoredOutput operator |(ColoredOutput output, Color color) => new(output.Value, output.ForegroundColor, color);

@@ -1,5 +1,5 @@
 using System;
-using System.Diagnostics.Contracts;
+using System.Runtime.CompilerServices;
 
 using PrettyConsole.Models;
 
@@ -15,10 +15,7 @@ public static partial class Console {
     /// </para>
     /// </summary>
     /// <param name="percent"></param>
-    [Pure]
-    public static void UpdateProgressBar(int percent) {
-        UpdateProgressBar(percent, Colors.Default);
-    }
+    public static void UpdateProgressBar(int percent) => UpdateProgressBar(percent, Color.Default);
 
     /// <summary>
     /// Outputs progress bar filled according to <paramref name="percent"/>
@@ -28,10 +25,8 @@ public static partial class Console {
     /// </summary>
     /// <param name="percent"></param>
     /// <param name="color">The color you want the progress bar to be</param>
-    [Pure]
-    public static void UpdateProgressBar(int percent, ConsoleColor color) {
-        UpdateProgressBar(percent, color, color);
-    }
+    public static void UpdateProgressBar(int percent, ConsoleColor color)
+     => UpdateProgressBar(percent, color, color);
 
     /// <summary>
     /// Outputs progress bar filled according to <paramref name="percent"/>
@@ -42,10 +37,8 @@ public static partial class Console {
     /// <param name="percent"></param>
     /// <param name="foreground">color of the bounds and percentage</param>
     /// <param name="progress">color of the progress bar fill</param>
-    [Pure]
-    public static void UpdateProgressBar(int percent, ConsoleColor foreground, ConsoleColor progress) {
-        UpdateProgressBar(new ProgressBarDisplay(percent, foreground, progress));
-    }
+    public static void UpdateProgressBar(int percent, ConsoleColor foreground, ConsoleColor progress)
+    => UpdateProgressBar(new ProgressBarDisplay(percent, foreground, progress));
 
     /// <summary>
     /// Outputs progress bar filled according to <paramref name="display"/>
@@ -60,28 +53,30 @@ public static partial class Console {
     /// <para>If the progress bar is interrupted, you clear the used lines with ClearNextLines()</para>
     /// </remarks>
     /// <param name="display"></param>
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public static void UpdateProgressBar(ProgressBarDisplay display) {
         try {
             ogConsole.ResetColor();
             ogConsole.ForegroundColor = display.Foreground;
             var currentLine = ogConsole.CursorTop;
             ogConsole.SetCursorPosition(0, currentLine);
-            ogConsole.Write(EmptyLine);
-            ogConsole.Write(EmptyLine);
+            ogConsole.WriteLine(EmptyLine);
+            ogConsole.WriteLine(EmptyLine);
             ogConsole.SetCursorPosition(0, currentLine);
-            if (!string.IsNullOrWhiteSpace(display.Header)) {
-                ogConsole.WriteLine(display.Header);
+            if (display.Header.Length is not 0) {
+                ogConsole.Out.WriteLine(display.Header);
             }
-            ogConsole.Write("[");
+            ogConsole.Out.Write("[");
             var p = (int)(ProgressBarSize * display.Percentage * 0.01);
             ogConsole.ForegroundColor = display.Progress;
-            var full = new string(display.ProgressChar, p);
-            var empty = new string(' ', ProgressBarSize - p);
-            ogConsole.Write(full);
-            ogConsole.Write(empty);
+            Span<char> full = stackalloc char[p];
+            full.Fill(display.ProgressChar);
+            Span<char> empty = stackalloc char[ProgressBarSize - p];
+            empty.Fill(' ');
+            ogConsole.Out.Write(full);
+            ogConsole.Out.Write(empty);
             ogConsole.ForegroundColor = display.Foreground;
-            ogConsole.Write("] {0,5:##0.##}%", display.Percentage);
+            ogConsole.Out.Write($"] {display.Percentage,5:##0.##}%");
             ogConsole.SetCursorPosition(0, currentLine);
         } finally {
             ogConsole.ResetColor();

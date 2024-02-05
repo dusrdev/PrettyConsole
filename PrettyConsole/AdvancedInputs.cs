@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.Contracts;
 
 using PrettyConsole.Models;
 
@@ -9,38 +8,50 @@ namespace PrettyConsole;
 
 public static partial class Console {
     /// <summary>
-    /// Used to wait for user input, you can customize <paramref name="message"/> or leave as default
+    /// Used to wait for user input
     /// </summary>
-    /// <param name="message"><ogConsole>Default value:</ogConsole> "Press any key to continue"</param>
-    public static void RequestAnyInput(string message = "Press any key to continue...") {
-        try {
-            Write(new TextRenderingScheme((message, Colors.Default), ("... ", Colors.Highlight)));
-            ogConsole.ForegroundColor = Colors.Input;
-            _ = ogConsole.ReadKey();
-            ogConsole.ForegroundColor = Colors.Default;
-        } finally {
-            ogConsole.ResetColor();
-        }
+    public static void RequestAnyInput(string message = "Press any key to continue...") => RequestAnyInput(new ColoredOutput(message));
+
+    /// <summary>
+    /// Used to wait for user input
+    /// </summary>
+    public static void RequestAnyInput(ColoredOutput output) {
+        Write(output);
+        _ = ogConsole.ReadKey();
     }
 
-    public static void RequestAnyInput(ColoredOutput output) {
-        throw new NotImplementedException();
-    }
+    private static ReadOnlySpan<string> DefaultConfirmValues => new[] { "y", "yes" };
+
+    /// <summary>
+    /// Used to get user confirmation with the default values ["y", "yes"] or just pressing enter
+    /// </summary>
+    /// <remarks>
+    /// It does not display a question mark or any other prompt, only the message
+    /// </remarks>
+    public static bool Confirm(ColoredOutput message) => Confirm(message, DefaultConfirmValues);
 
     /// <summary>
     /// Used to get user confirmation
     /// </summary>
     /// <param name="message"></param>
+    /// <param name="trueValues">a collection of values that indicate positive confirmation</param>
+    /// <param name="emptyIsTrue">if simply pressing enter is considered positive or not</param>
     /// <remarks>
-    /// The user can confirm by entering <ogConsole>"y"</ogConsole>/<ogConsole>"yes"</ogConsole> or just pressing <ogConsole>enter</ogConsole>, anything else is regarded as <c>false</c>.
+    /// It does not display a question mark or any other prompt, only the message
     /// </remarks>
-    public static bool Confirm(string message) {
+    public static bool Confirm(ColoredOutput message, ReadOnlySpan<string> trueValues, bool emptyIsTrue = true) {
         try {
-            Write(new TextRenderingScheme((message, Colors.Default), ("? ", Colors.Highlight), ("[", Colors.Default), ("y", Colors.Success),
-                ("/", Colors.Default), ("n", Colors.Error), ("]: ", Colors.Default)));
-            ogConsole.ForegroundColor = Colors.Input;
-            var input = ogConsole.ReadLine();
-            return string.IsNullOrEmpty(input) || input.ToLower() is "y" or "yes";
+            Write(message);
+            var input = ogConsole.ReadLine().AsSpan();
+            if (input.Length is 0) {
+                return emptyIsTrue;
+            }
+            foreach (var value in trueValues) {
+                if (input.Equals(value, StringComparison.InvariantCultureIgnoreCase)) {
+                    return true;
+                }
+            }
+            return false;
         } finally {
             ogConsole.ResetColor();
         }
