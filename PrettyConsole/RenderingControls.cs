@@ -28,5 +28,8 @@ public static partial class Console {
     /// <summary>
     /// Used to end current line or write an empty one, depends whether the current line has any text
     /// </summary>
-    public static void NewLine() => ogConsole.Out.WriteLine();
+    public static void NewLine() {
+        ogConsole.ResetColor();
+        ogConsole.Out.WriteLine();
+    }
 }
