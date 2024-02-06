@@ -1,4 +1,4 @@
-namespace PrettyConsole.Models;
+namespace PrettyConsole;
 
 /// <summary>
 /// Represents a color used for console output.

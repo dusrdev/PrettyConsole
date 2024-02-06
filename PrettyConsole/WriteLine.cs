@@ -6,35 +6,6 @@ namespace PrettyConsole;
 
 public static partial class Console {
     /// <summary>
-    /// Write a read-only span of characters to the console in the default color as set by <see cref="Color.Default"/>, followed by the current line terminator.
-    /// </summary>
-    /// <param name="buffer">The read-only span of characters to write to the console.</param>
-    /// <remarks>
-    /// To stay on the same line, use <see cref="Write(ReadOnlySpan{char})"/> with the same parameters.
-    /// </remarks>
-    public static void WriteLine(ReadOnlySpan<char> buffer) {
-        WriteLine(buffer, Color.Default);
-    }
-
-    /// <summary>
-    /// Write a read-only span of characters to the console in the specified color, followed by the current line terminator.
-    /// </summary>
-    /// <param name="buffer">The read-only span of characters to write to the console.</param>
-    /// <param name="color">The color in which the output will be displayed.</param>
-    /// <remarks>
-    /// To stay on the same line, use <see cref="Write(ReadOnlySpan{char}, ConsoleColor)"/> with the same parameters.
-    /// </remarks>
-    public static void WriteLine(ReadOnlySpan<char> buffer, ConsoleColor color) {
-        try {
-            ogConsole.ResetColor();
-            ogConsole.ForegroundColor = color;
-            ogConsole.Out.WriteLine(buffer);
-        } finally {
-            ogConsole.ResetColor();
-        }
-    }
-
-    /// <summary>
     /// Write a <see cref="ColoredOutput"/> to the error console
     /// </summary>
     /// <param name="output"/>

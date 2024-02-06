@@ -10,7 +10,7 @@ public interface IPrettyConsoleTest {
     abstract void Implementation();
 
     public void Render() {
-        WriteLine("Test: ", FeatureName & Color.Black | Color.Cyan);
+        WriteLine("Test: ", $" {FeatureName} " & Color.Black | Color.White);
         NewLine();
         Implementation();
     }

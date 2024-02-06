@@ -14,6 +14,6 @@ var tests = assembly.GetTypes()
 	.ToArray();
 
 foreach (var test in tests) {
-	test.Implementation();
+	test.Render();
 	NewLine();
 }
