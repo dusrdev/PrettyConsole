@@ -1,7 +1,5 @@
 using System.Runtime.CompilerServices;
 
-using PrettyConsole.Models;
-
 using ogConsole = System.Console;
 
 namespace PrettyConsole;

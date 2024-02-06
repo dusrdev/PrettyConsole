@@ -1,5 +1,3 @@
-using PrettyConsole.Models;
-
 using static PrettyConsole.Console;
 
 namespace PrettyConsole.Tests;
