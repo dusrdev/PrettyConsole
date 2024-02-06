@@ -1,7 +1,4 @@
-using System;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 
 using ogConsole = System.Console;
 
@@ -26,11 +23,7 @@ public static partial class Console {
     public static async Task<T> IndeterminateProgressBar<T>(Task<T> task, ConsoleColor color, bool displayElapsedTime, int updateRate = 50, CancellationToken token = default) {
         await IndeterminateProgressBar(task, color, "", displayElapsedTime, updateRate, token);
 
-        if (task.IsCompleted) {
-            return task.Result;
-        }
-
-        return await task;
+        return task.IsCompleted ? task.Result : await task;
     }
 
     /// <summary>
@@ -83,7 +76,5 @@ public static partial class Console {
         }
 
         ogConsole.ResetColor();
-
-        return;
     }
 }

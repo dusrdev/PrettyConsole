@@ -1,6 +1,3 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
-
 using PrettyConsole.Models;
 
 using ogConsole = System.Console;
@@ -155,7 +152,7 @@ public static partial class Console {
     /// <remarks>
     /// To end line, use <see cref="WriteError(ColoredOutput)"/>
     /// </remarks>
-    public static void WriteLineError([NotNull] ColoredOutput output) {
+    public static void WriteLineError(ColoredOutput output) {
         try {
             ogConsole.ResetColor();
             ogConsole.ForegroundColor = output.ForegroundColor;

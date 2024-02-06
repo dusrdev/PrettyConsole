@@ -1,5 +1,3 @@
-using System;
-
 namespace PrettyConsole.Models;
 
 /// <summary>

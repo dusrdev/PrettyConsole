@@ -4,32 +4,32 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Authors>David Shnayder</Authors>
-		<Company>David Shnayder</Company>
 		<Title>PrettyConsole</Title>
 		<Description>High performance, feature rich and easy to use wrap over System.Console</Description>
 		<Copyright>David Shnayder</Copyright>
 		<PackageTags>Console; Output; Input; ANSI</PackageTags>
-		<ImplicitUsings>disable</ImplicitUsings>
+		<ImplicitUsings>enable</ImplicitUsings>
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<Version>2.0.0</Version>
 		<Nullable>enable</Nullable>
-		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+        <PublishRespositoryUrl>true</PublishRespositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReadmeFile>CHANGELOGLATEST.md</PackageReadmeFile>
 		<AotCompatible>true</AotCompatible>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="README.md" Pack="true" PackagePath="\"/>
 		<None Include="CHANGELOG.md" Pack="true" PackagePath="\"/>
+        <None Include="CHANGELOGLATEST.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<Optimize>True</Optimize>
-	</PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    </ItemGroup>
 
 </Project>

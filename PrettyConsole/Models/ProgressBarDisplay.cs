@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PrettyConsole.Models;
+﻿namespace PrettyConsole.Models;
 
 /// <summary>
 /// Used as input parameter in an overload of the ProgressBar method.

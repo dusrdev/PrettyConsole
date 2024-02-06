@@ -1,5 +1,3 @@
-using System;
-
 using PrettyConsole.Models;
 
 using ogConsole = System.Console;

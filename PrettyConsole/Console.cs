@@ -1,6 +1,4 @@
-﻿using System;
-
-using ogConsole = System.Console;
+﻿using ogConsole = System.Console;
 
 namespace PrettyConsole;
 
