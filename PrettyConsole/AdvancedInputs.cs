@@ -6,7 +6,8 @@ public static partial class Console {
     /// <summary>
     /// Used to wait for user input
     /// </summary>
-    public static void RequestAnyInput(string message = "Press any key to continue...") => RequestAnyInput(new ColoredOutput(message));
+    public static void RequestAnyInput(string message = "Press any key to continue...") =>
+        RequestAnyInput(new ColoredOutput(message));
 
     /// <summary>
     /// Used to wait for user input
@@ -36,20 +37,18 @@ public static partial class Console {
     /// It does not display a question mark or any other prompt, only the message
     /// </remarks>
     public static bool Confirm(ColoredOutput message, ReadOnlySpan<string> trueValues, bool emptyIsTrue = true) {
-        try {
-            Write(message);
-            var input = ogConsole.ReadLine().AsSpan();
-            if (input.Length is 0) {
-                return emptyIsTrue;
-            }
-            foreach (var value in trueValues) {
-                if (input.Equals(value, StringComparison.InvariantCultureIgnoreCase)) {
-                    return true;
-                }
-            }
-            return false;
-        } finally {
-            ResetColors();
+        Write(message);
+        var input = ogConsole.ReadLine().AsSpan();
+        if (input.Length is 0) {
+            return emptyIsTrue;
         }
+
+        foreach (var value in trueValues) {
+            if (input.Equals(value, StringComparison.InvariantCultureIgnoreCase)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

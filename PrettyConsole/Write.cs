@@ -11,14 +11,11 @@ public static partial class Console {
     /// To end line, use <see cref="WriteLine(ColoredOutput)"/>
     /// </remarks>
     public static void Write(ColoredOutput output) {
-        try {
-            ResetColors();
-            ogConsole.ForegroundColor = output.ForegroundColor;
-            ogConsole.BackgroundColor = output.BackgroundColor;
-            ogConsole.Out.Write(output.Value);
-        } finally {
-            ResetColors();
-        }
+        ResetColors();
+        ogConsole.ForegroundColor = output.ForegroundColor;
+        ogConsole.BackgroundColor = output.BackgroundColor;
+        ogConsole.Out.Write(output.Value);
+        ResetColors();
     }
 
     /// <summary>
@@ -41,7 +38,8 @@ public static partial class Console {
     /// <summary>
     /// Write a number of <see cref="ColoredOutput"/> to the console
     /// </summary>
-    public static void Write(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3, ColoredOutput output4) {
+    public static void Write(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3,
+        ColoredOutput output4) {
         Write(output1);
         Write(output2);
         Write(output3);
@@ -51,7 +49,8 @@ public static partial class Console {
     /// <summary>
     /// Write a number of <see cref="ColoredOutput"/> to the console
     /// </summary>
-    public static void Write(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3, ColoredOutput output4, ColoredOutput output5) {
+    public static void Write(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3, ColoredOutput output4,
+        ColoredOutput output5) {
         Write(output1);
         Write(output2);
         Write(output3);
@@ -62,7 +61,8 @@ public static partial class Console {
     /// <summary>
     /// Write a number of <see cref="ColoredOutput"/> to the console
     /// </summary>
-    public static void Write(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3, ColoredOutput output4, ColoredOutput output5, ColoredOutput output6) {
+    public static void Write(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3, ColoredOutput output4,
+        ColoredOutput output5, ColoredOutput output6) {
         Write(output1);
         Write(output2);
         Write(output3);
@@ -83,10 +83,12 @@ public static partial class Console {
         if (outputs.Length is 0) {
             return;
         }
+
         if (outputs.Length is 1) {
             Write(outputs[0]);
             return;
         }
+
         foreach (var output in outputs) {
             Write(output);
         }
@@ -100,13 +102,10 @@ public static partial class Console {
     /// To end line, use <see cref="WriteLineError(ColoredOutput)"/>
     /// </remarks>
     public static void WriteError(ColoredOutput output) {
-        try {
-            ResetColors();
-            ogConsole.ForegroundColor = output.ForegroundColor;
-            ogConsole.BackgroundColor = output.BackgroundColor;
-            ogConsole.Error.Write(output.Value);
-        } finally {
-            ResetColors();
-        }
+        ResetColors();
+        ogConsole.ForegroundColor = output.ForegroundColor;
+        ogConsole.BackgroundColor = output.BackgroundColor;
+        ogConsole.Error.Write(output.Value);
+        ResetColors();
     }
 }

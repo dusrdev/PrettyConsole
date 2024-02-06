@@ -21,17 +21,15 @@ public static partial class Console {
     /// <param name="output"></param>
     /// <param name="delay">Delay in milliseconds between each character. Default is 200ms.</param>
     public static async Task TypeWrite(ColoredOutput output, int delay = 200) {
-        try {
-            ogConsole.ForegroundColor = output.ForegroundColor;
-            ogConsole.BackgroundColor = output.BackgroundColor;
-            for (int i = 0; i < output.Value.Length - 1; i++) {
-                ogConsole.Write(output.Value[i]);
-                await Task.Delay(delay);
-            }
-            ogConsole.Write(output.Value[^1]);
-        } finally {
-            ResetColors();
+        ogConsole.ForegroundColor = output.ForegroundColor;
+        ogConsole.BackgroundColor = output.BackgroundColor;
+        for (int i = 0; i < output.Value.Length - 1; i++) {
+            ogConsole.Write(output.Value[i]);
+            await Task.Delay(delay);
         }
+
+        ogConsole.Write(output.Value[^1]);
+        ResetColors();
     }
 
     /// <summary>
