@@ -12,12 +12,12 @@ public static partial class Console {
     /// </remarks>
     public static void WriteLine(ColoredOutput output) {
         try {
-            ogConsole.ResetColor();
+            ResetColors();
             ogConsole.ForegroundColor = output.ForegroundColor;
             ogConsole.BackgroundColor = output.BackgroundColor;
             ogConsole.Out.WriteLine(output.Value);
         } finally {
-            ogConsole.ResetColor();
+            ResetColors();
         }
     }
 
@@ -123,12 +123,12 @@ public static partial class Console {
     /// </remarks>
     public static void WriteLineError(ColoredOutput output) {
         try {
-            ogConsole.ResetColor();
+            ResetColors();
             ogConsole.ForegroundColor = output.ForegroundColor;
             ogConsole.BackgroundColor = output.BackgroundColor;
             ogConsole.Error.WriteLine(output.Value);
         } finally {
-            ogConsole.ResetColor();
+            ResetColors();
         }
     }
 }

@@ -17,7 +17,7 @@ public readonly record struct Color(ConsoleColor ConsoleColor) {
 	/// <param name="value">The string value to combine with the color.</param>
 	/// <param name="color">The color to apply to the string value.</param>
 	/// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
-	public static ColoredOutput operator &(string value, Color color) => new(value, color);
+	public static ColoredOutput operator &(string value, Color color) => new(value, color, Color.Black);
 
 	// Other members...
 

@@ -12,12 +12,12 @@ public static partial class Console {
     /// </remarks>
     public static void Write(ColoredOutput output) {
         try {
-            ogConsole.ResetColor();
+            ResetColors();
             ogConsole.ForegroundColor = output.ForegroundColor;
             ogConsole.BackgroundColor = output.BackgroundColor;
             ogConsole.Out.Write(output.Value);
         } finally {
-            ogConsole.ResetColor();
+            ResetColors();
         }
     }
 
@@ -80,6 +80,13 @@ public static partial class Console {
     /// Write a number of <see cref="ColoredOutput"/> to the console
     /// </summary>
     public static void Write(ReadOnlySpan<ColoredOutput> outputs) {
+        if (outputs.Length is 0) {
+            return;
+        }
+        if (outputs.Length is 1) {
+            Write(outputs[0]);
+            return;
+        }
         foreach (var output in outputs) {
             Write(output);
         }
@@ -94,12 +101,12 @@ public static partial class Console {
     /// </remarks>
     public static void WriteError(ColoredOutput output) {
         try {
-            ogConsole.ResetColor();
+            ResetColors();
             ogConsole.ForegroundColor = output.ForegroundColor;
             ogConsole.BackgroundColor = output.BackgroundColor;
             ogConsole.Error.Write(output.Value);
         } finally {
-            ogConsole.ResetColor();
+            ResetColors();
         }
     }
 }

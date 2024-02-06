@@ -17,4 +17,12 @@ public static partial class Console {
 
     // A whitespace the length of 10 spaces
     private const string ExtraBuffer = "          ";
+
+    /// <summary>
+    /// Resets the console colors to the defaults (foreground:gray, background:black)
+    /// </summary>
+    public static void ResetColors() {
+        ogConsole.ForegroundColor = Color.Gray;
+        ogConsole.BackgroundColor = Color.Black;
+    }
 }

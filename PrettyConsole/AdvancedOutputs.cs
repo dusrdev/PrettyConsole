@@ -30,7 +30,7 @@ public static partial class Console {
             }
             ogConsole.Write(output.Value[^1]);
         } finally {
-            ogConsole.ResetColor();
+            ResetColors();
         }
     }
 

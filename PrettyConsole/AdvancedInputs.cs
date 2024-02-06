@@ -49,7 +49,7 @@ public static partial class Console {
             }
             return false;
         } finally {
-            ogConsole.ResetColor();
+            ResetColors();
         }
     }
 }

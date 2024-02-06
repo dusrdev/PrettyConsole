@@ -29,7 +29,7 @@ public static partial class Console {
             var input = ogConsole.ReadLine();
             return T.TryParse(input, null, out result);
         } finally {
-            ogConsole.ResetColor();
+            ResetColors();
         }
     }
 
@@ -61,7 +61,7 @@ public static partial class Console {
             ogConsole.BackgroundColor = inputBackgroundColor;
             return ogConsole.ReadLine();
         } finally {
-            ogConsole.ResetColor();
+            ResetColors();
         }
     }
 
@@ -89,7 +89,7 @@ public static partial class Console {
             ogConsole.BackgroundColor = inputBackgroundColor;
             return ogConsole.ReadLine();
         } finally {
-            ogConsole.ResetColor();
+            ResetColors();
         }
     }
 

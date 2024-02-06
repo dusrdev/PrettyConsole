@@ -1,3 +1,5 @@
+using System.Buffers;
+
 using ogConsole = System.Console;
 
 namespace PrettyConsole;
@@ -31,7 +33,7 @@ public static partial class Console {
         }
 
         for (int i = 0; i < choices.Count; i++) {
-            WriteLine($"\t{i + 1}. ".InColor(indexForeground), choices[i]);
+            WriteLine($"  {i + 1}. ".InColor(indexForeground), choices[i]);
         }
         NewLine();
 
@@ -76,7 +78,7 @@ public static partial class Console {
         }
 
         for (int i = 0; i < choices.Count; i++) {
-            WriteLine($"\t{i + 1}. ".InColor(indexForeground), choices[i]);
+            WriteLine($"  {i + 1}. ".InColor(indexForeground), choices[i]);
         }
         NewLine();
 
@@ -93,12 +95,13 @@ public static partial class Console {
         }
 
         var arr = GC.AllocateUninitializedArray<string>(entries.Length);
-        foreach (var entry in entries) {
+        for (int i = 0; i < arr.Length; i++) {
+            var entry = entries[i];
             if (!int.TryParse(entry, out var selected) || selected < 1 || selected > choices.Count) {
                 return Array.Empty<string>();
             }
             selected--;
-            arr[selected] = choices[selected];
+            arr[i] = choices[selected];
         }
         return arr;
     }
@@ -192,21 +195,38 @@ public static partial class Console {
         return (mainChoice, subChoice);
     }
 
+    /// <summary>
+    /// Draws a table
+    /// </summary>
+    /// <param name="headers"></param>
+    /// <param name="columns"></param>
+    /// <exception cref="ArgumentException"></exception>
     public static void Table(IList<string> headers, IList<IList<string>> columns) {
         if (headers.Count != columns.Count) {
             throw new ArgumentException("Headers and columns must be of the same length");
         }
-        var lengths = columns.Select(x => x.Max(y => y.Length)).ToArray();
-        var height = columns.Max(x => x.Count);
-        var header = string.Join(" | ", headers.Select((x, i) => x.PadRight(lengths[i])));
-        WriteLine(header);
-        Span<char> buffer = stackalloc char[header.Length];
-        buffer.Fill('-');
-        ogConsole.Out.WriteLine(buffer);
-        for (int row = 0; row < height; row++) {
-            var line = string.Join(" | ", columns.Select((x, i) => x[row].PadRight(lengths[i])));
-            WriteLine(line);
+
+        var rentedBuffer = ArrayPool<int>.Shared.Rent(columns.Count);
+        try {
+            var lengths = new ArraySegment<int>(rentedBuffer, 0, columns.Count);
+            for (int i = 0; i < lengths.Count; i++) {
+                lengths[i] = columns[i].Max(y => y.Length);
+            }
+
+            var height = columns.Max(x => x.Count);
+            var header = string.Join(" | ", headers.Select((x, i) => x.PadRight(lengths[i])));
+            WriteLine(header);
+            Span<char> buffer = stackalloc char[header.Length];
+            buffer.Fill('-');
+            ogConsole.Out.WriteLine(buffer);
+            for (int row = 0; row < height; row++) {
+                var line = string.Join(" | ", columns.Select((x, i) => x[row].PadRight(lengths[i])));
+                WriteLine(line);
+            }
+
+            ogConsole.Out.WriteLine(buffer);
+        } finally {
+            ArrayPool<int>.Shared.Return(rentedBuffer);
         }
-        ogConsole.Out.WriteLine(buffer);
     }
 }

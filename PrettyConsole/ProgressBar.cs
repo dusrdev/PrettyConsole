@@ -55,7 +55,7 @@ public static partial class Console {
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public static void UpdateProgressBar(ProgressBarDisplay display) {
         try {
-            ogConsole.ResetColor();
+            ResetColors();
             ogConsole.ForegroundColor = display.Foreground;
             var currentLine = ogConsole.CursorTop;
             ogConsole.SetCursorPosition(0, currentLine);
@@ -79,7 +79,7 @@ public static partial class Console {
             ogConsole.Out.Write($"] {display.Percentage,5:##0.##}%");
             ogConsole.SetCursorPosition(0, currentLine);
         } finally {
-            ogConsole.ResetColor();
+            ResetColors();
         }
     }
 }
