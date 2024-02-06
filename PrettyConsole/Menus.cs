@@ -193,4 +193,22 @@ public static partial class Console {
 
         return (mainChoice, subChoice);
     }
+
+    public static void Table(IList<string> headers, IList<IList<string>> columns) {
+        if (headers.Count != columns.Count) {
+            throw new ArgumentException("Headers and columns must be of the same length");
+        }
+        var lengths = columns.Select(x => x.Max(y => y.Length)).ToArray();
+        var height = columns.Max(x => x.Count);
+        var header = string.Join(" | ", headers.Select((x, i) => x.PadRight(lengths[i])));
+        WriteLine(header);
+        Span<char> buffer = stackalloc char[header.Length];
+        buffer.Fill('-');
+        ogConsole.Out.WriteLine(buffer);
+        for (int row = 0; row < height; row++) {
+            var line = string.Join(" | ", columns.Select((x, i) => x[row].PadRight(lengths[i])));
+            WriteLine(line);
+        }
+        ogConsole.Out.WriteLine(buffer);
+    }
 }
