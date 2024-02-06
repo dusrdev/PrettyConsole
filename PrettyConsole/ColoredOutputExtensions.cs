@@ -1,4 +1,4 @@
-namespace PrettyConsole.Models;
+namespace PrettyConsole;
 
 /// <summary>
 /// Provides extension methods for <see cref="ColoredOutput"/>.
