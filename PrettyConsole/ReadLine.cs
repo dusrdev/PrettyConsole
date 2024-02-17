@@ -34,6 +34,36 @@ public static partial class Console {
     }
 
     /// <summary>
+    /// Used to request user input, validates and converts common types.
+    /// </summary>
+    public static bool TryReadLine<TEnum>(ColoredOutput message, bool ignoreCase, out TEnum result) where TEnum : struct, Enum {
+        Write(message);
+        var input = ogConsole.ReadLine();
+        return Enum.TryParse(input, ignoreCase, out result);
+    }
+
+    /// <summary>
+    /// Used to request user input, validates and converts common types.
+    /// </summary>
+    public static bool TryReadLine<TEnum>(ColoredOutput message, ConsoleColor inputColor, bool ignoreCase, out TEnum result)
+        where TEnum : struct, Enum
+        => TryReadLine(message, inputColor, ConsoleColor.Black, ignoreCase, out result);
+
+    /// <summary>
+    /// Used to request user input, validates and converts common types.
+    /// </summary>
+    public static bool TryReadLine<TEnum>(ColoredOutput message, ConsoleColor inputColor, ConsoleColor inputBackgroundColor,
+        bool ignoreCase, out TEnum result) where TEnum : struct, Enum {
+        Write(message);
+        ogConsole.ForegroundColor = inputColor;
+        ogConsole.BackgroundColor = inputBackgroundColor;
+        var input = ogConsole.ReadLine();
+        var res = Enum.TryParse(input, ignoreCase, out result);
+        ResetColors();
+        return res;
+    }
+
+    /// <summary>
     /// Used to request user input without any prepended message
     /// </summary>
     /// <remarks>

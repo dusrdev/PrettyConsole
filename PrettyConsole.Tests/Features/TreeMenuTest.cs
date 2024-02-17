@@ -6,6 +6,6 @@ public sealed class TreeMenuTest : IPrettyConsoleTest {
     public string FeatureName => "Tree Menu";
 
     public void Implementation() {
-        WriteLine(" Not implemented " & Color.Black | Color.Red);
+        WriteLine(" Not implemented " * Color.Black / Color.Red);
     }
 }

@@ -18,5 +18,5 @@ public readonly record struct ColoredOutput(string Value, ConsoleColor Foregroun
 	/// <summary>
 	/// Creates a new instance of <see cref="ColoredOutput"/> with a different background color
 	/// </summary>
-	public static ColoredOutput operator |(ColoredOutput output, Color color) => output with { BackgroundColor = color };
+	public static ColoredOutput operator /(ColoredOutput output, Color color) => output with { BackgroundColor = color };
 }

@@ -6,6 +6,6 @@ public sealed class IndeterminateProgressBarTest : IPrettyConsoleTest {
     public string FeatureName => "IndeterminateProgressBar";
 
     public void Implementation() {
-        IndeterminateProgressBar(Task.Delay(5000), ConsoleColor.Green, true).Wait();
+        IndeterminateProgressBar(Task.Delay(5000), Color.Green, true).Wait();
     }
 }
