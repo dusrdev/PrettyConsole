@@ -32,8 +32,14 @@ public static partial class Console {
             WriteLine(title);
         }
 
+        Span<char> buffer = stackalloc char[ogConsole.BufferWidth];
+
         for (int i = 0; i < choices.Count; i++) {
-            WriteLine($"  {i + 1}. ".InColor(indexForeground), choices[i]);
+            (i + 1).TryFormat(buffer, out int numWritten, "  0) ");
+            ogConsole.ForegroundColor = indexForeground;
+            ogConsole.Out.Write(buffer[..numWritten]);
+            ResetColors();
+            WriteLine(choices[i]);
         }
         NewLine();
 
@@ -77,8 +83,14 @@ public static partial class Console {
             WriteLine(title);
         }
 
+        Span<char> buffer = stackalloc char[ogConsole.BufferWidth];
+
         for (int i = 0; i < choices.Count; i++) {
-            WriteLine($"  {i + 1}. ".InColor(indexForeground), choices[i]);
+            (i + 1).TryFormat(buffer, out int numWritten, "  0) ");
+            ogConsole.ForegroundColor = indexForeground;
+            ogConsole.Out.Write(buffer[..numWritten]);
+            ResetColors();
+            WriteLine(choices[i]);
         }
         NewLine();
 
@@ -118,8 +130,8 @@ public static partial class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static (string option, string subOption) TreeMenu(ColoredOutput title,
-                                                             Dictionary<string, IList<string>> menu)
+    public static (string option, string subOption) TreeMenu<T>(ColoredOutput title,
+                                                             Dictionary<string, T> menu) where T : IList<string>
     => TreeMenu(title, ConsoleColor.White, menu);
 
     /// <summary>
@@ -135,18 +147,17 @@ public static partial class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static (string option, string subOption) TreeMenu(ColoredOutput title,
+    public static (string option, string subOption) TreeMenu<T>(ColoredOutput title,
                                                             ConsoleColor indexForeground,
-                                                             Dictionary<string, IList<string>> menu) {
+                                                             Dictionary<string, T> menu) where T : IList<string> {
         if (title.Value.Length is not 0) {
             WriteLine(title);
             NewLine();
         }
         var menuKeys = menu.Keys.ToArray();
-        var maxMainOption = menuKeys.Max(static x => x.Length); // Used to make sub-tree prefix spaces uniform
-        maxMainOption += 10;
+        var maxMainOption = menuKeys.Max(static x => x.Length) + 10; // Used to make sub-tree prefix spaces uniform
 
-        Span<char> mainIndexBuffer = stackalloc char[10];
+        Span<char> buffer = stackalloc char[ogConsole.BufferWidth];
         Span<char> emptySpaces = stackalloc char[maxMainOption];
         emptySpaces.Fill(' ');
 
@@ -156,15 +167,24 @@ public static partial class Console {
             var subChoices = menu[mainEntry];
             var lst = new List<int>();
             var prefixLength = i.ToString().Length + 2;
-            var mainIndex = string.Create(null, mainIndexBuffer, $"{i + 1}. ");
-            Write(mainIndex.InColor(indexForeground));
-            Write(mainEntry.PadRight(maxMainOption - mainIndex.Length));
+            (i + 1).TryFormat(buffer, out int mainIndexWritten, "0) ");
+            var mainIndex = buffer[..mainIndexWritten];
+            ogConsole.ForegroundColor = indexForeground;
+            ogConsole.Out.Write(mainIndex);
+            ResetColors();
+            // Find a way to pad to a buffer
+            ogConsole.Out.Write(mainEntry);
+            var remainingLength = maxMainOption - mainIndex.Length - mainEntry.Length;
+            ogConsole.Out.Write(emptySpaces[..remainingLength]);
             for (int j = 0; j < subChoices.Count; j++) {
-                var subIndex = string.Create(null, mainIndexBuffer, $"{j + 1}. ");
                 if (j is not 0) {
                     ogConsole.Out.Write(emptySpaces);
                 }
-                WriteLine(subIndex.InColor(indexForeground), subChoices[j]);
+                (j + 1).TryFormat(buffer, out int numWritten, "0) ");
+                ogConsole.ForegroundColor = indexForeground;
+                ogConsole.Out.Write(buffer[..numWritten]);
+                ResetColors();
+                WriteLine(subChoices[j]);
             }
             NewLine();
         }
@@ -201,32 +221,45 @@ public static partial class Console {
     /// <param name="headers"></param>
     /// <param name="columns"></param>
     /// <exception cref="ArgumentException"></exception>
-    public static void Table(IList<string> headers, IList<IList<string>> columns) {
-        if (headers.Count != columns.Count) {
+    public static void Table<T>(T headers, ReadOnlySpan<T> columns) where T : IList<string> {
+        if (headers.Count != columns.Length) {
             throw new ArgumentException("Headers and columns must be of the same length");
         }
 
-        var rentedBuffer = ArrayPool<int>.Shared.Rent(columns.Count);
-        try {
-            var lengths = new ArraySegment<int>(rentedBuffer, 0, columns.Count);
-            for (int i = 0; i < lengths.Count; i++) {
-                lengths[i] = columns[i].Max(y => y.Length);
-            }
-
-            var height = columns.Max(x => x.Count);
-            var header = string.Join(" | ", headers.Select((x, i) => x.PadRight(lengths[i])));
-            WriteLine(header);
-            Span<char> buffer = stackalloc char[header.Length];
-            buffer.Fill('-');
-            ogConsole.Out.WriteLine(buffer);
-            for (int row = 0; row < height; row++) {
-                var line = string.Join(" | ", columns.Select((x, i) => x[row].PadRight(lengths[i])));
-                WriteLine(line);
-            }
-
-            ogConsole.Out.WriteLine(buffer);
-        } finally {
-            ArrayPool<int>.Shared.Return(rentedBuffer);
+        Span<int> lengths = stackalloc int[columns.Length];
+        for (int i = 0; i < lengths.Length; i++) {
+            lengths[i] = columns[i].Max(y => y.Length);
         }
+
+        var height = int.MinValue;
+        foreach (var column in columns) {
+            if (column.Count > height) {
+                height = column.Count;
+            }
+        }
+
+        var headersArray = ArrayPool<string>.Shared.Rent(columns.Length);
+        var headersSegment = new ArraySegment<string>(headersArray, 0, columns.Length);
+        for (int i = 0; i < headersSegment.Count; i++) {
+            headersSegment[i] = headers[i].PadRight(lengths[i]);
+        }
+        var header = string.Join(string.Intern(" | "), headersSegment);
+        ArrayPool<string>.Shared.Return(headersArray);
+        WriteLine(header);
+        Span<char> buffer = stackalloc char[header.Length];
+        buffer.Fill('-');
+        ogConsole.Out.WriteLine(buffer);
+        for (int row = 0; row < height; row++) {
+            var rowsArray = ArrayPool<string>.Shared.Rent(columns.Length);
+            var rowValues = new ArraySegment<string>(rowsArray, 0, columns.Length);
+            for (int i = 0; i < columns.Length; i++) {
+                rowValues[i] = columns[i][row].PadRight(lengths[i]);
+            }
+            var line = string.Join(string.Intern(" | "), rowValues);
+            ArrayPool<string>.Shared.Return(rowsArray);
+            WriteLine(line);
+        }
+
+        ogConsole.Out.WriteLine(buffer);
     }
 }

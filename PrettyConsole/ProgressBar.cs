@@ -24,9 +24,18 @@ public static partial class Console {
 		/// </summary>
 		public ConsoleColor ProgressColor { get; set; } = ConsoleColor.Gray;
 
-		private readonly char[] _buffer = GC.AllocateUninitializedArray<char>(ogConsole.BufferWidth - 10);
+		private readonly char[] _buffer;
 
-		private readonly string _emptyLine = new(' ', ogConsole.BufferWidth);
+		private readonly char[] _emptyLine;
+
+		/// <summary>
+		/// Represents a progress bar that can be displayed in the console.
+		/// </summary>
+		public ProgressBar() {
+			_buffer = GC.AllocateUninitializedArray<char>(ogConsole.BufferWidth - 10);
+			_emptyLine = GC.AllocateUninitializedArray<char>(ogConsole.BufferWidth);
+			_emptyLine.AsSpan().Fill(' ');
+		}
 
 		/// <summary>
 		/// Updates the progress bar with the specified percentage.
@@ -53,14 +62,14 @@ public static partial class Console {
 			ogConsole.ForegroundColor = ForegroundColor;
 			var currentLine = ogConsole.CursorTop;
 			ogConsole.SetCursorPosition(0, currentLine);
-			ogConsole.WriteLine(_emptyLine);
-			ogConsole.WriteLine(_emptyLine);
+			ogConsole.Out.WriteLine(_emptyLine.AsSpan());
+			ogConsole.Out.WriteLine(_emptyLine.AsSpan());
 			ogConsole.SetCursorPosition(0, currentLine);
 			if (header.Length is not 0) {
 				ogConsole.Out.WriteLine(header);
 			}
 
-			ogConsole.Out.Write("[");
+			ogConsole.Out.Write('[');
 			var p = (int)(_buffer.Length * percentage * 0.01);
 			ogConsole.ForegroundColor = ProgressColor;
 			Span<char> span = _buffer;
@@ -71,7 +80,9 @@ public static partial class Console {
 			ogConsole.Out.Write(full);
 			ogConsole.Out.Write(empty);
 			ogConsole.ForegroundColor = ForegroundColor;
-			ogConsole.Out.Write($"] {percentage,5:##0.##}%");
+			ogConsole.Out.Write(']');
+			ogConsole.Out.Write(' ');
+			ogConsole.Out.Write(percentage.FormattedPercentage());
 			ogConsole.SetCursorPosition(0, currentLine);
 			ResetColors();
 		}

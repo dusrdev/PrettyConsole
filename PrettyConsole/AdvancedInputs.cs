@@ -17,7 +17,10 @@ public static partial class Console {
         _ = ogConsole.ReadKey();
     }
 
-    private static ReadOnlySpan<string> DefaultConfirmValues => new[] { "y", "yes" };
+    /// <summary>
+    /// Used to get user confirmation with the default values ["y", "yes"]
+    /// </summary>
+    public static ReadOnlySpan<string> DefaultConfirmValues => new[] { "y", "yes" };
 
     /// <summary>
     /// Used to get user confirmation with the default values ["y", "yes"] or just pressing enter

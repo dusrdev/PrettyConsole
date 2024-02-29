@@ -89,9 +89,8 @@ public static partial class Console {
                     ogConsole.ForegroundColor = originalColor;
                     if (DisplayElapsedTime) {
                         var elapsed = Stopwatch.GetElapsedTime(startTime);
-                        ogConsole.Write(" [Elapsed: ");
-                        ogConsole.Write(elapsed.ToFriendlyString());
-                        ogConsole.Write(']');
+                        ogConsole.Write(' ');
+                        ogConsole.Out.Write(elapsed.FormattedElapsedTime());
                     }
 
                     ogConsole.Write(ExtraBuffer);
