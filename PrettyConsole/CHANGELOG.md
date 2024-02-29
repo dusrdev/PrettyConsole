@@ -28,3 +28,5 @@ implementing types (which are most of the base types, and you can create any cus
 * `TryReadLine` now also has an `Enum` overload that can parse for enums, with configurable case sensitivity.
 * Many functions, especially more advance outputs such as selections, menus and progress bar, had undergone tremendous performance optimizations, and show now perform extremely efficiently.
 * A new table view implementation was added.
+* `ProgressBar` and `IndeterminateProgressBar` are now classes, which upon initialization take care of building the foundation for their respective actions, this enables better size awareness, as previously the progress bar would always render depending on the size of the terminal when launched, now, it will depend on the size of the terminal when the class was created, possibly giving producing a more accurate output if the user resized the terminal window.
+* The change of `ProgressBar` to class, aside from performance improvement due to reduced copying of values from the heap/stack, now enables easier customization even mid-run. The properties of the class can be changed and will be reflected on the next render.

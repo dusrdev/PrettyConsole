@@ -1,3 +1,5 @@
+using System.Buffers;
+
 using ogConsole = System.Console;
 
 namespace PrettyConsole;
@@ -12,12 +14,16 @@ public static partial class Console {
     /// </remarks>
     public static void ClearNextLines(int lines) {
         ResetColors();
+        var array = ArrayPool<char>.Shared.Rent(ogConsole.BufferWidth);
+        Span<char> emptyLine = array.AsSpan(0, ogConsole.BufferWidth);
+        emptyLine.Fill(' ');
         var currentLine = ogConsole.CursorTop;
         ogConsole.SetCursorPosition(0, currentLine);
         for (int i = 0; i < lines; i++) {
-            ogConsole.WriteLine(EmptyLine);
+            ogConsole.Out.WriteLine(emptyLine);
         }
         ogConsole.SetCursorPosition(0, currentLine);
+        ArrayPool<char>.Shared.Return(array);
     }
 
     /// <summary>

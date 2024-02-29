@@ -1,83 +1,79 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 using ogConsole = System.Console;
 
 namespace PrettyConsole;
 
 public static partial class Console {
-    /// <summary>
-    /// Outputs progress bar filled according to <paramref name="percent"/>
-    /// <para>
-    /// When called consecutively, it overrides the previous
-    /// </para>
-    /// </summary>
-    /// <param name="percent"></param>
-    public static void UpdateProgressBar(int percent) => UpdateProgressBar(percent, Color.Default);
+	/// <summary>
+	/// Represents a progress bar that can be displayed in the console.
+	/// </summary>
+	public class ProgressBar {
+		/// <summary>
+		/// Gets or sets the character used to represent the progress.
+		/// </summary>
+		public char ProgressChar { get; set; } = '■';
 
-    /// <summary>
-    /// Outputs progress bar filled according to <paramref name="percent"/>
-    /// <para>
-    /// When called consecutively, it overrides the previous
-    /// </para>
-    /// </summary>
-    /// <param name="percent"></param>
-    /// <param name="color">The color you want the progress bar to be</param>
-    public static void UpdateProgressBar(int percent, ConsoleColor color)
-        => UpdateProgressBar(percent, color, color);
+		/// <summary>
+		/// Gets or sets the foreground color of the progress bar.
+		/// </summary>
+		public ConsoleColor ForegroundColor { get; set; } = ConsoleColor.Gray;
 
-    /// <summary>
-    /// Outputs progress bar filled according to <paramref name="percent"/>
-    /// <para>
-    /// When called consecutively, it overrides the previous
-    /// </para>
-    /// </summary>
-    /// <param name="percent"></param>
-    /// <param name="foreground">color of the bounds and percentage</param>
-    /// <param name="progress">color of the progress bar fill</param>
-    public static void UpdateProgressBar(int percent, ConsoleColor foreground, ConsoleColor progress)
-        => UpdateProgressBar(new ProgressBarDisplay(percent, foreground, progress));
+		/// <summary>
+		/// Gets or sets the color of the progress portion of the bar.
+		/// </summary>
+		public ConsoleColor ProgressColor { get; set; } = ConsoleColor.Gray;
 
-    private static readonly char[] ProgressBarBuffer = GC.AllocateUninitializedArray<char>(ProgressBarSize);
+		private readonly char[] _buffer = GC.AllocateUninitializedArray<char>(ogConsole.BufferWidth - 10);
 
-    /// <summary>
-    /// Outputs progress bar filled according to <paramref name="display"/>
-    /// <para>
-    /// When called consecutively, it overrides the previous
-    /// </para>
-    /// <para>Make sure to print a new line after the last call, otherwise your outputs will override the progress bar</para>
-    /// </summary>
-    /// <remarks>
-    /// <para>Test before usage in release, when updated too quickly, the progress bar may fail to override previous lines and will make a mess</para>
-    /// <para>If that happens, consider restricting the updates yourself by wrapping the call</para>
-    /// <para>If the progress bar is interrupted, you clear the used lines with ClearNextLines()</para>
-    /// </remarks>
-    /// <param name="display"></param>
-    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-    public static void UpdateProgressBar(ProgressBarDisplay display) {
-        ResetColors();
-        ogConsole.ForegroundColor = display.Foreground;
-        var currentLine = ogConsole.CursorTop;
-        ogConsole.SetCursorPosition(0, currentLine);
-        ogConsole.WriteLine(EmptyLine);
-        ogConsole.WriteLine(EmptyLine);
-        ogConsole.SetCursorPosition(0, currentLine);
-        if (display.Header.Length is not 0) {
-            ogConsole.Out.WriteLine(display.Header);
-        }
+		private readonly string _emptyLine = new(' ', ogConsole.BufferWidth);
 
-        ogConsole.Out.Write("[");
-        var p = (int)(ProgressBarSize * display.Percentage * 0.01);
-        ogConsole.ForegroundColor = display.Progress;
-        Span<char> span = ProgressBarBuffer;
-        Span<char> full = span[..p];
-        full.Fill(display.ProgressChar);
-        Span<char> empty = span[p..];
-        empty.Fill(' ');
-        ogConsole.Out.Write(full);
-        ogConsole.Out.Write(empty);
-        ogConsole.ForegroundColor = display.Foreground;
-        ogConsole.Out.Write($"] {display.Percentage,5:##0.##}%");
-        ogConsole.SetCursorPosition(0, currentLine);
-        ResetColors();
-    }
+		/// <summary>
+		/// Updates the progress bar with the specified percentage.
+		/// </summary>
+		/// <param name="percentage">The percentage value (0-100) representing the progress.</param>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Update(int percentage) => Update(percentage, ReadOnlySpan<char>.Empty);
+
+		/// <summary>
+		/// Updates the progress bar with the specified percentage.
+		/// </summary>
+		/// <param name="percentage">The percentage value (0-100) representing the progress.</param>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Update(double percentage) => Update(percentage, ReadOnlySpan<char>.Empty);
+
+		/// <summary>
+		/// Updates the progress bar with the specified percentage and header text.
+		/// </summary>
+		/// <param name="percentage">The percentage value (0-100) representing the progress.</param>
+		/// <param name="header">The header text to be displayed above the progress bar.</param>
+		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+		public void Update(double percentage, ReadOnlySpan<char> header) {
+			ResetColors();
+			ogConsole.ForegroundColor = ForegroundColor;
+			var currentLine = ogConsole.CursorTop;
+			ogConsole.SetCursorPosition(0, currentLine);
+			ogConsole.WriteLine(_emptyLine);
+			ogConsole.WriteLine(_emptyLine);
+			ogConsole.SetCursorPosition(0, currentLine);
+			if (header.Length is not 0) {
+				ogConsole.Out.WriteLine(header);
+			}
+
+			ogConsole.Out.Write("[");
+			var p = (int)(_buffer.Length * percentage * 0.01);
+			ogConsole.ForegroundColor = ProgressColor;
+			Span<char> span = _buffer;
+			Span<char> full = span[..p];
+			full.Fill(ProgressChar);
+			Span<char> empty = span[p..];
+			empty.Fill(' ');
+			ogConsole.Out.Write(full);
+			ogConsole.Out.Write(empty);
+			ogConsole.ForegroundColor = ForegroundColor;
+			ogConsole.Out.Write($"] {percentage,5:##0.##}%");
+			ogConsole.SetCursorPosition(0, currentLine);
+			ResetColors();
+		}
+	}
 }

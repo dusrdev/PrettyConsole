@@ -6,83 +6,107 @@ namespace PrettyConsole;
 
 public static partial class Console {
     /// <summary>
-    /// A simple twirl style indeterminate progress bar to signal the user that the app is not stuck but rather is performing a time consuming task.
-    /// <para>
-    /// The output is cleared so the next line will be written on the same line as the progress bar was.
-    /// </para>
+    /// Represents an indeterminate progress bar that visually indicates the progress of a time-consuming task.
     /// </summary>
-    /// <param name="task">The task you want to await on, it will not be modified, only the state is observed</param>
-    /// <param name="color">The color in which to display the progress bar</param>
-    /// <param name="displayElapsedTime">Display elapsed time</param>
-    /// <param name="updateRate">Rate at which the progress bar refreshes in milliseconds</param>
-    /// <param name="token">So you can cancel the progress bar and end it any time</param>
     /// <remarks>
-    /// <para>The cancellation token parameter is to be used if you want to cancel the progress bar and end it any time.</para>
-    /// <para>It can also be used when you to display it while non-task actions are running, simply set the task to Task.Delay(-1) and cancel with the token when you want to</para>
-    /// </remarks>
-    public static async Task<T> IndeterminateProgressBar<T>(Task<T> task, ConsoleColor color, bool displayElapsedTime,
-        int updateRate = 50, CancellationToken token = default) {
-        await IndeterminateProgressBar(task, color, displayElapsedTime, updateRate, token);
-
-        return task.IsCompleted ? task.Result : await task;
-    }
-
-    /// <summary>
-    /// A simple twirl style indeterminate progress bar to signal the user that the app is not stuck but rather is performing a time consuming task.
     /// <para>
-    /// The output is cleared so the next line will be written on the same line as the progress bar was.
+    /// After the time consuming task is completed, the progress bar is removed from the console. and the next output will take its place.
     /// </para>
-    /// </summary>
-    /// <param name="task">The task you want to await on, it will not be modified, only the state is observed</param>
-    /// <param name="color">The color in which to display the progress bar</param>
-    /// <param name="displayElapsedTime">Display elapsed time</param>
-    /// <param name="updateRate">Rate at which the progress bar refreshes in milliseconds</param>
-    /// <param name="token">So you can cancel the progress bar and end it any time</param>
-    /// <remarks>
-    /// <para>The cancellation token parameter is to be used if you want to cancel the progress bar and end it any time.</para>
-    /// <para>It can also be used when you to display it while non-task actions are running, simply set the task to Task.Delay(-1) and cancel with the token when you want to</para>
+    /// <para>
+    /// The cancellation token parameter on the RunAsync methods is to cancel the progress bar (not necessarily the task) and end it any time.
+    /// </para>
     /// </remarks>
-    public static async Task IndeterminateProgressBar(Task task, ConsoleColor color, bool displayElapsedTime,
-        int updateRate = 50, CancellationToken token = default) {
-        try {
-            if (task.Status is not TaskStatus.Running) {
-                task.Start();
-            }
-        } catch {
-            //ignore
+    public class IndeterminateProgressBar {
+        // Constant pattern containing the characters needed for the indeterminate progress bar
+        private const string Twirl = "-\\|/";
+
+        // A whitespace the length of 10 spaces
+        private const string ExtraBuffer = "          ";
+
+        /// <summary>
+        /// Gets or sets the foreground color of the progress bar.
+        /// </summary>
+        public ConsoleColor ForegroundColor { get; set; } = ConsoleColor.Gray;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to display the elapsed time in the progress bar.
+        /// </summary>
+        public bool DisplayElapsedTime { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the update rate (in ms) of the indeterminate progress bar.
+        /// </summary>
+        public int UpdateRate { get; set; } = 50;
+
+        private readonly char[] _emptyLine;
+
+        /// <summary>
+        /// Represents an indeterminate progress bar that continuously animates without a specific progress value.
+        /// </summary>
+        public IndeterminateProgressBar() {
+            _emptyLine = GC.AllocateUninitializedArray<char>(ogConsole.BufferWidth);
+            _emptyLine.AsSpan().Fill(' ');
         }
 
-        ResetColors();
-        var originalColor = ogConsole.ForegroundColor;
-        var startTime = Stopwatch.GetTimestamp();
-        var lineNum = ogConsole.CursorTop;
+        /// <summary>
+        /// Runs the indeterminate progress bar while the specified task is running.
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="token"></param>
+        /// <returns>The output of the running task</returns>
+        public async Task<T> RunAsync<T>(Task<T> task, CancellationToken token = default) {
+            await RunAsync(task, token);
 
-        while (!task.IsCompleted) {
-            // Await until the TaskAwaiter informs of completion
-            foreach (char c in Twirl) {
-                // Cycle through the characters of twirl
-                ogConsole.ForegroundColor = color;
-                ogConsole.Write(c);
-                ogConsole.ForegroundColor = originalColor;
-                if (displayElapsedTime) {
-                    var elapsed = Stopwatch.GetElapsedTime(startTime);
-                    ogConsole.Write(" [Elapsed: ");
-                    ogConsole.Write(elapsed.ToFriendlyString());
-                    ogConsole.Write(']');
-                }
-
-                ogConsole.Write(ExtraBuffer);
-
-                ogConsole.SetCursorPosition(0, lineNum);
-                await Task.Delay(updateRate, token); // The update rate
-                ogConsole.Write(EmptyLine);
-                ogConsole.SetCursorPosition(0, lineNum);
-                if (token.IsCancellationRequested) {
-                    return;
-                }
-            }
+            return task.IsCompleted ? task.Result : await task;
         }
 
-        ResetColors();
+        /// <summary>
+        /// Runs the indeterminate progress bar while the specified task is running.
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task RunAsync(Task task, CancellationToken token = default) {
+            try {
+                if (task.Status is not TaskStatus.Running) {
+                    task.Start();
+                }
+            } catch {
+                //ignore
+            }
+
+            ResetColors();
+            var originalColor = ogConsole.ForegroundColor;
+            var startTime = Stopwatch.GetTimestamp();
+            var lineNum = ogConsole.CursorTop;
+
+            while (!task.IsCompleted) {
+                // Await until the TaskAwaiter informs of completion
+                foreach (char c in Twirl) {
+                    // Cycle through the characters of twirl
+                    ogConsole.ForegroundColor = ForegroundColor;
+                    ogConsole.Write(c);
+                    ogConsole.ForegroundColor = originalColor;
+                    if (DisplayElapsedTime) {
+                        var elapsed = Stopwatch.GetElapsedTime(startTime);
+                        ogConsole.Write(" [Elapsed: ");
+                        ogConsole.Write(elapsed.ToFriendlyString());
+                        ogConsole.Write(']');
+                    }
+
+                    ogConsole.Write(ExtraBuffer);
+
+                    ogConsole.SetCursorPosition(0, lineNum);
+                    await Task.Delay(UpdateRate, token); // The update rate
+                    ogConsole.Write(_emptyLine);
+                    ogConsole.SetCursorPosition(0, lineNum);
+                    if (token.IsCancellationRequested) {
+                        return;
+                    }
+                }
+            }
+
+            ResetColors();
+        }
     }
 }

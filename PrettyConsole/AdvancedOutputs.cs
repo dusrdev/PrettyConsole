@@ -1,3 +1,5 @@
+using System.Buffers;
+
 using ogConsole = System.Console;
 
 namespace PrettyConsole;
@@ -8,10 +10,14 @@ public static partial class Console {
     /// </summary>
     /// <param name="output"></param>
     public static void OverrideCurrentLine(ColoredOutput output) {
+        var array = ArrayPool<char>.Shared.Rent(ogConsole.BufferWidth);
+        Span<char> emptyLine = array.AsSpan(0, ogConsole.BufferWidth);
+        emptyLine.Fill(' ');
         var currentLine = ogConsole.CursorTop;
         ogConsole.SetCursorPosition(0, currentLine);
-        ogConsole.Write(EmptyLine);
+        ogConsole.Out.Write(emptyLine);
         ogConsole.SetCursorPosition(0, currentLine);
+        ArrayPool<char>.Shared.Return(array);
         Write(output);
     }
 
