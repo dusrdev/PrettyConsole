@@ -29,6 +29,7 @@ public static partial class Console {
     /// <param name="output"></param>
     /// <param name="delay">Delay in milliseconds between each character.</param>
     public static async Task TypeWrite(ColoredOutput output, int delay = TypeWriteDefaultDelay) {
+        ResetColors();
         ogConsole.ForegroundColor = output.ForegroundColor;
         ogConsole.BackgroundColor = output.BackgroundColor;
         for (int i = 0; i < output.Value.Length - 1; i++) {
@@ -47,6 +48,6 @@ public static partial class Console {
     /// <param name="delay">Delay in milliseconds between each character.</param>
     public static async Task TypeWriteLine(ColoredOutput output, int delay = TypeWriteDefaultDelay) {
         await TypeWrite(output, delay);
-        ogConsole.WriteLine();
+        ogConsole.Out.WriteLine();
     }
 }

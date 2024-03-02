@@ -10,11 +10,12 @@ public static partial class Console {
     /// </summary>
     /// <param name="title"/>
     /// <param name="choices">Any collection of strings</param>
-    /// <returns>The selected string, or null if the choice was invalid.</returns>
+    /// <returns>The selected string, or empty if the choice was invalid.</returns>
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static string? Selection(ColoredOutput title, IList<string> choices)
+    public static string Selection<TList>(ColoredOutput title, TList choices)
+    where TList : IList<string>
     => Selection(title, ConsoleColor.White, choices);
 
     /// <summary>
@@ -23,11 +24,12 @@ public static partial class Console {
     /// <param name="title"/>
     /// <param name="indexForeground"></param>
     /// <param name="choices">Any collection of strings</param>
-    /// <returns>The selected string, or null if the choice was invalid.</returns>
+    /// <returns>The selected string, or empty if the choice was invalid.</returns>
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static string? Selection(ColoredOutput title, ConsoleColor indexForeground, IList<string> choices) {
+    public static string Selection<TList>(ColoredOutput title, ConsoleColor indexForeground, TList choices)
+    where TList : IList<string> {
         if (title.Value.Length is not 0) {
             WriteLine(title);
         }
@@ -44,13 +46,13 @@ public static partial class Console {
         NewLine();
 
         if (!TryReadLine("Enter your choice: ", out int selected)) {
-            return null;
+            return "";
         }
 
         selected--;
 
         if (selected < 0 || selected >= choices.Count) {
-            return null;
+            return "";
         }
 
         return choices[selected];
@@ -61,24 +63,26 @@ public static partial class Console {
     /// </summary>
     /// <param name="title"><ogConsole>Optional</ogConsole>, null or whitespace will not be displayed</param>
     /// <param name="choices">Any collection of strings</param>
-    /// <returns>A list containing any selected choices by order of selection, or default if choice is invalid</returns>
+    /// <returns>An array containing any selected choices by order of selection, or empty array if any choice is invalid</returns>
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static string[] MultiSelection(ColoredOutput title, IList<string> choices)
+    public static string[] MultiSelection<TList>(ColoredOutput title, TList choices)
+    where TList : IList<string>
     => MultiSelection(title, ConsoleColor.White, choices);
 
     /// <summary>
-    /// Enumerates a list of strings and allows the user to select one by number
+    /// Enumerates a list of strings and allows the user to select multiple strings by any order, and uses the default index color (White)
     /// </summary>
-    /// <param name="title"/>
-    /// <param name="indexForeground"></param>
+    /// <param name="title"><ogConsole>Optional</ogConsole>, null or whitespace will not be displayed</param>
+    /// <param name="indexForeground">The color of the indexes</param>
     /// <param name="choices">Any collection of strings</param>
-    /// <returns>The selected string, or null if the choice was invalid.</returns>
+    /// <returns>An array containing any selected choices by order of selection, or empty array if any choice is invalid</returns>
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static string[] MultiSelection(ColoredOutput title, ConsoleColor indexForeground, IList<string> choices) {
+    public static string[] MultiSelection<TList>(ColoredOutput title, ConsoleColor indexForeground, TList choices)
+    where TList : IList<string> {
         if (title.Value.Length is not 0) {
             WriteLine(title);
         }
@@ -90,7 +94,7 @@ public static partial class Console {
             ogConsole.ForegroundColor = indexForeground;
             ogConsole.Out.Write(buffer[..numWritten]);
             ResetColors();
-            WriteLine(choices[i]);
+            ogConsole.Out.WriteLine(choices[i]);
         }
         NewLine();
 
@@ -121,7 +125,7 @@ public static partial class Console {
     /// <summary>
     /// Enumerates a menu containing main option as well as sub options and allows the user to select both. Uses the default index color (White)
     /// <para>
-    /// This function is great where more options or categories are required than <see cref="Selection(ColoredOutput, IList{string})"/> can provide.
+    /// This function is great where more options or categories are required than <see cref="Selection{TList}(PrettyConsole.ColoredOutput,TList)"/> can provide.
     /// </para>
     /// </summary>
     /// <param name="title"><ogConsole>Optional</ogConsole>, null or whitespace will not be displayed</param>
@@ -130,14 +134,14 @@ public static partial class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static (string option, string subOption) TreeMenu<T>(ColoredOutput title,
-                                                             Dictionary<string, T> menu) where T : IList<string>
+    public static (string option, string subOption) TreeMenu<TList>(ColoredOutput title,
+                                                             Dictionary<string, TList> menu) where TList : IList<string>
     => TreeMenu(title, ConsoleColor.White, menu);
 
     /// <summary>
     /// Enumerates a menu containing main option as well as sub options and allows the user to select both.
     /// <para>
-    /// This function is great where more options or categories are required than <see cref="Selection(ColoredOutput, IList{string})"/> can provide.
+    /// This function is great where more options or categories are required than <see cref="Selection{TList}(PrettyConsole.ColoredOutput,TList)"/> can provide.
     /// </para>
     /// </summary>
     /// <param name="title"><ogConsole>Optional</ogConsole>, null or whitespace will not be displayed</param>
@@ -147,9 +151,9 @@ public static partial class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static (string option, string subOption) TreeMenu<T>(ColoredOutput title,
+    public static (string option, string subOption) TreeMenu<TList>(ColoredOutput title,
                                                             ConsoleColor indexForeground,
-                                                             Dictionary<string, T> menu) where T : IList<string> {
+                                                             Dictionary<string, TList> menu) where TList : IList<string> {
         if (title.Value.Length is not 0) {
             WriteLine(title);
             NewLine();
@@ -165,8 +169,6 @@ public static partial class Console {
         for (int i = 0; i < menuKeys.Length; i++) {
             var mainEntry = menuKeys[i];
             var subChoices = menu[mainEntry];
-            var lst = new List<int>();
-            var prefixLength = i.ToString().Length + 2;
             (i + 1).TryFormat(buffer, out int mainIndexWritten, "0) ");
             var mainIndex = buffer[..mainIndexWritten];
             ogConsole.ForegroundColor = indexForeground;
@@ -184,7 +186,7 @@ public static partial class Console {
                 ogConsole.ForegroundColor = indexForeground;
                 ogConsole.Out.Write(buffer[..numWritten]);
                 ResetColors();
-                WriteLine(subChoices[j]);
+                ogConsole.Out.WriteLine(subChoices[j]);
             }
             NewLine();
         }
@@ -196,8 +198,6 @@ public static partial class Console {
         if (selected.Length is not 2) {
             throw new ArgumentException("Invalid input, must have 2 selections");
         }
-
-        var (sub, main) = (selected[0], selected[1]);
 
         // Validate
         if (!int.TryParse(selected[0], out var mainNum) || mainNum < 1 || mainNum > menuKeys.Length) {
@@ -221,10 +221,13 @@ public static partial class Console {
     /// <param name="headers"></param>
     /// <param name="columns"></param>
     /// <exception cref="ArgumentException"></exception>
-    public static void Table<T>(T headers, ReadOnlySpan<T> columns) where T : IList<string> {
+    public static void Table<TList>(TList headers, ReadOnlySpan<TList> columns) where TList : IList<string> {
         if (headers.Count != columns.Length) {
             throw new ArgumentException("Headers and columns must be of the same length");
         }
+
+        const char rowSeparator = '-';
+        const string columnSeparator = " | ";
 
         Span<int> lengths = stackalloc int[columns.Length];
         for (int i = 0; i < lengths.Length; i++) {
@@ -243,11 +246,11 @@ public static partial class Console {
         for (int i = 0; i < headersSegment.Count; i++) {
             headersSegment[i] = headers[i].PadRight(lengths[i]);
         }
-        var header = string.Join(string.Intern(" | "), headersSegment);
+        var header = string.Join(columnSeparator, headersSegment);
         ArrayPool<string>.Shared.Return(headersArray);
-        WriteLine(header);
+        ogConsole.Out.WriteLine(header);
         Span<char> buffer = stackalloc char[header.Length];
-        buffer.Fill('-');
+        buffer.Fill(rowSeparator);
         ogConsole.Out.WriteLine(buffer);
         for (int row = 0; row < height; row++) {
             var rowsArray = ArrayPool<string>.Shared.Rent(columns.Length);
@@ -255,9 +258,9 @@ public static partial class Console {
             for (int i = 0; i < columns.Length; i++) {
                 rowValues[i] = columns[i][row].PadRight(lengths[i]);
             }
-            var line = string.Join(string.Intern(" | "), rowValues);
+            var line = string.Join(columnSeparator, rowValues);
             ArrayPool<string>.Shared.Return(rowsArray);
-            WriteLine(line);
+            ogConsole.Out.WriteLine(line);
         }
 
         ogConsole.Out.WriteLine(buffer);

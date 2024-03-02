@@ -31,10 +31,12 @@ public static partial class Console {
     /// <summary>
     /// Used to clear all previous outputs to the console
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Clear() => ogConsole.Clear();
 
     /// <summary>
     /// Used to end current line or write an empty one, depends whether the current line has any text
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void NewLine() => ogConsole.Out.WriteLine();
 }

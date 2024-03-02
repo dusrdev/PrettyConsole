@@ -12,7 +12,7 @@ public sealed class MultiSelectionTest : IPrettyConsoleTest {
             "Option 3"
         };
 
-        var selected = MultiSelection("Select an option", options);
+        var selected = MultiSelection("Select an option:", options);
         WriteLine($"Selected: [{string.Join(", ", selected)}]");
     }
 }

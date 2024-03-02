@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 using ogConsole = System.Console;
 
 namespace PrettyConsole;
@@ -10,6 +12,7 @@ public static partial class Console {
     /// <remarks>
     /// To end line, use <see cref="WriteLine(ColoredOutput)"/>
     /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public static void Write(ColoredOutput output) {
         ResetColors();
         ogConsole.ForegroundColor = output.ForegroundColor;

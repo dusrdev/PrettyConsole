@@ -11,11 +11,8 @@ public static partial class Console {
     /// To not end line, use <see cref="Write(ColoredOutput)"/>
     /// </remarks>
     public static void WriteLine(ColoredOutput output) {
-        ResetColors();
-        ogConsole.ForegroundColor = output.ForegroundColor;
-        ogConsole.BackgroundColor = output.BackgroundColor;
-        ogConsole.Out.WriteLine(output.Value);
-        ResetColors();
+        Write(output);
+        ogConsole.Out.WriteLine();
     }
 
     /// <summary>
