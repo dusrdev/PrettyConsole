@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Runtime.CompilerServices;
 
 using ogConsole = System.Console;
 
@@ -12,6 +13,7 @@ public static partial class Console {
     /// <remarks>
     /// Useful for clearing output of overriding functions, like the ProgressBar
     /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.Synchronized)]
     public static void ClearNextLines(int lines) {
         ResetColors();
         var array = ArrayPool<char>.Shared.Rent(ogConsole.BufferWidth);

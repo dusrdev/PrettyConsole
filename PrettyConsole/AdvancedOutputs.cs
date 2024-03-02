@@ -21,12 +21,14 @@ public static partial class Console {
         Write(output);
     }
 
+    private const int TypeWriteDefaultDelay = 200;
+
     /// <summary>
     /// Types out the <see cref="ColoredOutput"/> character by character with a delay of <paramref name="delay"/> milliseconds between each character.
     /// </summary>
     /// <param name="output"></param>
-    /// <param name="delay">Delay in milliseconds between each character. Default is 200ms.</param>
-    public static async Task TypeWrite(ColoredOutput output, int delay = 200) {
+    /// <param name="delay">Delay in milliseconds between each character.</param>
+    public static async Task TypeWrite(ColoredOutput output, int delay = TypeWriteDefaultDelay) {
         ogConsole.ForegroundColor = output.ForegroundColor;
         ogConsole.BackgroundColor = output.BackgroundColor;
         for (int i = 0; i < output.Value.Length - 1; i++) {
@@ -42,8 +44,8 @@ public static partial class Console {
     /// Types out the <see cref="ColoredOutput"/> character by character with a delay of <paramref name="delay"/> milliseconds between each character.
     /// </summary>
     /// <param name="output"></param>
-    /// <param name="delay">Delay in milliseconds between each character. Default is 200ms.</param>
-    public static async Task TypeWriteLine(ColoredOutput output, int delay = 200) {
+    /// <param name="delay">Delay in milliseconds between each character.</param>
+    public static async Task TypeWriteLine(ColoredOutput output, int delay = TypeWriteDefaultDelay) {
         await TypeWrite(output, delay);
         ogConsole.WriteLine();
     }
