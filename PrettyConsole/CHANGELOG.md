@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v2.0.0 - Unreleased
+## v2.0.0
 
 * All previous variants of output types were removed, now the main output type is `ColoredOutput` (which includes a string, foreground color and background color).
 Thanks to implicit and other converters and the added supporting `Color` class,

@@ -11,6 +11,7 @@ implementing types (which are most of the base types, and you can create any cus
 * `ReadLine` now also has an `Enum` overload that can parse for enums, with configurable case sensitivity.
 * Many functions, especially more advance outputs such as selections, menus and progress bar, had undergone tremendous performance optimizations, and show now perform extremely efficiently.
 * A new table view implementation was added.
+* The progress bar types `ProgressBar` and `IndeterminateProgressBar` are now classes, and also have been substantially optimized.
 
 ## v1.6.1
 
