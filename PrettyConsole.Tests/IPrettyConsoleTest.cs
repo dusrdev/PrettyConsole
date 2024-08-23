@@ -3,12 +3,12 @@ using static PrettyConsole.Console;
 namespace PrettyConsole.Tests;
 
 public interface IPrettyConsoleTest {
-    abstract string FeatureName { get; }
+    string FeatureName { get; }
 
-    abstract void Implementation();
+    void Implementation();
 
     public void Render() {
-        WriteLine("Test: ", $" {FeatureName} " * Color.Black / Color.White);
+        WriteLine("Test: ", FeatureName * Color.Black / Color.White);
         NewLine();
         Implementation();
         NewLine();
