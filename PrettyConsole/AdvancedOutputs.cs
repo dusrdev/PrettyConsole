@@ -1,5 +1,3 @@
-using System.Buffers;
-
 using ogConsole = System.Console;
 
 namespace PrettyConsole;
@@ -10,14 +8,13 @@ public static partial class Console {
     /// </summary>
     /// <param name="output"></param>
     public static void OverrideCurrentLine(ColoredOutput output) {
-        var array = ArrayPool<char>.Shared.Rent(ogConsole.BufferWidth);
-        Span<char> emptyLine = array.AsSpan(0, ogConsole.BufferWidth);
+        using var array = new RentedBuffer<char>(ogConsole.BufferWidth);
+        Span<char> emptyLine = array.Array.AsSpan(0, ogConsole.BufferWidth);
         emptyLine.Fill(' ');
         var currentLine = ogConsole.CursorTop;
         ogConsole.SetCursorPosition(0, currentLine);
-        ogConsole.Out.Write(emptyLine);
+        ogConsole.Out.WriteDirect(emptyLine);
         ogConsole.SetCursorPosition(0, currentLine);
-        ArrayPool<char>.Shared.Return(array);
         Write(output);
     }
 
@@ -37,7 +34,7 @@ public static partial class Console {
             await Task.Delay(delay);
         }
 
-        ogConsole.Write(output.Value[^1]);
+        ogConsole.Write(output.Value[output.Value.Length - 1]);
         ResetColors();
     }
 
@@ -48,6 +45,6 @@ public static partial class Console {
     /// <param name="delay">Delay in milliseconds between each character.</param>
     public static async Task TypeWriteLine(ColoredOutput output, int delay = TypeWriteDefaultDelay) {
         await TypeWrite(output, delay);
-        ogConsole.Out.WriteLine();
+        NewLine();
     }
 }

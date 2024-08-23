@@ -41,8 +41,8 @@ public static partial class Console {
     /// </remarks>
     public static bool Confirm(ColoredOutput message, ReadOnlySpan<string> trueValues, bool emptyIsTrue = true) {
         Write(message);
-        var input = ogConsole.ReadLine().AsSpan();
-        if (input.Length is 0) {
+        var input = ogConsole.ReadLine();
+        if (input is null or { Length: 0 }) {
             return emptyIsTrue;
         }
 

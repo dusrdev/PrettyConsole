@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 using ogConsole = System.Console;
 
@@ -10,7 +11,7 @@ public static partial class Console {
     /// </summary>
     /// <remarks>
     /// <para>
-    /// After the time consuming task is completed, the progress bar is removed from the console. and the next output will take its place.
+    /// After the time-consuming task is completed, the progress bar is removed from the console. and the next output will take its place.
     /// </para>
     /// <para>
     /// The cancellation token parameter on the RunAsync methods is to cancel the progress bar (not necessarily the task) and end it any time.
@@ -26,7 +27,7 @@ public static partial class Console {
         /// <summary>
         /// Gets or sets the foreground color of the progress bar.
         /// </summary>
-        public ConsoleColor ForegroundColor { get; set; } = ConsoleColor.Gray;
+        public ConsoleColor ForegroundColor { get; set; } = Console.UnknownColor;
 
         /// <summary>
         /// Gets or sets a value indicating whether to display the elapsed time in the progress bar.
@@ -38,14 +39,13 @@ public static partial class Console {
         /// </summary>
         public int UpdateRate { get; set; } = 50;
 
-        private readonly char[] _emptyLine;
+        private readonly string _emptyLine;
 
         /// <summary>
         /// Represents an indeterminate progress bar that continuously animates without a specific progress value.
         /// </summary>
         public IndeterminateProgressBar() {
-            _emptyLine = GC.AllocateUninitializedArray<char>(ogConsole.BufferWidth);
-            _emptyLine.AsSpan().Fill(' ');
+            _emptyLine = new string(' ', ogConsole.BufferWidth);
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ public static partial class Console {
         /// <param name="token"></param>
         /// <returns>The output of the running task</returns>
         public async Task<T> RunAsync<T>(Task<T> task, CancellationToken token = default) {
-            await RunAsync(task, token);
+            await RunAsyncNonGeneric(task, token);
 
             return task.IsCompleted ? task.Result : await task;
         }
@@ -80,24 +80,26 @@ public static partial class Console {
             var startTime = Stopwatch.GetTimestamp();
             var lineNum = ogConsole.CursorTop;
 
+            using var defaultBuffer = RentedBuffer<char>.ShortBuffer;
+
             while (!task.IsCompleted) {
                 // Await until the TaskAwaiter informs of completion
-                foreach (char c in Twirl) {
+                foreach (var c in Twirl) {
                     // Cycle through the characters of twirl
                     ogConsole.ForegroundColor = ForegroundColor;
-                    ogConsole.Out.Write(c);
+                    ogConsole.Write(c);
                     ogConsole.ForegroundColor = originalColor;
                     if (DisplayElapsedTime) {
                         var elapsed = Stopwatch.GetElapsedTime(startTime);
-                        ogConsole.Out.Write(' ');
-                        ogConsole.Out.Write(elapsed.FormattedElapsedTime());
+                        ogConsole.Write(' ');
+                        ogConsole.Out.WriteDirect(elapsed.FormattedElapsedTime(defaultBuffer.Array));
                     }
 
-                    ogConsole.Out.Write(ExtraBuffer);
+                    ogConsole.Write(ExtraBuffer);
 
                     ogConsole.SetCursorPosition(0, lineNum);
                     await Task.Delay(UpdateRate, token); // The update rate
-                    ogConsole.Out.Write(_emptyLine);
+                    ogConsole.Write(_emptyLine);
                     ogConsole.SetCursorPosition(0, lineNum);
                     if (token.IsCancellationRequested) {
                         return;
@@ -107,5 +109,8 @@ public static partial class Console {
 
             ResetColors();
         }
+        
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private Task RunAsyncNonGeneric(Task task, CancellationToken token) => RunAsync(task, token);
     }
 }
