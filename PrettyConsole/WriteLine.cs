@@ -12,7 +12,7 @@ public static partial class Console {
     /// </remarks>
     public static void WriteLine(ColoredOutput output) {
         Write(output);
-        ogConsole.Out.WriteLine();
+        ogConsole.WriteLine();
     }
 
     /// <summary>
@@ -111,7 +111,7 @@ public static partial class Console {
             Write(outputs[i]);
         }
 
-        WriteLine(outputs[^1]);
+        WriteLine(outputs[outputs.Length - 1]);
     }
 
     /// <summary>

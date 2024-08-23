@@ -17,7 +17,7 @@ public static partial class Console {
     /// </summary>
     public static bool TryReadLine<T>(ColoredOutput message, ConsoleColor inputColor, out T? result)
         where T : IParsable<T>
-        => TryReadLine(message, inputColor, ConsoleColor.Black, out result);
+        => TryReadLine(message, inputColor, UnknownColor, out result);
 
     /// <summary>
     /// Used to request user input, validates and converts common types.
@@ -47,7 +47,7 @@ public static partial class Console {
     /// </summary>
     public static bool TryReadLine<TEnum>(ColoredOutput message, ConsoleColor inputColor, bool ignoreCase, out TEnum result)
         where TEnum : struct, Enum
-        => TryReadLine(message, inputColor, ConsoleColor.Black, ignoreCase, out result);
+        => TryReadLine(message, inputColor, UnknownColor, ignoreCase, out result);
 
     /// <summary>
     /// Used to request user input, validates and converts common types.
@@ -77,7 +77,7 @@ public static partial class Console {
     /// <remarks>
     /// You can use <see cref="Write(ColoredOutput)"/> or it's overloads in conjunction with this to create more complex input requests.
     /// </remarks>
-    public static string? ReadLine(ConsoleColor inputColor) => ReadLine(inputColor, ConsoleColor.Black);
+    public static string? ReadLine(ConsoleColor inputColor) => ReadLine(inputColor, UnknownColor);
 
     /// <summary>
     /// Used to request user input without any prepended message
@@ -105,7 +105,7 @@ public static partial class Console {
     /// Used to request user input
     /// </summary>
     public static string? ReadLine(ColoredOutput message, ConsoleColor inputColor)
-        => ReadLine(message, inputColor, ConsoleColor.Black);
+        => ReadLine(message, inputColor, UnknownColor);
 
     /// <summary>
     /// Used to request user input

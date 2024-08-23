@@ -12,7 +12,7 @@ internal sealed class RentedBuffer<T> : IDisposable {
 
     private const int ShortBufferLength = 20;
 
-    public static RentedBuffer<char> ShortCharBuffer => new(ShortBufferLength);
+    public static RentedBuffer<T> ShortBuffer => new(ShortBufferLength);
 
     public void Dispose() {
         if (Volatile.Read(ref _disposed)) {
