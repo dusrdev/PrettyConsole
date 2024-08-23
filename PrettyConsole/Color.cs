@@ -1,3 +1,4 @@
+// ReSharper disable InconsistentNaming
 namespace PrettyConsole;
 
 /// <summary>
@@ -17,7 +18,7 @@ public readonly record struct Color(ConsoleColor ConsoleColor) {
 	/// <param name="value">The string value to combine with the color.</param>
 	/// <param name="color">The color to apply to the string value.</param>
 	/// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
-	public static ColoredOutput operator *(string value, Color color) => new(value, color, ConsoleColor.Black);
+	public static ColoredOutput operator *(string value, Color color) => new(value, color, Unknown);
 
     /// <summary>
     /// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
@@ -25,90 +26,95 @@ public readonly record struct Color(ConsoleColor ConsoleColor) {
     /// <param name="value">The string value to combine with the color.</param>
     /// <param name="color">The color to apply to the string value.</param>
     /// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
-    public static ColoredOutput operator /(string value, Color color) => new(value, ConsoleColor.Gray, color);
+    public static ColoredOutput operator /(string value, Color color) => new(value, Unknown, color);
+
+	/// <summary>
+	/// Gets a <see cref="Color"/> object representing the color unknown (the default color).
+	/// </summary>
+	public static readonly Color Unknown = new(Console.UnknownColor);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color black.
 	/// </summary>
-	public static Color Black => new(ConsoleColor.Black);
+	public static readonly Color Black = new(ConsoleColor.Black);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color dark blue.
 	/// </summary>
-	public static Color DarkBlue => new(ConsoleColor.DarkBlue);
+	public static readonly Color DarkBlue = new(ConsoleColor.DarkBlue);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color dark green.
 	/// </summary>
-	public static Color DarkGreen => new(ConsoleColor.DarkGreen);
+	public static readonly Color DarkGreen = new(ConsoleColor.DarkGreen);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color dark cyan.
 	/// </summary>
-	public static Color DarkCyan => new(ConsoleColor.DarkCyan);
+	public static readonly Color DarkCyan = new(ConsoleColor.DarkCyan);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color dark red.
 	/// </summary>
-	public static Color DarkRed => new(ConsoleColor.DarkRed);
+	public static readonly Color DarkRed = new(ConsoleColor.DarkRed);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color dark magenta.
 	/// </summary>
-	public static Color DarkMagenta => new(ConsoleColor.DarkMagenta);
+	public static readonly Color DarkMagenta = new(ConsoleColor.DarkMagenta);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color dark yellow.
 	/// </summary>
-	public static Color DarkYellow => new(ConsoleColor.DarkYellow);
+	public static readonly Color DarkYellow = new(ConsoleColor.DarkYellow);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color gray.
 	/// </summary>
-	public static Color Gray => new(ConsoleColor.Gray);
+	public static readonly Color Gray = new(ConsoleColor.Gray);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color dark gray.
 	/// </summary>
-	public static Color DarkGray => new(ConsoleColor.DarkGray);
+	public static readonly Color DarkGray = new(ConsoleColor.DarkGray);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color blue.
 	/// </summary>
-	public static Color Blue => new(ConsoleColor.Blue);
+	public static readonly Color Blue = new(ConsoleColor.Blue);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color green.
 	/// </summary>
-	public static Color Green => new(ConsoleColor.Green);
+	public static readonly Color Green = new(ConsoleColor.Green);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color cyan.
 	/// </summary>
-	public static Color Cyan => new(ConsoleColor.Cyan);
+	public static readonly Color Cyan = new(ConsoleColor.Cyan);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color red.
 	/// </summary>
-	public static Color Red => new(ConsoleColor.Red);
+	public static readonly Color Red = new(ConsoleColor.Red);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color magenta.
 	/// </summary>
-	public static Color Magenta => new(ConsoleColor.Magenta);
+	public static readonly Color Magenta = new(ConsoleColor.Magenta);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color yellow.
 	/// </summary>
-	public static Color Yellow => new(ConsoleColor.Yellow);
+	public static readonly Color Yellow = new(ConsoleColor.Yellow);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color white.
 	/// </summary>
-	public static Color White => new(ConsoleColor.White);
+	public static readonly Color White = new(ConsoleColor.White);
 
 	/// <summary>
-	/// Gets a <see cref="Color"/> object representing the default color (gray).
+	/// Gets a <see cref="Color"/> object representing the default color.
 	/// </summary>
-	public static Color Default => Gray;
+	public static Color Default => Unknown;
 }
