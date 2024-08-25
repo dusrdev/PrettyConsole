@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v2.1.1
+
+* Removed redirection of `ReadOnlySpan<char>` print overload that degraded performance.
+* Improved internal handling of array and memory pooling.
+* Decreased formatted length limit for `ISpanFormattable` to 50 characters, as it was too long and frequent calls could cause the os to lag. Also changed to use rented buffer instead of stack allocation.
+
 ## v2.1.0
 
 * Fixed default colors, previously colors where defaulted to `Color.Gray` for foreground and `Color.Black` for background, however many shells have custom colors that they render by default, which means the default colors seemed to render in a non ordinary fashion. The default colors now are `Color.Unknown` which will actually use the colors of the shell.

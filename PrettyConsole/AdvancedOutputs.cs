@@ -8,12 +8,12 @@ public static partial class Console {
     /// </summary>
     /// <param name="output"></param>
     public static void OverrideCurrentLine(ColoredOutput output) {
-        using var array = new RentedBuffer<char>(ogConsole.BufferWidth);
-        Span<char> emptyLine = array.Array.AsSpan(0, ogConsole.BufferWidth);
+        using var memoryOwner = Helper.ObtainMemory(ogConsole.BufferWidth);
+        Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, ogConsole.BufferWidth);
         emptyLine.Fill(' ');
         var currentLine = ogConsole.CursorTop;
         ogConsole.SetCursorPosition(0, currentLine);
-        ogConsole.Out.WriteDirect(emptyLine);
+        ogConsole.Out.Write(emptyLine);
         ogConsole.SetCursorPosition(0, currentLine);
         Write(output);
     }

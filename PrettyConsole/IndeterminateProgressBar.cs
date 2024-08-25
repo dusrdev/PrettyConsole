@@ -80,7 +80,7 @@ public static partial class Console {
             var startTime = Stopwatch.GetTimestamp();
             var lineNum = ogConsole.CursorTop;
 
-            using var defaultBuffer = RentedBuffer<char>.ShortBuffer;
+            using var memoryOwner = Helper.ObtainMemory(20);
 
             while (!task.IsCompleted) {
                 // Await until the TaskAwaiter informs of completion
@@ -92,7 +92,7 @@ public static partial class Console {
                     if (DisplayElapsedTime) {
                         var elapsed = Stopwatch.GetElapsedTime(startTime);
                         ogConsole.Write(' ');
-                        ogConsole.Out.WriteDirect(elapsed.FormattedElapsedTime(defaultBuffer.Array));
+                        ogConsole.Out.Write(Helper.FormatElapsedTime(elapsed, memoryOwner.Memory.Span));
                     }
 
                     ogConsole.Write(ExtraBuffer);
@@ -109,7 +109,7 @@ public static partial class Console {
 
             ResetColors();
         }
-        
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         private Task RunAsyncNonGeneric(Task task, CancellationToken token) => RunAsync(task, token);
     }
