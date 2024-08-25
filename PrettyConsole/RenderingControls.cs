@@ -20,14 +20,13 @@ public static partial class Console {
     [MethodImpl(MethodImplOptions.Synchronized)]
     public static void ClearNextLines(int lines) {
         ResetColors();
-        using var array = new RentedBuffer<char>(ogConsole.BufferWidth);
-        Span<char> emptyLine = array.Array.AsSpan(0, ogConsole.BufferWidth);
+        using var memoryOwner = Helper.ObtainMemory(ogConsole.BufferWidth);
+        Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, ogConsole.BufferWidth);
         emptyLine.Fill(' ');
         var currentLine = ogConsole.CursorTop;
         ogConsole.SetCursorPosition(0, currentLine);
         for (int i = 0; i < lines; i++) {
-            ogConsole.Out.WriteDirect(emptyLine);
-            ogConsole.WriteLine();
+            ogConsole.Out.WriteLine(emptyLine);
         }
         ogConsole.SetCursorPosition(0, currentLine);
     }

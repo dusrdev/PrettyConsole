@@ -28,16 +28,18 @@ public static partial class Console {
     /// <typeparam name="T"></typeparam>
     /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
     public static void Write<T>(T item, ConsoleColor foreground,
-        ConsoleColor background, ReadOnlySpan<char> format, IFormatProvider? formatProvider) 
+        ConsoleColor background, ReadOnlySpan<char> format, IFormatProvider? formatProvider)
     where T : ISpanFormattable {
-        scoped Span<char> buffer = stackalloc char[256];
-        if (!item.TryFormat(buffer, out int charsWritten, format, formatProvider)) {
-            throw new ArgumentException("Formatted item length > 256, please use a different overload", nameof(item));
+        const int bufferSize = 50;
+        using var memoryOwner = Helper.ObtainMemory(bufferSize);
+        var span = memoryOwner.Memory.Span;
+        if (!item.TryFormat(span, out int charsWritten, format, formatProvider)) {
+            throw new ArgumentException($"Formatted item length > {bufferSize}, please use a different overload", nameof(item));
         }
         ResetColors();
         ogConsole.ForegroundColor = foreground;
         ogConsole.BackgroundColor = background;
-        ogConsole.Out.WriteDirect(buffer.Slice(0, charsWritten));
+        ogConsole.Out.Write(span.Slice(0, charsWritten));
         ResetColors();
     }
 

@@ -1,3 +1,5 @@
+using System.Buffers;
+
 using ogConsole = System.Console;
 
 namespace PrettyConsole;
@@ -37,7 +39,7 @@ public static partial class Console {
         for (int i = 0; i < choices.Count; i++) {
             (i + 1).TryFormat(buffer, out int numWritten, "  0) ");
             ogConsole.ForegroundColor = indexForeground;
-            ogConsole.Out.WriteDirect(buffer.Slice(0, numWritten));
+            ogConsole.Out.Write(buffer.Slice(0, numWritten));
             ResetColors();
             ogConsole.WriteLine(choices[i]);
         }
@@ -91,7 +93,7 @@ public static partial class Console {
         for (int i = 0; i < choices.Count; i++) {
             (i + 1).TryFormat(buffer, out int numWritten, "  0) ");
             ogConsole.ForegroundColor = indexForeground;
-            ogConsole.Out.WriteDirect(buffer.Slice(0, numWritten));
+            ogConsole.Out.Write(buffer.Slice(0, numWritten));
             ResetColors();
             ogConsole.WriteLine(choices[i]);
         }
@@ -175,20 +177,20 @@ public static partial class Console {
             (i + 1).TryFormat(buffer, out int mainIndexWritten, "0) ");
             var mainIndex = buffer.Slice(0, mainIndexWritten);
             ogConsole.ForegroundColor = indexForeground;
-            ogConsole.Out.WriteDirect(mainIndex);
+            ogConsole.Out.Write(mainIndex);
             ResetColors();
             // Find a way to pad to a buffer
             ogConsole.Write(mainEntry);
             var remainingLength = maxMainOption - mainIndex.Length - mainEntry.Length;
-            ogConsole.Out.WriteDirect(emptySpaces.Slice(0, remainingLength));
+            ogConsole.Out.Write(emptySpaces.Slice(0, remainingLength));
             for (int j = 0; j < subChoices.Count; j++) {
                 if (j is not 0) {
-                    ogConsole.Out.WriteDirect(emptySpaces);
+                    ogConsole.Out.Write(emptySpaces);
                 }
 
                 (j + 1).TryFormat(buffer, out int numWritten, "0) ");
                 ogConsole.ForegroundColor = indexForeground;
-                ogConsole.Out.WriteDirect(buffer.Slice(0, numWritten));
+                ogConsole.Out.Write(buffer.Slice(0, numWritten));
                 ResetColors();
                 ogConsole.WriteLine(subChoices[j]);
             }
@@ -248,29 +250,32 @@ public static partial class Console {
 
 
         var columnsLength = columns.Length;
-        using var buffer = new RentedBuffer<string>(columnsLength);
-        for (int i = 0; i < columnsLength; i++) {
-            buffer.Array[i] = headers[i].PadRight(lengths[i]);
-        }
+        var arrayToReturn = ArrayPool<string>.Shared.Rent(columnsLength);
 
-        var header = string.Join(columnSeparator, buffer.Array, 0, columnsLength);
-
-        scoped Span<char> rowSeparation = stackalloc char[header.Length];
-        rowSeparation.Fill(rowSeparator);
-
-        ogConsole.WriteLine(header);
-        ogConsole.Out.WriteDirect(rowSeparation);
-        NewLine();
-        for (int row = 0; row < height; row++) {
+        try {
             for (int i = 0; i < columnsLength; i++) {
-                buffer.Array[i] = columns[i][row].PadRight(lengths[i]);
+                arrayToReturn[i] = headers[i].PadRight(lengths[i]);
             }
 
-            var line = string.Join(columnSeparator, buffer.Array, 0, columnsLength);
-            ogConsole.WriteLine(line);
-        }
+            var header = string.Join(columnSeparator, arrayToReturn, 0, columnsLength);
 
-        ogConsole.Out.WriteDirect(rowSeparation);
-        NewLine();
+            scoped Span<char> rowSeparation = stackalloc char[header.Length];
+            rowSeparation.Fill(rowSeparator);
+
+            ogConsole.WriteLine(header);
+            ogConsole.Out.WriteLine(rowSeparation);
+            for (int row = 0; row < height; row++) {
+                for (int i = 0; i < columnsLength; i++) {
+                    arrayToReturn[i] = columns[i][row].PadRight(lengths[i]);
+                }
+
+                var line = string.Join(columnSeparator, arrayToReturn, 0, columnsLength);
+                ogConsole.WriteLine(line);
+            }
+
+            ogConsole.Out.WriteLine(rowSeparation);
+        } finally {
+            ArrayPool<string>.Shared.Return(arrayToReturn);
+        }
     }
 }

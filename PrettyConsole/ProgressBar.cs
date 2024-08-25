@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Buffers;
+using System.Runtime.CompilerServices;
 
 using ogConsole = System.Console;
 
@@ -27,11 +28,11 @@ public static partial class Console {
 		/// </summary>
 		public ConsoleColor ProgressColor { get; set; } = UnknownColor;
 
-        private readonly RentedBuffer<char> _progressArrayToReturn;
+        private readonly IMemoryOwner<char> _progressBufferOwner;
 
 		private readonly Memory<char> _progressBuffer;
-        
-        private readonly RentedBuffer<char> _percentageArrayToReturn;
+
+        private readonly IMemoryOwner<char> _percentageBufferOwner;
 
 		private readonly string _emptyLine;
 
@@ -42,9 +43,9 @@ public static partial class Console {
 		/// </summary>
 		public ProgressBar() {
             int length = ogConsole.BufferWidth - 10;
-            _progressArrayToReturn = new RentedBuffer<char>(length);
-            _progressBuffer = new Memory<char>(_progressArrayToReturn.Array, 0, length);
-            _percentageArrayToReturn = RentedBuffer<char>.ShortBuffer;
+            _progressBufferOwner = Helper.ObtainMemory(length);
+			_progressBuffer = _progressBufferOwner.Memory.Slice(0, length);
+            _percentageBufferOwner = Helper.ObtainMemory(20);
             _emptyLine = new string(' ', ogConsole.BufferWidth);
 		}
 
@@ -76,8 +77,7 @@ public static partial class Console {
 			ogConsole.WriteLine(_emptyLine);
 			ogConsole.SetCursorPosition(0, currentLine);
 			if (header.Length is not 0) {
-				ogConsole.Out.WriteDirect(header);
-                NewLine();
+				ogConsole.Out.WriteLine(header);
 			}
 
 			ogConsole.Write('[');
@@ -88,11 +88,11 @@ public static partial class Console {
 			full.Fill(ProgressChar);
 			Span<char> empty = span.Slice(p);
 			empty.Fill(' ');
-			ogConsole.Out.WriteDirect(full);
-			ogConsole.Out.WriteDirect(empty);
+			ogConsole.Out.Write(full);
+			ogConsole.Out.Write(empty);
 			ogConsole.ForegroundColor = ForegroundColor;
 			ogConsole.Write("] ");
-			ogConsole.Out.WriteDirect(percentage.FormattedPercentage(_percentageArrayToReturn.Array));
+			ogConsole.Out.Write(Helper.FormatPercentage(percentage, _percentageBufferOwner.Memory.Span));
 			ogConsole.SetCursorPosition(0, currentLine);
 			ResetColors();
 		}
@@ -104,9 +104,8 @@ public static partial class Console {
             if (Volatile.Read(ref _disposed)) {
                 return;
             }
-            
-            _progressArrayToReturn.Dispose();
-            _percentageArrayToReturn.Dispose();
+            _progressBufferOwner.Dispose();
+            _percentageBufferOwner.Dispose();
             Volatile.Write(ref _disposed, true);
             GC.SuppressFinalize(this);
         }
