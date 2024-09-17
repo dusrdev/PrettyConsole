@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 using ogConsole = System.Console;
 
 namespace PrettyConsole;
@@ -7,16 +9,33 @@ public static partial class Console {
     /// Clears the current line and overrides it with <paramref name="output"/>
     /// </summary>
     /// <param name="output"></param>
-    public static void OverrideCurrentLine(ColoredOutput output) {
+    [MethodImpl(MethodImplOptions.Synchronized)]
+    public static void OverrideCurrentLine(ReadOnlySpan<ColoredOutput> output) {
         using var memoryOwner = Helper.ObtainMemory(ogConsole.BufferWidth);
         Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, ogConsole.BufferWidth);
         emptyLine.Fill(' ');
         var currentLine = ogConsole.CursorTop;
         ogConsole.SetCursorPosition(0, currentLine);
-        ogConsole.Out.Write(emptyLine);
+        ogConsole.Error.Write(emptyLine);
         ogConsole.SetCursorPosition(0, currentLine);
-        Write(output);
+        WriteError(output);
     }
+
+    // /// <summary>
+    // /// Clears the current line and overrides it with <paramref name="outputs"/>
+    // /// </summary>
+    // /// <param name="outputs"></param>
+    // [MethodImpl(MethodImplOptions.Synchronized)]
+    // public static void OverrideLines(ReadOnlySpan<ReadOnlySpan<ColoredOutput>> outputs) {
+    //     using var memoryOwner = Helper.ObtainMemory(ogConsole.BufferWidth);
+    //     Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, ogConsole.BufferWidth);
+    //     emptyLine.Fill(' ');
+    //     var currentLine = ogConsole.CursorTop;
+    //     ogConsole.SetCursorPosition(0, currentLine);
+    //     ogConsole.Error.Write(emptyLine);
+    //     ogConsole.SetCursorPosition(0, currentLine);
+    //     WriteError(outputs);
+    // }
 
     private const int TypeWriteDefaultDelay = 200;
 

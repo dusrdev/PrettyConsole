@@ -14,7 +14,7 @@ public static partial class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static string Selection<TList>(ColoredOutput title, TList choices)
+    public static string Selection<TList>(ReadOnlySpan<ColoredOutput> title, TList choices)
         where TList : IList<string>
         => Selection(title, ConsoleColor.White, choices);
 
@@ -28,11 +28,9 @@ public static partial class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static string Selection<TList>(ColoredOutput title, ConsoleColor indexForeground, TList choices)
+    public static string Selection<TList>(ReadOnlySpan<ColoredOutput> title, ConsoleColor indexForeground, TList choices)
         where TList : IList<string> {
-        if (title.Value.Length is not 0) {
-            WriteLine(title);
-        }
+        WriteLine(title);
 
         Span<char> buffer = stackalloc char[ogConsole.BufferWidth];
 
@@ -46,7 +44,7 @@ public static partial class Console {
 
         NewLine();
 
-        if (!TryReadLine("Enter your choice: ", out int selected)) {
+        if (!TryReadLine(["Enter your choice: "], out int selected)) {
             return "";
         }
 
@@ -68,7 +66,7 @@ public static partial class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static string[] MultiSelection<TList>(ColoredOutput title, TList choices)
+    public static string[] MultiSelection<TList>(ReadOnlySpan<ColoredOutput> title, TList choices)
         where TList : IList<string>
         => MultiSelection(title, ConsoleColor.White, choices);
 
@@ -82,11 +80,9 @@ public static partial class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static string[] MultiSelection<TList>(ColoredOutput title, ConsoleColor indexForeground, TList choices)
+    public static string[] MultiSelection<TList>(ReadOnlySpan<ColoredOutput> title, ConsoleColor indexForeground, TList choices)
         where TList : IList<string> {
-        if (title.Value.Length is not 0) {
-            WriteLine(title);
-        }
+        WriteLine(title);
 
         Span<char> buffer = stackalloc char[ogConsole.BufferWidth];
 
@@ -100,7 +96,7 @@ public static partial class Console {
 
         NewLine();
 
-        var input = ReadLine("Enter your choices separated with spaces: ");
+        var input = ReadLine(["Enter your choices separated with spaces: "]);
 
         if (string.IsNullOrWhiteSpace(input)) {
             return Array.Empty<string>();
@@ -129,7 +125,7 @@ public static partial class Console {
     /// <summary>
     /// Enumerates a menu containing main option as well as sub options and allows the user to select both. Uses the default index color (White)
     /// <para>
-    /// This function is great where more options or categories are required than <see cref="Selection{TList}(PrettyConsole.ColoredOutput,TList)"/> can provide.
+    /// This function is great where more options or categories are required than <see cref="Selection{TList}(ReadOnlySpan{ColoredOutput}, ConsoleColor, TList)"/> can provide.
     /// </para>
     /// </summary>
     /// <param name="title"><ogConsole>Optional</ogConsole>, null or whitespace will not be displayed</param>
@@ -138,14 +134,14 @@ public static partial class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static (string option, string subOption) TreeMenu<TList>(ColoredOutput title,
+    public static (string option, string subOption) TreeMenu<TList>(ReadOnlySpan<ColoredOutput> title,
         Dictionary<string, TList> menu) where TList : IList<string>
         => TreeMenu(title, ConsoleColor.White, menu);
 
     /// <summary>
     /// Enumerates a menu containing main option as well as sub options and allows the user to select both.
     /// <para>
-    /// This function is great where more options or categories are required than <see cref="Selection{TList}(PrettyConsole.ColoredOutput,TList)"/> can provide.
+    /// This function is great where more options or categories are required than <see cref="Selection{TList}(ReadOnlySpan{ColoredOutput}, ConsoleColor, TList)"/> can provide.
     /// </para>
     /// </summary>
     /// <param name="title"><ogConsole>Optional</ogConsole>, null or whitespace will not be displayed</param>
@@ -155,13 +151,11 @@ public static partial class Console {
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
-    public static (string option, string subOption) TreeMenu<TList>(ColoredOutput title,
+    public static (string option, string subOption) TreeMenu<TList>(ReadOnlySpan<ColoredOutput> title,
         ConsoleColor indexForeground,
         Dictionary<string, TList> menu) where TList : IList<string> {
-        if (title.Value.Length is not 0) {
-            WriteLine(title);
-            NewLine();
-        }
+        WriteLine(title);
+        NewLine();
 
         var menuKeys = menu.Keys.ToArray();
         var maxMainOption = menuKeys.Max(static x => x.Length) + 10; // Used to make sub-tree prefix spaces uniform
@@ -198,7 +192,7 @@ public static partial class Console {
             NewLine();
         }
 
-        var input = ReadLine("Enter your main choice and sub choice separated with space: ") ?? "";
+        var input = ReadLine(["Enter your main choice and sub choice separated with space: "]) ?? "";
 
         var selected = input.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 

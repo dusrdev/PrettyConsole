@@ -87,19 +87,19 @@ public static partial class Console {
                 foreach (var c in Twirl) {
                     // Cycle through the characters of twirl
                     ogConsole.ForegroundColor = ForegroundColor;
-                    ogConsole.Write(c);
+                    ogConsole.Error.Write(c);
                     ogConsole.ForegroundColor = originalColor;
                     if (DisplayElapsedTime) {
                         var elapsed = Stopwatch.GetElapsedTime(startTime);
-                        ogConsole.Write(' ');
-                        ogConsole.Out.Write(Helper.FormatElapsedTime(elapsed, memoryOwner.Memory.Span));
+                        ogConsole.Error.Write(' ');
+                        ogConsole.Error.Write(Helper.FormatElapsedTime(elapsed, memoryOwner.Memory.Span));
                     }
 
-                    ogConsole.Write(ExtraBuffer);
+                    ogConsole.Error.Write(ExtraBuffer);
 
                     ogConsole.SetCursorPosition(0, lineNum);
                     await Task.Delay(UpdateRate, token); // The update rate
-                    ogConsole.Write(_emptyLine);
+                    ogConsole.Error.Write(_emptyLine);
                     ogConsole.SetCursorPosition(0, lineNum);
                     if (token.IsCancellationRequested) {
                         return;
