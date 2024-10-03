@@ -49,27 +49,5 @@ jobs:
     - name: Restore the application
       run: msbuild $env:Solution_Name /t:Restore /p:Configuration=${{ matrix.configuration }}
       env:
-        Solution_Name: ${{ secrets.SOLUTION_NAME }}  # Ensure this secret is defined
+        Solution_Name: PrettyConsole
         Configuration: ${{ matrix.configuration }}
-
-    # Decode the base64 encoded pfx and save the Signing_Certificate
-    - name: Decode the pfx
-      shell: pwsh
-      run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $certificatePath = Join-Path -Path "${{ secrets.WAP_PROJECT_DIRECTORY }}" -ChildPath "GitHubActionsWorkflow.pfx"
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-      env:
-        Wap_Project_Directory: ${{ secrets.WAP_PROJECT_DIRECTORY }}
-
-    # Remove the pfx
-    - name: Remove the pfx
-      shell: pwsh
-      run: |
-        if ($env:RUNNER_OS -eq 'Windows') {
-          Remove-Item -Path "${{ secrets.WAP_PROJECT_DIRECTORY }}\GitHubActionsWorkflow.pfx"
-        } else {
-          Remove-Item -Path "${{ secrets.WAP_PROJECT_DIRECTORY }}/GitHubActionsWorkflow.pfx"
-        }
-      env:
-        Wap_Project_Directory: ${{ secrets.WAP_PROJECT_DIRECTORY }}
