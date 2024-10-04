@@ -14,6 +14,20 @@ public readonly partial record struct Color {
 	/// </summary>
 	public static readonly ConsoleColor DefaultBackgroundColor;
 
+	static Color() {
+		if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+			const ConsoleColor unknown = (ConsoleColor)(-1);
+			DefaultForegroundColor = unknown;
+			DefaultBackgroundColor = unknown;
+			return;
+		}
+
+		baseConsole.ResetColor();
+		DefaultForegroundColor = baseConsole.ForegroundColor;
+		DefaultBackgroundColor = baseConsole.BackgroundColor;
+	}
+
+/*
 #if !Windows
 	static Color() {
 		const ConsoleColor unknown = (ConsoleColor)(-1);
@@ -123,4 +137,5 @@ public readonly partial record struct Color {
 		private static IntPtr InvalidHandleValue => new(-1);
 	}
 #endif
+*/
 }
