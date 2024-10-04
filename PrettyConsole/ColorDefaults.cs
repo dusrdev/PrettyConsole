@@ -25,8 +25,8 @@ public readonly partial record struct Color {
 		Kernel32.CONSOLE_SCREEN_BUFFER_INFO csbi = Kernel32.GetBufferInfo(false, out bool succeeded);
 
 		if (succeeded) {
-			ColorAttributeToConsoleColor((Kernel32.Color)csbi.wAttributes & Kernel32.Color.ForegroundMask);
-			ColorAttributeToConsoleColor((Kernel32.Color)csbi.wAttributes & Kernel32.Color.BackgroundMask);
+			DefaultForegroundColor = ColorAttributeToConsoleColor((Kernel32.Color)csbi.wAttributes & Kernel32.Color.ForegroundMask);
+			DefaultBackgroundColor = ColorAttributeToConsoleColor((Kernel32.Color)csbi.wAttributes & Kernel32.Color.BackgroundMask);
 		} else {
 			DefaultForegroundColor = ConsoleColor.Gray;
 			DefaultBackgroundColor = ConsoleColor.Black;
