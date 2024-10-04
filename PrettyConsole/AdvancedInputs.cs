@@ -1,5 +1,3 @@
-using ogConsole = System.Console;
-
 namespace PrettyConsole;
 
 public static partial class Console {
@@ -14,7 +12,7 @@ public static partial class Console {
     /// </summary>
     public static void RequestAnyInput(ReadOnlySpan<ColoredOutput> output) {
         Write(output);
-        _ = ogConsole.ReadKey();
+        _ = baseConsole.ReadKey();
     }
 
     /// <summary>
@@ -41,7 +39,7 @@ public static partial class Console {
     /// </remarks>
     public static bool Confirm(ReadOnlySpan<ColoredOutput> message, ReadOnlySpan<string> trueValues, bool emptyIsTrue = true) {
         Write(message);
-        var input = ogConsole.ReadLine();
+        var input = baseConsole.ReadLine();
         if (input is null or { Length: 0 }) {
             return emptyIsTrue;
         }

@@ -1,5 +1,3 @@
-using ogConsole = System.Console;
-
 namespace PrettyConsole;
 
 public static partial class Console {
@@ -12,8 +10,8 @@ public static partial class Console {
     /// <param name="background">background color</param>
     /// <typeparam name="T"></typeparam>
     /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
-    public static void Write<T>(T item, ConsoleColor foreground = UnknownColor,
-        ConsoleColor background = UnknownColor) where T : ISpanFormattable
+    public static void Write<T>(T item, ConsoleColor foreground = Color.DefaultForegroundColor,
+        ConsoleColor background = Color.DefaultBackgroundColor) where T : ISpanFormattable
         => Write(item, foreground, background, ReadOnlySpan<char>.Empty, null);
 
     /// <summary>
@@ -31,15 +29,15 @@ public static partial class Console {
         ConsoleColor background, ReadOnlySpan<char> format, IFormatProvider? formatProvider)
     where T : ISpanFormattable {
         const int bufferSize = 50;
-        using var memoryOwner = Helper.ObtainMemory(bufferSize);
+        using var memoryOwner = Utils.ObtainMemory(bufferSize);
         var span = memoryOwner.Memory.Span;
         if (!item.TryFormat(span, out int charsWritten, format, formatProvider)) {
             throw new ArgumentException($"Formatted item length > {bufferSize}, please use a different overload", nameof(item));
         }
         ResetColors();
-        ogConsole.ForegroundColor = foreground;
-        ogConsole.BackgroundColor = background;
-        ogConsole.Out.Write(span.Slice(0, charsWritten));
+        baseConsole.ForegroundColor = foreground;
+        baseConsole.BackgroundColor = background;
+        Out.Write(span.Slice(0, charsWritten));
         ResetColors();
     }
 
@@ -52,9 +50,9 @@ public static partial class Console {
     /// </remarks>
     public static void Write(ColoredOutput output) {
         ResetColors();
-        ogConsole.ForegroundColor = output.ForegroundColor;
-        ogConsole.BackgroundColor = output.BackgroundColor;
-        ogConsole.Write(output.Value);
+        baseConsole.ForegroundColor = output.ForegroundColor;
+        baseConsole.BackgroundColor = output.BackgroundColor;
+        Out.Write(output.Value);
         ResetColors();
     }
 
@@ -89,9 +87,9 @@ public static partial class Console {
     /// </remarks>
     public static void WriteError(ColoredOutput output) {
         ResetColors();
-        ogConsole.ForegroundColor = output.ForegroundColor;
-        ogConsole.BackgroundColor = output.BackgroundColor;
-        ogConsole.Error.Write(output.Value);
+        baseConsole.ForegroundColor = output.ForegroundColor;
+        baseConsole.BackgroundColor = output.BackgroundColor;
+        Error.Write(output.Value);
         ResetColors();
     }
 

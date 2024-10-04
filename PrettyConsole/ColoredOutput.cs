@@ -5,8 +5,8 @@ namespace PrettyConsole;
 /// </summary>
 public readonly record struct ColoredOutput(
     string Value,
-    ConsoleColor ForegroundColor = Console.UnknownColor,
-    ConsoleColor BackgroundColor = Console.UnknownColor) {
+    ConsoleColor ForegroundColor = Color.DefaultForegroundColor,
+    ConsoleColor BackgroundColor = Color.DefaultBackgroundColor) {
     /// <summary>
 	/// Implicitly converts a string to a <see cref="ColoredOutput"/> with default colors.
 	/// </summary>

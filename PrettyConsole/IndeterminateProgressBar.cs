@@ -1,8 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-using ogConsole = System.Console;
-
 namespace PrettyConsole;
 
 public static partial class Console {
@@ -27,7 +25,7 @@ public static partial class Console {
         /// <summary>
         /// Gets or sets the foreground color of the progress bar.
         /// </summary>
-        public ConsoleColor ForegroundColor { get; set; } = Console.UnknownColor;
+        public ConsoleColor ForegroundColor { get; set; } = Color.DefaultForegroundColor;
 
         /// <summary>
         /// Gets or sets a value indicating whether to display the elapsed time in the progress bar.
@@ -45,7 +43,7 @@ public static partial class Console {
         /// Represents an indeterminate progress bar that continuously animates without a specific progress value.
         /// </summary>
         public IndeterminateProgressBar() {
-            _emptyLine = new string(' ', ogConsole.BufferWidth);
+            _emptyLine = new string(' ', baseConsole.BufferWidth);
         }
 
         /// <summary>
@@ -76,31 +74,32 @@ public static partial class Console {
             }
 
             ResetColors();
-            var originalColor = ogConsole.ForegroundColor;
+            var originalColor = baseConsole.ForegroundColor;
             var startTime = Stopwatch.GetTimestamp();
-            var lineNum = ogConsole.CursorTop;
+            var lineNum = baseConsole.CursorTop;
 
-            using var memoryOwner = Helper.ObtainMemory(20);
+            using var memoryOwner = Utils.ObtainMemory(20);
 
             while (!task.IsCompleted) {
                 // Await until the TaskAwaiter informs of completion
                 foreach (var c in Twirl) {
                     // Cycle through the characters of twirl
-                    ogConsole.ForegroundColor = ForegroundColor;
-                    ogConsole.Error.Write(c);
-                    ogConsole.ForegroundColor = originalColor;
+                    baseConsole.ForegroundColor = ForegroundColor;
+                    Error.Write(c);
+                    baseConsole.ForegroundColor = originalColor;
                     if (DisplayElapsedTime) {
                         var elapsed = Stopwatch.GetElapsedTime(startTime);
-                        ogConsole.Error.Write(' ');
-                        ogConsole.Error.Write(Helper.FormatElapsedTime(elapsed, memoryOwner.Memory.Span));
+                        Error.Write(" [Elapsed: ");
+                        baseConsole.Error.Write(Utils.FormatElapsedTime(elapsed, memoryOwner.Memory.Span));
+                        Error.Write(']');
                     }
 
-                    ogConsole.Error.Write(ExtraBuffer);
+                    Error.Write(ExtraBuffer);
 
-                    ogConsole.SetCursorPosition(0, lineNum);
+                    baseConsole.SetCursorPosition(0, lineNum);
                     await Task.Delay(UpdateRate, token); // The update rate
-                    ogConsole.Error.Write(_emptyLine);
-                    ogConsole.SetCursorPosition(0, lineNum);
+                    Error.Write(_emptyLine);
+                    baseConsole.SetCursorPosition(0, lineNum);
                     if (token.IsCancellationRequested) {
                         return;
                     }

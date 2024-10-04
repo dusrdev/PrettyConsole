@@ -21,12 +21,12 @@ public static partial class Console {
 		/// <summary>
 		/// Gets or sets the foreground color of the progress bar.
 		/// </summary>
-		public ConsoleColor ForegroundColor { get; set; } = UnknownColor;
+		public ConsoleColor ForegroundColor { get; set; } = Color.DefaultForegroundColor;
 
 		/// <summary>
 		/// Gets or sets the color of the progress portion of the bar.
 		/// </summary>
-		public ConsoleColor ProgressColor { get; set; } = UnknownColor;
+		public ConsoleColor ProgressColor { get; set; } = Color.DefaultForegroundColor;
 
         private readonly IMemoryOwner<char> _progressBufferOwner;
 
@@ -43,9 +43,9 @@ public static partial class Console {
 		/// </summary>
 		public ProgressBar() {
             int length = ogConsole.BufferWidth - 10;
-            _progressBufferOwner = Helper.ObtainMemory(length);
+            _progressBufferOwner = Utils.ObtainMemory(length);
 			_progressBuffer = _progressBufferOwner.Memory.Slice(0, length);
-            _percentageBufferOwner = Helper.ObtainMemory(20);
+            _percentageBufferOwner = Utils.ObtainMemory(20);
             _emptyLine = new string(' ', ogConsole.BufferWidth);
 		}
 
@@ -92,7 +92,7 @@ public static partial class Console {
 			ogConsole.Error.Write(empty);
 			ogConsole.ForegroundColor = ForegroundColor;
 			ogConsole.Error.Write("] ");
-			ogConsole.Error.Write(Helper.FormatPercentage(percentage, _percentageBufferOwner.Memory.Span));
+			ogConsole.Error.Write(Utils.FormatPercentage(percentage, _percentageBufferOwner.Memory.Span));
 			ogConsole.SetCursorPosition(0, currentLine);
 			ResetColors();
 		}

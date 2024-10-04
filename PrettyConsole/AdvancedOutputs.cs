@@ -1,7 +1,5 @@
 using System.Runtime.CompilerServices;
 
-using ogConsole = System.Console;
-
 namespace PrettyConsole;
 
 public static partial class Console {
@@ -11,13 +9,13 @@ public static partial class Console {
     /// <param name="output"></param>
     [MethodImpl(MethodImplOptions.Synchronized)]
     public static void OverrideCurrentLine(ReadOnlySpan<ColoredOutput> output) {
-        using var memoryOwner = Helper.ObtainMemory(ogConsole.BufferWidth);
-        Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, ogConsole.BufferWidth);
+        using var memoryOwner = Utils.ObtainMemory(baseConsole.BufferWidth);
+        Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, baseConsole.BufferWidth);
         emptyLine.Fill(' ');
-        var currentLine = ogConsole.CursorTop;
-        ogConsole.SetCursorPosition(0, currentLine);
-        ogConsole.Error.Write(emptyLine);
-        ogConsole.SetCursorPosition(0, currentLine);
+        var currentLine = baseConsole.CursorTop;
+        baseConsole.SetCursorPosition(0, currentLine);
+        Error.Write(emptyLine);
+        baseConsole.SetCursorPosition(0, currentLine);
         WriteError(output);
     }
 
@@ -27,13 +25,13 @@ public static partial class Console {
     // /// <param name="outputs"></param>
     // [MethodImpl(MethodImplOptions.Synchronized)]
     // public static void OverrideLines(ReadOnlySpan<ReadOnlySpan<ColoredOutput>> outputs) {
-    //     using var memoryOwner = Helper.ObtainMemory(ogConsole.BufferWidth);
-    //     Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, ogConsole.BufferWidth);
+    //     using var memoryOwner = Helper.ObtainMemory(baseConsole.BufferWidth);
+    //     Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, baseConsole.BufferWidth);
     //     emptyLine.Fill(' ');
-    //     var currentLine = ogConsole.CursorTop;
-    //     ogConsole.SetCursorPosition(0, currentLine);
-    //     ogConsole.Error.Write(emptyLine);
-    //     ogConsole.SetCursorPosition(0, currentLine);
+    //     var currentLine = baseConsole.CursorTop;
+    //     baseConsole.SetCursorPosition(0, currentLine);
+    //     baseConsole.Error.Write(emptyLine);
+    //     baseConsole.SetCursorPosition(0, currentLine);
     //     WriteError(outputs);
     // }
 
@@ -46,14 +44,14 @@ public static partial class Console {
     /// <param name="delay">Delay in milliseconds between each character.</param>
     public static async Task TypeWrite(ColoredOutput output, int delay = TypeWriteDefaultDelay) {
         ResetColors();
-        ogConsole.ForegroundColor = output.ForegroundColor;
-        ogConsole.BackgroundColor = output.BackgroundColor;
+        baseConsole.ForegroundColor = output.ForegroundColor;
+        baseConsole.BackgroundColor = output.BackgroundColor;
         for (int i = 0; i < output.Value.Length - 1; i++) {
-            ogConsole.Write(output.Value[i]);
+            baseConsole.Write(output.Value[i]);
             await Task.Delay(delay);
         }
 
-        ogConsole.Write(output.Value[output.Value.Length - 1]);
+        baseConsole.Write(output.Value[output.Value.Length - 1]);
         ResetColors();
     }
 

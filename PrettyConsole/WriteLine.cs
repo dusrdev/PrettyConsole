@@ -1,5 +1,3 @@
-using ogConsole = System.Console;
-
 namespace PrettyConsole;
 
 public static partial class Console {
@@ -12,7 +10,7 @@ public static partial class Console {
     /// </remarks>
     public static void WriteLine(ColoredOutput output) {
         Write(output);
-        ogConsole.WriteLine();
+        baseConsole.WriteLine();
     }
 
     /// <summary>
@@ -54,9 +52,9 @@ public static partial class Console {
     /// </remarks>
     public static void WriteLineError(ColoredOutput output) {
         ResetColors();
-        ogConsole.ForegroundColor = output.ForegroundColor;
-        ogConsole.BackgroundColor = output.BackgroundColor;
-        ogConsole.Error.WriteLine(output.Value);
+        baseConsole.ForegroundColor = output.ForegroundColor;
+        baseConsole.BackgroundColor = output.BackgroundColor;
+        Error.WriteLine(output.Value);
         ResetColors();
     }
 

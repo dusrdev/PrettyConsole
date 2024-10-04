@@ -1,7 +1,5 @@
 using System.Buffers;
 
-using ogConsole = System.Console;
-
 namespace PrettyConsole;
 
 public static partial class Console {
@@ -32,14 +30,14 @@ public static partial class Console {
         where TList : IList<string> {
         WriteLine(title);
 
-        Span<char> buffer = stackalloc char[ogConsole.BufferWidth];
+        Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
 
         for (int i = 0; i < choices.Count; i++) {
             (i + 1).TryFormat(buffer, out int numWritten, "  0) ");
-            ogConsole.ForegroundColor = indexForeground;
-            ogConsole.Out.Write(buffer.Slice(0, numWritten));
+            baseConsole.ForegroundColor = indexForeground;
+            Out.Write(buffer.Slice(0, numWritten));
             ResetColors();
-            ogConsole.WriteLine(choices[i]);
+            baseConsole.WriteLine(choices[i]);
         }
 
         NewLine();
@@ -60,7 +58,7 @@ public static partial class Console {
     /// <summary>
     /// Enumerates a list of strings and allows the user to select multiple strings by any order, and uses the default index color (White)
     /// </summary>
-    /// <param name="title"><ogConsole>Optional</ogConsole>, null or whitespace will not be displayed</param>
+    /// <param name="title"><baseConsole>Optional</baseConsole>, null or whitespace will not be displayed</param>
     /// <param name="choices">Any collection of strings</param>
     /// <returns>An array containing any selected choices by order of selection, or empty array if any choice is invalid</returns>
     /// <remarks>
@@ -73,7 +71,7 @@ public static partial class Console {
     /// <summary>
     /// Enumerates a list of strings and allows the user to select multiple strings by any order, and uses the default index color (White)
     /// </summary>
-    /// <param name="title"><ogConsole>Optional</ogConsole>, null or whitespace will not be displayed</param>
+    /// <param name="title"><baseConsole>Optional</baseConsole>, null or whitespace will not be displayed</param>
     /// <param name="indexForeground">The color of the indexes</param>
     /// <param name="choices">Any collection of strings</param>
     /// <returns>An array containing any selected choices by order of selection, or empty array if any choice is invalid</returns>
@@ -84,14 +82,14 @@ public static partial class Console {
         where TList : IList<string> {
         WriteLine(title);
 
-        Span<char> buffer = stackalloc char[ogConsole.BufferWidth];
+        Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
 
         for (int i = 0; i < choices.Count; i++) {
             (i + 1).TryFormat(buffer, out int numWritten, "  0) ");
-            ogConsole.ForegroundColor = indexForeground;
-            ogConsole.Out.Write(buffer.Slice(0, numWritten));
+            baseConsole.ForegroundColor = indexForeground;
+            Out.Write(buffer.Slice(0, numWritten));
             ResetColors();
-            ogConsole.WriteLine(choices[i]);
+            Out.WriteLine(choices[i]);
         }
 
         NewLine();
@@ -128,7 +126,7 @@ public static partial class Console {
     /// This function is great where more options or categories are required than <see cref="Selection{TList}(ReadOnlySpan{ColoredOutput}, ConsoleColor, TList)"/> can provide.
     /// </para>
     /// </summary>
-    /// <param name="title"><ogConsole>Optional</ogConsole>, null or whitespace will not be displayed</param>
+    /// <param name="title"><baseConsole>Optional</baseConsole>, null or whitespace will not be displayed</param>
     /// <param name="menu">A nested dictionary containing menu titles</param>
     /// <returns>The selected main option and selected sub option</returns>
     /// <remarks>
@@ -144,7 +142,7 @@ public static partial class Console {
     /// This function is great where more options or categories are required than <see cref="Selection{TList}(ReadOnlySpan{ColoredOutput}, ConsoleColor, TList)"/> can provide.
     /// </para>
     /// </summary>
-    /// <param name="title"><ogConsole>Optional</ogConsole>, null or whitespace will not be displayed</param>
+    /// <param name="title"><baseConsole>Optional</baseConsole>, null or whitespace will not be displayed</param>
     /// <param name="indexForeground"></param>
     /// <param name="menu">A nested dictionary containing menu titles</param>
     /// <returns>The selected main option and selected sub option</returns>
@@ -160,7 +158,7 @@ public static partial class Console {
         var menuKeys = menu.Keys.ToArray();
         var maxMainOption = menuKeys.Max(static x => x.Length) + 10; // Used to make sub-tree prefix spaces uniform
 
-        Span<char> buffer = stackalloc char[ogConsole.BufferWidth];
+        Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
         Span<char> emptySpaces = stackalloc char[maxMainOption];
         emptySpaces.Fill(' ');
 
@@ -170,23 +168,23 @@ public static partial class Console {
             var subChoices = menu[mainEntry];
             (i + 1).TryFormat(buffer, out int mainIndexWritten, "0) ");
             var mainIndex = buffer.Slice(0, mainIndexWritten);
-            ogConsole.ForegroundColor = indexForeground;
-            ogConsole.Out.Write(mainIndex);
+            baseConsole.ForegroundColor = indexForeground;
+            Out.Write(mainIndex);
             ResetColors();
             // Find a way to pad to a buffer
-            ogConsole.Write(mainEntry);
+            Out.Write(mainEntry);
             var remainingLength = maxMainOption - mainIndex.Length - mainEntry.Length;
-            ogConsole.Out.Write(emptySpaces.Slice(0, remainingLength));
+            Out.Write(emptySpaces.Slice(0, remainingLength));
             for (int j = 0; j < subChoices.Count; j++) {
                 if (j is not 0) {
-                    ogConsole.Out.Write(emptySpaces);
+                    Out.Write(emptySpaces);
                 }
 
                 (j + 1).TryFormat(buffer, out int numWritten, "0) ");
-                ogConsole.ForegroundColor = indexForeground;
-                ogConsole.Out.Write(buffer.Slice(0, numWritten));
+                baseConsole.ForegroundColor = indexForeground;
+                Out.Write(buffer.Slice(0, numWritten));
                 ResetColors();
-                ogConsole.WriteLine(subChoices[j]);
+                Out.WriteLine(subChoices[j]);
             }
 
             NewLine();
@@ -256,18 +254,18 @@ public static partial class Console {
             scoped Span<char> rowSeparation = stackalloc char[header.Length];
             rowSeparation.Fill(rowSeparator);
 
-            ogConsole.WriteLine(header);
-            ogConsole.Out.WriteLine(rowSeparation);
+            Out.WriteLine(header);
+            Out.WriteLine(rowSeparation);
             for (int row = 0; row < height; row++) {
                 for (int i = 0; i < columnsLength; i++) {
                     arrayToReturn[i] = columns[i][row].PadRight(lengths[i]);
                 }
 
                 var line = string.Join(columnSeparator, arrayToReturn, 0, columnsLength);
-                ogConsole.WriteLine(line);
+                Out.WriteLine(line);
             }
 
-            ogConsole.Out.WriteLine(rowSeparation);
+            Out.WriteLine(rowSeparation);
         } finally {
             ArrayPool<string>.Shared.Return(arrayToReturn);
         }
