@@ -33,7 +33,7 @@ public readonly partial record struct Color {
 		}
 	}
 
-	private static ConsoleColor ColorAttributeToConsoleColor(Kernel32.Color c) {
+	internal static ConsoleColor ColorAttributeToConsoleColor(Kernel32.Color c) {
 		// Turn background colors into foreground colors.
 		if ((c & Kernel32.Color.BackgroundMask) != 0) {
 			c = (Kernel32.Color)(((int)c) >> 4);
@@ -41,7 +41,7 @@ public readonly partial record struct Color {
 		return (ConsoleColor)c;
 	}
 
-	private static class Kernel32 {
+	internal static class Kernel32 {
 		[StructLayout(LayoutKind.Sequential)]
 		internal struct CONSOLE_SCREEN_BUFFER_INFO {
 			internal COORD dwSize;
