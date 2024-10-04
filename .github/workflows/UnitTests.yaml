@@ -53,7 +53,7 @@ jobs:
 
       # 4. Restore dependencies
       - name: Restore Dependencies
-        run: dotnet restore ${{ env.PROJECT_PATH }} --configuration ${{ matrix.configuration }}
+        run: dotnet restore ${{ env.PROJECT_PATH }}
 
       # 5. Build the application
       - name: Build Application
@@ -61,4 +61,4 @@ jobs:
 
       # 6. Run unit tests
       - name: Run Unit Tests
-        run: dotnet test ${{ env.PROJECT_PATH }} -c ${{ matrix.configuration }} --verbosity normal
+        run: dotnet test ${{ env.PROJECT_PATH }} -c ${{ matrix.configuration }}
