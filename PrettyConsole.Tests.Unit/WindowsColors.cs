@@ -2,7 +2,7 @@ using static PrettyConsole.Color;
 
 namespace PrettyConsole.Tests.Unit;
 
-#if OS_WINDOWS
+#if Windows
 public class WindowsColors {
     [Fact]
     public void SetColorsToDefaults() {

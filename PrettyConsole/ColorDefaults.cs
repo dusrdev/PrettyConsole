@@ -14,7 +14,7 @@ public readonly partial record struct Color {
 	/// </summary>
 	public static readonly ConsoleColor DefaultBackgroundColor;
 
-#if !OS_WINDOWS
+#if !Windows
 	static Color() {
 		const ConsoleColor unknown = (ConsoleColor)(-1);
 		DefaultForegroundColor = unknown;
