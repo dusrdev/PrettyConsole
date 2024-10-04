@@ -17,7 +17,7 @@
         <PublishRespositoryUrl>true</PublishRespositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
         <PackageReadmeFile>CHANGELOG.md</PackageReadmeFile>
 		<AotCompatible>true</AotCompatible>
 	</PropertyGroup>
