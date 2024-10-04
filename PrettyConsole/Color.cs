@@ -1,9 +1,15 @@
 // ReSharper disable InconsistentNaming
+using System.Runtime.Versioning;
+
 namespace PrettyConsole;
 
 /// <summary>
 /// Represents a color used for console output.
 /// </summary>
+[UnsupportedOSPlatform("android")]
+[UnsupportedOSPlatform("browser")]
+[UnsupportedOSPlatform("ios")]
+[UnsupportedOSPlatform("tvos")]
 public readonly partial record struct Color(ConsoleColor ConsoleColor) {
 	/// <summary>
 	/// Implicitly converts a <see cref="Color"/> to a <see cref="ConsoleColor"/>.
@@ -20,13 +26,13 @@ public readonly partial record struct Color(ConsoleColor ConsoleColor) {
 	/// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
 	public static ColoredOutput operator *(string value, Color color) => new(value, color, DefaultBackgroundColor);
 
-    /// <summary>
-    /// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
-    /// </summary>
-    /// <param name="value">The string value to combine with the color.</param>
-    /// <param name="color">The color to apply to the string value.</param>
-    /// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
-    public static ColoredOutput operator /(string value, Color color) => new(value, DefaultForegroundColor, color);
+	/// <summary>
+	/// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
+	/// </summary>
+	/// <param name="value">The string value to combine with the color.</param>
+	/// <param name="color">The color to apply to the string value.</param>
+	/// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
+	public static ColoredOutput operator /(string value, Color color) => new(value, DefaultForegroundColor, color);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color black.

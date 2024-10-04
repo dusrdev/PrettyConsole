@@ -2,6 +2,26 @@ namespace PrettyConsole;
 
 public static partial class Console {
     /// <summary>
+    /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer
+    /// </summary>
+    /// <param name="item"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
+    public static void Write<T>(T item) where T : ISpanFormattable
+        => Write(item, Color.DefaultForegroundColor, Color.DefaultBackgroundColor, ReadOnlySpan<char>.Empty, null);
+
+    /// <summary>
+    /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer,
+    /// in the same color convention as ColoredOutput
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="foreground">foreground color</param>
+    /// <typeparam name="T"></typeparam>
+    /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
+    public static void Write<T>(T item, ConsoleColor foreground) where T : ISpanFormattable
+        => Write(item, foreground, Color.DefaultBackgroundColor, ReadOnlySpan<char>.Empty, null);
+
+    /// <summary>
     /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer,
     /// in the same color convention as ColoredOutput
     /// </summary>
@@ -10,8 +30,8 @@ public static partial class Console {
     /// <param name="background">background color</param>
     /// <typeparam name="T"></typeparam>
     /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
-    public static void Write<T>(T item, ConsoleColor foreground = Color.DefaultForegroundColor,
-        ConsoleColor background = Color.DefaultBackgroundColor) where T : ISpanFormattable
+    public static void Write<T>(T item, ConsoleColor foreground,
+        ConsoleColor background) where T : ISpanFormattable
         => Write(item, foreground, background, ReadOnlySpan<char>.Empty, null);
 
     /// <summary>
