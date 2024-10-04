@@ -36,7 +36,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. Cache NuGet packages to speed up build times
+      # 2. Cache NuGet packages
       - name: Cache NuGet Packages
         uses: actions/cache@v4
         with:
@@ -45,20 +45,30 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      # 3. Setup the .NET Core SDK
-      - name: Setup .NET Core SDK
+      # 3. Setup .NET
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      # 4. Restore dependencies
+      # 4. Clean
+      - name: Clean
+        run: |
+          dotnet clean ${{ env.PROJECT_PATH }} -c ${{ matrix.configuration }}
+          dotnet clean ${{ env.TEST_PROJECT_PATH }} -c ${{ matrix.configuration }}
+
+      # 5. Restore dependencies
       - name: Restore Dependencies
-        run: dotnet restore ${{ env.PROJECT_PATH }}
+        run:  |
+          dotnet restore ${{ env.PROJECT_PATH }}
+          dotnet restore ${{ env.TEST_PROJECT_PATH }}
 
-      # 5. Build the application
-      - name: Build Application
-        run: dotnet build ${{ env.PROJECT_PATH }} -c ${{ matrix.configuration }}
+      # 6. Build
+      - name: Build
+        run: |
+          dotnet build ${{ env.PROJECT_PATH }} -c ${{ matrix.configuration }}
+          dotnet build ${{ env.TEST_PROJECT_PATH }} -c ${{ matrix.configuration }}
 
-      # 6. Run unit tests
+      # 7. Run Unit Tests
       - name: Run Unit Tests
-        run: dotnet test ${{ env.PROJECT_PATH }} -c ${{ matrix.configuration }}
+        run: dotnet test ${{ env.TEST_PROJECT_PATH }} -c ${{ matrix.configuration }}
