@@ -25,6 +25,11 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]  # Corrected comma separation
         configuration: [Debug, Release]
+
+    env:
+      # Define the path to your project and test project
+      PROJECT_PATH: src/MyApp/MyApp.csproj
+      TEST_PROJECT_PATH: tests/MyApp.Tests/MyApp.Tests.csproj # replace
         
     steps:
     # 1. Checkout the repository code
@@ -48,12 +53,12 @@ jobs:
 
       # 4. Restore dependencies
       - name: Restore Dependencies
-        run: dotnet restore --configuration ${{ matrix.configuration }}
+        run: dotnet restore ${{ env.PROJECT_PATH }} --configuration ${{ matrix.configuration }}
 
       # 5. Build the application
       - name: Build Application
-        run: dotnet build -c ${{ matrix.configuration }}
+        run: dotnet build ${{ env.PROJECT_PATH }} -c ${{ matrix.configuration }}
 
       # 6. Run unit tests
       - name: Run Unit Tests
-        run: dotnet test -c ${{ matrix.configuration }} --verbosity normal
+        run: dotnet test ${{ env.PROJECT_PATH }} -c ${{ matrix.configuration }} --verbosity normal
