@@ -23,16 +23,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]  # Corrected comma separation
+        os: [ubuntu-latest, windows-latest, macos-latest]
         configuration: [Debug, Release]
 
     env:
-      # Define the path to your project and test project
-      PROJECT_PATH: src/MyApp/MyApp.csproj
-      TEST_PROJECT_PATH: tests/MyApp.Tests/MyApp.Tests.csproj # replace
+      # Define the path to project and test project
+      PROJECT_PATH: PrettyConsole/PrettyConsole.csproj
+      TEST_PROJECT_PATH: PrettyConsole.Tests.Unit/PrettyConsole.Tests.Unit.csproj
 
     steps:
-    # 1. Checkout the repository code
+      # 1. Checkout the repository code
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -49,7 +49,7 @@ jobs:
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x  # Specify your target .NET version
+          dotnet-version: 8.0.x
 
       # 4. Restore dependencies
       - name: Restore Dependencies
