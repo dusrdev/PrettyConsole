@@ -79,11 +79,6 @@ public static partial class Console {
     /// <summary>
     /// Write a number of <see cref="ColoredOutput"/> to the console
     /// </summary>
-    public static void Write(params ColoredOutput[] outputs) => Write(new ReadOnlySpan<ColoredOutput>(outputs));
-
-    /// <summary>
-    /// Write a number of <see cref="ColoredOutput"/> to the console
-    /// </summary>
     public static void Write(ReadOnlySpan<ColoredOutput> outputs) {
         if (outputs.Length is 0) {
             return;

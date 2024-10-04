@@ -10,7 +10,7 @@ public static partial class Console {
     /// </remarks>
     public static void WriteLine(ColoredOutput output) {
         Write(output);
-        baseConsole.WriteLine();
+        Out.WriteLine();
     }
 
     /// <summary>
