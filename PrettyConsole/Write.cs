@@ -44,7 +44,7 @@ public static partial class Console {
     /// <param name="format">item format</param>
     /// <param name="formatProvider">format provider</param>
     /// <typeparam name="T"></typeparam>
-    /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
+    /// <exception cref="ArgumentException">If the result of formatted item length is > 50 characters</exception>
     public static void Write<T>(T item, ConsoleColor foreground,
         ConsoleColor background, ReadOnlySpan<char> format, IFormatProvider? formatProvider)
     where T : ISpanFormattable {
@@ -54,10 +54,21 @@ public static partial class Console {
         if (!item.TryFormat(span, out int charsWritten, format, formatProvider)) {
             throw new ArgumentException($"Formatted item length > {bufferSize}, please use a different overload", nameof(item));
         }
+        Write(span.Slice(0, charsWritten), foreground, background);
+    }
+
+    /// <summary>
+    /// Writes a <see cref="ReadOnlySpan{Char}"/> without boxing directly to the output writer,
+    /// in the same color convention as ColoredOutput
+    /// </summary>
+    /// <param name="span"></param>
+    /// <param name="foreground">foreground color</param>
+    /// <param name="background">background color</param>
+    public static void Write(ReadOnlySpan<char> span, ConsoleColor foreground, ConsoleColor background) {
         ResetColors();
         baseConsole.ForegroundColor = foreground;
         baseConsole.BackgroundColor = background;
-        Out.Write(span.Slice(0, charsWritten));
+        Out.Write(span);
         ResetColors();
     }
 
@@ -123,5 +134,39 @@ public static partial class Console {
                 WriteError(output);
             }
         }
+    }
+
+    /// <summary>
+    /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer,
+    /// in the same color convention as ColoredOutput
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="foreground">foreground color</param>
+    /// <param name="background">background color</param>
+    /// <typeparam name="T"></typeparam>
+    /// <exception cref="ArgumentException">If the result of formatted item length is > 50 characters</exception>
+    public static void WriteError<T>(T item, ConsoleColor foreground, ConsoleColor background) where T : ISpanFormattable {
+        const int bufferSize = 50;
+        using var memoryOwner = Utils.ObtainMemory(bufferSize);
+        var span = memoryOwner.Memory.Span;
+        if (!item.TryFormat(span, out int charsWritten, ReadOnlySpan<char>.Empty, null)) {
+            throw new ArgumentException($"Formatted item length > {bufferSize}, please use a different overload", nameof(item));
+        }
+        WriteError(span.Slice(0, charsWritten), foreground, background);
+    }
+
+    /// <summary>
+    /// Writes a <see cref="ReadOnlySpan{Char}"/> without boxing directly to the output writer,
+    /// in the same color convention as ColoredOutput
+    /// </summary>
+    /// <param name="span"></param>
+    /// <param name="foreground">foreground color</param>
+    /// <param name="background">background color</param>
+    public static void WriteError(ReadOnlySpan<char> span, ConsoleColor foreground, ConsoleColor background) {
+        ResetColors();
+        baseConsole.ForegroundColor = foreground;
+        baseConsole.BackgroundColor = background;
+        Error.Write(span);
+        ResetColors();
     }
 }
