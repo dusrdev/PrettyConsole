@@ -90,7 +90,7 @@ public static partial class Console {
                     if (DisplayElapsedTime) {
                         var elapsed = Stopwatch.GetElapsedTime(startTime);
                         Error.Write(" [Elapsed: ");
-                        baseConsole.Error.Write(Utils.FormatElapsedTime(elapsed, memoryOwner.Memory.Span));
+                        baseConsole.Error.Write(Sharpify.Utils.DateAndTime.FormatTimeSpan(elapsed, memoryOwner.Memory.Span));
                         Error.Write(']');
                     }
 
