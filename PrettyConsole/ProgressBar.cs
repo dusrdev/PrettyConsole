@@ -1,8 +1,6 @@
 ﻿using System.Buffers;
 using System.Runtime.CompilerServices;
 
-using ogConsole = System.Console;
-
 namespace PrettyConsole;
 
 public static partial class Console {
@@ -42,11 +40,11 @@ public static partial class Console {
 		/// Represents a progress bar that can be displayed in the console.
 		/// </summary>
 		public ProgressBar() {
-            int length = ogConsole.BufferWidth - 10;
+            int length = baseConsole.BufferWidth - 10;
             _progressBufferOwner = Utils.ObtainMemory(length);
 			_progressBuffer = _progressBufferOwner.Memory.Slice(0, length);
             _percentageBufferOwner = Utils.ObtainMemory(20);
-            _emptyLine = new string(' ', ogConsole.BufferWidth);
+            _emptyLine = new string(' ', baseConsole.BufferWidth);
 		}
 
 		/// <summary>
@@ -70,30 +68,30 @@ public static partial class Console {
 		/// <param name="header">The header text to be displayed above the progress bar.</param>
 		public void Update(double percentage, ReadOnlySpan<char> header) {
 			ResetColors();
-			ogConsole.ForegroundColor = ForegroundColor;
-			var currentLine = ogConsole.CursorTop;
-			ogConsole.SetCursorPosition(0, currentLine);
-			ogConsole.Error.WriteLine(_emptyLine);
-			ogConsole.Error.WriteLine(_emptyLine);
-			ogConsole.SetCursorPosition(0, currentLine);
+			baseConsole.ForegroundColor = ForegroundColor;
+			var currentLine = baseConsole.CursorTop;
+			baseConsole.SetCursorPosition(0, currentLine);
+			baseConsole.Error.WriteLine(_emptyLine);
+			baseConsole.Error.WriteLine(_emptyLine);
+			baseConsole.SetCursorPosition(0, currentLine);
 			if (header.Length is not 0) {
-				ogConsole.Error.WriteLine(header);
+				baseConsole.Error.WriteLine(header);
 			}
 
-			ogConsole.Error.Write('[');
+			baseConsole.Error.Write('[');
 			var p = (int)(_progressBuffer.Length * percentage * 0.01);
-			ogConsole.ForegroundColor = ProgressColor;
+			baseConsole.ForegroundColor = ProgressColor;
 			Span<char> span = _progressBuffer.Span;
 			Span<char> full = span.Slice(0, p);
 			full.Fill(ProgressChar);
 			Span<char> empty = span.Slice(p);
 			empty.Fill(' ');
-			ogConsole.Error.Write(full);
-			ogConsole.Error.Write(empty);
-			ogConsole.ForegroundColor = ForegroundColor;
-			ogConsole.Error.Write("] ");
-			ogConsole.Error.Write(Utils.FormatPercentage(percentage, _percentageBufferOwner.Memory.Span));
-			ogConsole.SetCursorPosition(0, currentLine);
+			baseConsole.Error.Write(full);
+			baseConsole.Error.Write(empty);
+			baseConsole.ForegroundColor = ForegroundColor;
+			baseConsole.Error.Write("] ");
+			baseConsole.Error.Write(Utils.FormatPercentage(percentage, _percentageBufferOwner.Memory.Span));
+			baseConsole.SetCursorPosition(0, currentLine);
 			ResetColors();
 		}
 
