@@ -17,23 +17,8 @@ public static partial class Console {
         Error.Write(emptyLine);
         baseConsole.SetCursorPosition(0, currentLine);
         WriteError(output);
+        baseConsole.SetCursorPosition(0, currentLine);
     }
-
-    // /// <summary>
-    // /// Clears the current line and overrides it with <paramref name="outputs"/>
-    // /// </summary>
-    // /// <param name="outputs"></param>
-    // [MethodImpl(MethodImplOptions.Synchronized)]
-    // public static void OverrideLines(ReadOnlySpan<ReadOnlySpan<ColoredOutput>> outputs) {
-    //     using var memoryOwner = Helper.ObtainMemory(baseConsole.BufferWidth);
-    //     Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, baseConsole.BufferWidth);
-    //     emptyLine.Fill(' ');
-    //     var currentLine = baseConsole.CursorTop;
-    //     baseConsole.SetCursorPosition(0, currentLine);
-    //     baseConsole.Error.Write(emptyLine);
-    //     baseConsole.SetCursorPosition(0, currentLine);
-    //     WriteError(outputs);
-    // }
 
     private const int TypeWriteDefaultDelay = 200;
 
