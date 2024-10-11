@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Authors>David Shnayder</Authors>
 		<Title>PrettyConsole</Title>
 		<Description>High performance, feature rich and easy to use wrap over System.Console</Description>
@@ -17,7 +16,6 @@
 		<PublishRespositoryUrl>true</PublishRespositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 		<PackageReadmeFile>CHANGELOG.md</PackageReadmeFile>
 		<AotCompatible>true</AotCompatible>
 	</PropertyGroup>

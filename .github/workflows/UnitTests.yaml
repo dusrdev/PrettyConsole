@@ -1,10 +1,7 @@
 name: Unit Tests
 
 on:
-  push:
-    branches: [ "Future" ]
   pull_request:
-    branches: [ "Future" ]
   workflow_dispatch:  # Allows the workflow to be triggered manually
 
 jobs:
