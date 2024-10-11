@@ -1,10 +1,12 @@
 using System.Buffers;
 
+using Sharpify.Collections;
+
 namespace PrettyConsole;
 
 public static partial class Console {
     /// <summary>
-    /// Enumerates a list of strings and allows the user to select one by number, and uses the default index color (White)
+    /// Enumerates a list of strings and allows the user to select one by number
     /// </summary>
     /// <param name="title"/>
     /// <param name="choices">Any collection of strings</param>
@@ -13,31 +15,18 @@ public static partial class Console {
     /// This validates the input for you.
     /// </remarks>
     public static string Selection<TList>(ReadOnlySpan<ColoredOutput> title, TList choices)
-        where TList : IList<string>
-        => Selection(title, ConsoleColor.White, choices);
-
-    /// <summary>
-    /// Enumerates a list of strings and allows the user to select one by number
-    /// </summary>
-    /// <param name="title"/>
-    /// <param name="indexForeground"></param>
-    /// <param name="choices">Any collection of strings</param>
-    /// <returns>The selected string, or empty if the choice was invalid.</returns>
-    /// <remarks>
-    /// This validates the input for you.
-    /// </remarks>
-    public static string Selection<TList>(ReadOnlySpan<ColoredOutput> title, ConsoleColor indexForeground, TList choices)
         where TList : IList<string> {
         WriteLine(title);
 
         Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
 
         for (int i = 0; i < choices.Count; i++) {
-            (i + 1).TryFormat(buffer, out int numWritten, "  0) ");
-            baseConsole.ForegroundColor = indexForeground;
-            Out.Write(buffer.Slice(0, numWritten));
-            ResetColors();
-            baseConsole.WriteLine(choices[i]);
+            var builder = StringBuffer.Create(buffer);
+            builder.Append("  ");
+            builder.Append(i + 1);
+            builder.Append(") ");
+            builder.Append(choices[i]);
+            Out.WriteLine(builder.WrittenSpan);
         }
 
         NewLine();
@@ -48,7 +37,7 @@ public static partial class Console {
 
         selected--;
 
-        if (selected < 0 || selected >= choices.Count) {
+        if ((uint)selected >= choices.Count) {
             return "";
         }
 
@@ -65,31 +54,18 @@ public static partial class Console {
     /// This validates the input for you.
     /// </remarks>
     public static string[] MultiSelection<TList>(ReadOnlySpan<ColoredOutput> title, TList choices)
-        where TList : IList<string>
-        => MultiSelection(title, ConsoleColor.White, choices);
-
-    /// <summary>
-    /// Enumerates a list of strings and allows the user to select multiple strings by any order, and uses the default index color (White)
-    /// </summary>
-    /// <param name="title"><baseConsole>Optional</baseConsole>, null or whitespace will not be displayed</param>
-    /// <param name="indexForeground">The color of the indexes</param>
-    /// <param name="choices">Any collection of strings</param>
-    /// <returns>An array containing any selected choices by order of selection, or empty array if any choice is invalid</returns>
-    /// <remarks>
-    /// This validates the input for you.
-    /// </remarks>
-    public static string[] MultiSelection<TList>(ReadOnlySpan<ColoredOutput> title, ConsoleColor indexForeground, TList choices)
         where TList : IList<string> {
         WriteLine(title);
 
         Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
 
         for (int i = 0; i < choices.Count; i++) {
-            (i + 1).TryFormat(buffer, out int numWritten, "  0) ");
-            baseConsole.ForegroundColor = indexForeground;
-            Out.Write(buffer.Slice(0, numWritten));
-            ResetColors();
-            Out.WriteLine(choices[i]);
+            var builder = StringBuffer.Create(buffer);
+            builder.Append("  ");
+            builder.Append(i + 1);
+            builder.Append(") ");
+            builder.Append(choices[i]);
+            Out.WriteLine(builder.WrittenSpan);
         }
 
         NewLine();
@@ -97,20 +73,20 @@ public static partial class Console {
         var input = ReadLine(["Enter your choices separated with spaces: "]);
 
         if (string.IsNullOrWhiteSpace(input)) {
-            return Array.Empty<string>();
+            return [];
         }
 
         var entries = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         if (entries.Length is 0) {
-            return Array.Empty<string>();
+            return [];
         }
 
         var arr = new string[entries.Length];
         for (int i = 0; i < arr.Length; i++) {
             var entry = entries[i];
             if (!int.TryParse(entry, out var selected) || selected < 1 || selected > choices.Count) {
-                return Array.Empty<string>();
+                return [];
             }
 
             selected--;
@@ -121,36 +97,18 @@ public static partial class Console {
     }
 
     /// <summary>
-    /// Enumerates a menu containing main option as well as sub options and allows the user to select both. Uses the default index color (White)
-    /// <para>
-    /// This function is great where more options or categories are required than <see cref="Selection{TList}(ReadOnlySpan{ColoredOutput}, ConsoleColor, TList)"/> can provide.
-    /// </para>
-    /// </summary>
-    /// <param name="title"><baseConsole>Optional</baseConsole>, null or whitespace will not be displayed</param>
-    /// <param name="menu">A nested dictionary containing menu titles</param>
-    /// <returns>The selected main option and selected sub option</returns>
-    /// <remarks>
-    /// This validates the input for you.
-    /// </remarks>
-    public static (string option, string subOption) TreeMenu<TList>(ReadOnlySpan<ColoredOutput> title,
-        Dictionary<string, TList> menu) where TList : IList<string>
-        => TreeMenu(title, ConsoleColor.White, menu);
-
-    /// <summary>
     /// Enumerates a menu containing main option as well as sub options and allows the user to select both.
     /// <para>
-    /// This function is great where more options or categories are required than <see cref="Selection{TList}(ReadOnlySpan{ColoredOutput}, ConsoleColor, TList)"/> can provide.
+    /// This function is great where more options or categories are required than <see cref="Selection{TList}(ReadOnlySpan{ColoredOutput}, TList)"/> can provide.
     /// </para>
     /// </summary>
     /// <param name="title"><baseConsole>Optional</baseConsole>, null or whitespace will not be displayed</param>
-    /// <param name="indexForeground"></param>
     /// <param name="menu">A nested dictionary containing menu titles</param>
     /// <returns>The selected main option and selected sub option</returns>
     /// <remarks>
     /// This validates the input for you.
     /// </remarks>
     public static (string option, string subOption) TreeMenu<TList>(ReadOnlySpan<ColoredOutput> title,
-        ConsoleColor indexForeground,
         Dictionary<string, TList> menu) where TList : IList<string> {
         WriteLine(title);
         NewLine();
@@ -166,25 +124,25 @@ public static partial class Console {
         for (int i = 0; i < menuKeys.Length; i++) {
             var mainEntry = menuKeys[i];
             var subChoices = menu[mainEntry];
-            (i + 1).TryFormat(buffer, out int mainIndexWritten, "0) ");
-            var mainIndex = buffer.Slice(0, mainIndexWritten);
-            baseConsole.ForegroundColor = indexForeground;
-            Out.Write(mainIndex);
-            ResetColors();
-            // Find a way to pad to a buffer
-            Out.Write(mainEntry);
-            var remainingLength = maxMainOption - mainIndex.Length - mainEntry.Length;
-            Out.Write(emptySpaces.Slice(0, remainingLength));
+            var builder = StringBuffer.Create(buffer);
+            builder.Append("  ");
+            builder.Append(i + 1);
+            builder.Append(") ");
+            builder.Append(mainEntry);
+            var remainingLength = maxMainOption - builder.Position;
+            builder.Append(emptySpaces.Slice(0, remainingLength));
+            Out.Write(builder.WrittenSpan);
             for (int j = 0; j < subChoices.Count; j++) {
                 if (j is not 0) {
                     Out.Write(emptySpaces);
                 }
 
-                (j + 1).TryFormat(buffer, out int numWritten, "0) ");
-                baseConsole.ForegroundColor = indexForeground;
-                Out.Write(buffer.Slice(0, numWritten));
-                ResetColors();
-                Out.WriteLine(subChoices[j]);
+                builder = StringBuffer.Create(buffer);
+                builder.Append("  ");
+                builder.Append(j + 1);
+                builder.Append(") ");
+                builder.Append(subChoices[j]);
+                Out.WriteLine(builder.WrittenSpan);
             }
 
             NewLine();

@@ -12,7 +12,7 @@ public sealed class TreeMenuTest : IPrettyConsoleTest {
             { "Option 3", ["Option 3.1", "Option 3.2", "Option 3.3"] }
         };
 
-        var (main, sub) = TreeMenu("Select an option", options);
+        var (main, sub) = TreeMenu(["Select an option"], options);
         WriteLine($"Selected: ({main}, {sub})");
     }
 }

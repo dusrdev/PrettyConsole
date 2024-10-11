@@ -34,7 +34,9 @@ public static partial class Console {
 
 		private readonly string _emptyLine;
 
-        private bool _disposed;
+		private int _currentProgress = 0;
+
+        private volatile bool _disposed;
 
 		/// <summary>
 		/// Represents a progress bar that can be displayed in the console.
@@ -43,6 +45,7 @@ public static partial class Console {
             int length = baseConsole.BufferWidth - 10;
             _progressBufferOwner = Utils.ObtainMemory(length);
 			_progressBuffer = _progressBufferOwner.Memory.Slice(0, length);
+			_progressBuffer.Span.Fill(' ');
             _percentageBufferOwner = Utils.ObtainMemory(20);
             _emptyLine = new string(' ', baseConsole.BufferWidth);
 		}
@@ -71,26 +74,28 @@ public static partial class Console {
 			baseConsole.ForegroundColor = ForegroundColor;
 			var currentLine = baseConsole.CursorTop;
 			baseConsole.SetCursorPosition(0, currentLine);
-			baseConsole.Error.WriteLine(_emptyLine);
-			baseConsole.Error.WriteLine(_emptyLine);
+			Error.WriteLine(_emptyLine);
+			Error.WriteLine(_emptyLine);
 			baseConsole.SetCursorPosition(0, currentLine);
 			if (header.Length is not 0) {
-				baseConsole.Error.WriteLine(header);
+				Error.WriteLine(header);
 			}
 
-			baseConsole.Error.Write('[');
+			Error.Write('[');
 			var p = (int)(_progressBuffer.Length * percentage * 0.01);
 			baseConsole.ForegroundColor = ProgressColor;
 			Span<char> span = _progressBuffer.Span;
-			Span<char> full = span.Slice(0, p);
+			Span<char> full = span.Slice(_currentProgress, p);
 			full.Fill(ProgressChar);
-			Span<char> empty = span.Slice(p);
-			empty.Fill(' ');
-			baseConsole.Error.Write(full);
-			baseConsole.Error.Write(empty);
+			_currentProgress = p;
+			// Span<char> empty = span.Slice(p);
+			// empty.Fill(' ');
+			// Error.Write(full);
+			// Error.Write(empty);
+			Error.Write(span);
 			baseConsole.ForegroundColor = ForegroundColor;
-			baseConsole.Error.Write("] ");
-			baseConsole.Error.Write(Utils.FormatPercentage(percentage, _percentageBufferOwner.Memory.Span));
+			Error.Write("] ");
+			Error.Write(Utils.FormatPercentage(percentage, _percentageBufferOwner.Memory.Span));
 			baseConsole.SetCursorPosition(0, currentLine);
 			ResetColors();
 		}
@@ -99,12 +104,12 @@ public static partial class Console {
         /// Releases the resources held by this object
         /// </summary>
         public void Dispose() {
-            if (Volatile.Read(ref _disposed)) {
+            if (_disposed) {
                 return;
             }
             _progressBufferOwner.Dispose();
             _percentageBufferOwner.Dispose();
-            Volatile.Write(ref _disposed, true);
+            _disposed = true;
             GC.SuppressFinalize(this);
         }
     }

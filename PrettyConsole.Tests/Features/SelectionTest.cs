@@ -12,7 +12,7 @@ public sealed class SelectionTest : IPrettyConsoleTest {
             "Option 3"
         ];
 
-        var selected = Selection("Select an option", options);
+        var selected = Selection(["Select an option"], options);
         WriteLine($"Selected: {selected}");
     }
 }

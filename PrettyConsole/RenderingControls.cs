@@ -56,8 +56,24 @@ public static partial class Console {
     public static void NewLine() => Out.WriteLine();
 
     /// <summary>
-    /// Reset the colors of the console output
+    /// Used to end current line or write an empty one, depends whether the current line has any text
     /// </summary>
+    /// <remarks>
+    /// This is the error console version of <see cref="NewLine"/>
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void NewLineError() => Error.WriteLine();
+
+    /// <summary>
+    /// Sets the colors of the console output
+    /// </summary>
+    public static void SetColors(ConsoleColor foreground, ConsoleColor background) {
+        baseConsole.ForegroundColor = foreground;
+        baseConsole.BackgroundColor = background;
+    }
+
+    /// <summary>
+    /// Resets the colors of the console output
+    /// </summary>
     public static void ResetColors() => baseConsole.ResetColor();
 }

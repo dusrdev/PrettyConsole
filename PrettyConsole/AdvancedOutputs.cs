@@ -28,15 +28,13 @@ public static partial class Console {
     /// <param name="output"></param>
     /// <param name="delay">Delay in milliseconds between each character.</param>
     public static async Task TypeWrite(ColoredOutput output, int delay = TypeWriteDefaultDelay) {
-        ResetColors();
-        baseConsole.ForegroundColor = output.ForegroundColor;
-        baseConsole.BackgroundColor = output.BackgroundColor;
+        SetColors(output.ForegroundColor, output.BackgroundColor);
         for (int i = 0; i < output.Value.Length - 1; i++) {
-            baseConsole.Write(output.Value[i]);
+            Out.Write(output.Value[i]);
             await Task.Delay(delay);
         }
 
-        baseConsole.Write(output.Value[output.Value.Length - 1]);
+        Out.Write(output.Value[output.Value.Length - 1]);
         ResetColors();
     }
 
