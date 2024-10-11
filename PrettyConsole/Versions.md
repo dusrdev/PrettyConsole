@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v3.0.0 - Alpha
+## v3.0.0 - RC1
 
 * Removed `Write` and `WriteLine` overloads that contains multiple `ColoredOutput`s, when using the overload with `ReadOnlySpan<ColoredOutput>` and `CollectionExpression`, the compiler generates an inline array to hold the elements, this is very efficient, and the reduced complexity allows usage of multiple `ColoredOutput`s in more places.
 * All overloads of all functions that previously took only one `ColoredOutput` now take a `ReadOnlySpan<ColoredOutput>` instead, as noted it will use an inline array, and the internal implementation also has fast paths for size 1.
@@ -19,6 +19,7 @@
   * You can also refer them when you want to use the defaults for any reason.
 * The base methods which are used for outputting `ReadOnlySpan<ColoredOutput>` have been re-written to reduce assembly instructions, leading to about 15-20% runtime improvements across the board, and reducing by the binary size by a few bytes too lol.
 * `Console` and `Color` now have the correct attributes to disallow compilation on unsupported platforms, if anyone tries to use them now (even thought it should've been obvious that they shouldn't be used on unsupported platforms), it should display the right message at build time.
+* Removed all overloads that have options to change the input colors, it invites non-streamlined usage, and just increases the code complexity to maintain. Without them the code is simpler and more performant.
 
 ## v2.1.1
 
