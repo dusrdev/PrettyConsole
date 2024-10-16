@@ -1,10 +1,16 @@
 // ReSharper disable InconsistentNaming
+using System.Runtime.Versioning;
+
 namespace PrettyConsole;
 
 /// <summary>
 /// Represents a color used for console output.
 /// </summary>
-public readonly record struct Color(ConsoleColor ConsoleColor) {
+[UnsupportedOSPlatform("android")]
+[UnsupportedOSPlatform("browser")]
+[UnsupportedOSPlatform("ios")]
+[UnsupportedOSPlatform("tvos")]
+public readonly partial record struct Color(ConsoleColor ConsoleColor) {
 	/// <summary>
 	/// Implicitly converts a <see cref="Color"/> to a <see cref="ConsoleColor"/>.
 	/// </summary>
@@ -18,20 +24,15 @@ public readonly record struct Color(ConsoleColor ConsoleColor) {
 	/// <param name="value">The string value to combine with the color.</param>
 	/// <param name="color">The color to apply to the string value.</param>
 	/// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
-	public static ColoredOutput operator *(string value, Color color) => new(value, color, Unknown);
-
-    /// <summary>
-    /// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
-    /// </summary>
-    /// <param name="value">The string value to combine with the color.</param>
-    /// <param name="color">The color to apply to the string value.</param>
-    /// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
-    public static ColoredOutput operator /(string value, Color color) => new(value, Unknown, color);
+	public static ColoredOutput operator *(string value, Color color) => new(value, color, DefaultBackgroundColor);
 
 	/// <summary>
-	/// Gets a <see cref="Color"/> object representing the color unknown (the default color).
+	/// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
 	/// </summary>
-	public static readonly Color Unknown = new(Console.UnknownColor);
+	/// <param name="value">The string value to combine with the color.</param>
+	/// <param name="color">The color to apply to the string value.</param>
+	/// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
+	public static ColoredOutput operator /(string value, Color color) => new(value, DefaultForegroundColor, color);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color black.
@@ -112,9 +113,4 @@ public readonly record struct Color(ConsoleColor ConsoleColor) {
 	/// Gets a <see cref="Color"/> object representing the color white.
 	/// </summary>
 	public static readonly Color White = new(ConsoleColor.White);
-
-	/// <summary>
-	/// Gets a <see cref="Color"/> object representing the default color.
-	/// </summary>
-	public static Color Default => Unknown;
 }

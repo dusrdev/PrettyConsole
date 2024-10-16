@@ -1,51 +1,88 @@
 using System.Runtime.CompilerServices;
 
-using ogConsole = System.Console;
-
 namespace PrettyConsole;
 
 public static partial class Console {
     /// <summary>
-    /// Represents a color that was configured as the default of the shell
-    /// </summary>
-    public const ConsoleColor UnknownColor = (ConsoleColor)(-1);
-
-    /// <summary>
-    /// Clears the next <paramref name="lines"/>
+    /// Clears the next <paramref name="lines"/> (regular output)
     /// </summary>
     /// <param name="lines">Amount of lines to clear</param>
     /// <remarks>
     /// Useful for clearing output of overriding functions, like the ProgressBar
     /// </remarks>
+    public static void ClearNextLines(int lines) => ClearNextLines(lines, Out);
+
+    /// <summary>
+    /// Clears the next <paramref name="lines"/> (regular output)
+    /// </summary>
+    /// <param name="lines">Amount of lines to clear</param>
+    /// <remarks>
+    /// Useful for clearing output of overriding functions, like the ProgressBar
+    /// </remarks>
+    public static void ClearNextLinesError(int lines) => ClearNextLines(lines, Error);
+
+    /// <summary>
+    /// Clears the next <paramref name="lines"/>
+    /// </summary>
+    /// <param name="lines">Amount of lines to clear</param>
+    /// <param name="writer"></param>
+    /// <remarks>
+    /// Useful for clearing output of overriding functions, like the ProgressBar
+    /// </remarks>
     [MethodImpl(MethodImplOptions.Synchronized)]
-    public static void ClearNextLines(int lines) {
+    private static void ClearNextLines(int lines, TextWriter writer) {
         ResetColors();
-        using var memoryOwner = Helper.ObtainMemory(ogConsole.BufferWidth);
-        Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, ogConsole.BufferWidth);
-        emptyLine.Fill(' ');
-        var currentLine = ogConsole.CursorTop;
-        ogConsole.SetCursorPosition(0, currentLine);
+        ReadOnlySpan<char> emptyLine = WhiteSpace.AsSpan(0, baseConsole.BufferWidth);
+        var currentLine = GetCurrentLine();
         for (int i = 0; i < lines; i++) {
-            ogConsole.Out.WriteLine(emptyLine);
+            writer.WriteLine(emptyLine);
         }
-        ogConsole.SetCursorPosition(0, currentLine);
+        GoToLine(currentLine);
     }
 
     /// <summary>
     /// Used to clear all previous outputs to the console
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Clear() => ogConsole.Clear();
+    public static void Clear() => baseConsole.Clear();
 
     /// <summary>
     /// Used to end current line or write an empty one, depends whether the current line has any text
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void NewLine() => ogConsole.WriteLine();
+    public static void NewLine() => Out.WriteLine();
 
     /// <summary>
-    /// Reset the colors of the console output
+    /// Used to end current line or write an empty one, depends whether the current line has any text
     /// </summary>
+    /// <remarks>
+    /// This is the error console version of <see cref="NewLine"/>
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ResetColors() => ogConsole.ResetColor();
+    public static void NewLineError() => Error.WriteLine();
+
+    /// <summary>
+    /// Sets the colors of the console output
+    /// </summary>
+    public static void SetColors(ConsoleColor foreground, ConsoleColor background) {
+        baseConsole.ForegroundColor = foreground;
+        baseConsole.BackgroundColor = background;
+    }
+
+    /// <summary>
+    /// Resets the colors of the console output
+    /// </summary>
+    public static void ResetColors() => baseConsole.ResetColor();
+
+    /// <summary>
+    /// Gets the current line number
+    /// </summary>
+    /// <returns></returns>
+    public static int GetCurrentLine() => baseConsole.CursorTop;
+
+    /// <summary>
+    /// Moves the cursor to the specified line
+    /// </summary>
+    /// <param name="line"></param>
+    public static void GoToLine(int line) => baseConsole.SetCursorPosition(0, line);
 }

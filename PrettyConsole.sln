@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrettyConsole", "PrettyCons
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrettyConsole.Tests", "PrettyConsole.Tests\PrettyConsole.Tests.csproj", "{128CE278-869A-4896-8977-1A588FFD6A15}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrettyConsole.Tests.Unit", "PrettyConsole.Tests.Unit\PrettyConsole.Tests.Unit.csproj", "{202848E2-F4F8-4DEE-904D-AF610CF30765}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{128CE278-869A-4896-8977-1A588FFD6A15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{128CE278-869A-4896-8977-1A588FFD6A15}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{128CE278-869A-4896-8977-1A588FFD6A15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{202848E2-F4F8-4DEE-904D-AF610CF30765}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{202848E2-F4F8-4DEE-904D-AF610CF30765}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{202848E2-F4F8-4DEE-904D-AF610CF30765}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{202848E2-F4F8-4DEE-904D-AF610CF30765}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

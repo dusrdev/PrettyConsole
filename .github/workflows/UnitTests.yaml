@@ -1,0 +1,57 @@
+name: Unit Tests
+
+on:
+  pull_request:
+  workflow_dispatch:  # Allows the workflow to be triggered manually
+
+jobs:
+
+  run-tests:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        configuration: [Debug, Release]
+
+    env:
+      # Define the path to project and test project
+      PROJECT_PATH: PrettyConsole/PrettyConsole.csproj
+      TEST_PROJECT_PATH: PrettyConsole.Tests.Unit/PrettyConsole.Tests.Unit.csproj
+
+    steps:
+      # 1. Checkout the repository code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Cache NuGet packages
+      - name: Cache NuGet Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # 3. Setup .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # 4. Clean
+      - name: Clean
+        run: |
+          dotnet clean ${{ env.PROJECT_PATH }} -c ${{ matrix.configuration }}
+          dotnet clean ${{ env.TEST_PROJECT_PATH }} -c ${{ matrix.configuration }}
+
+      # 5. Restore dependencies
+      - name: Restore Dependencies
+        run:  |
+          dotnet restore ${{ env.PROJECT_PATH }}
+          dotnet restore ${{ env.TEST_PROJECT_PATH }}
+
+      # 6. Run Unit Tests
+      - name: Run Unit Tests
+        run: dotnet test ${{ env.TEST_PROJECT_PATH }} -c ${{ matrix.configuration }}

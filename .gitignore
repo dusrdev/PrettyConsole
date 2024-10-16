@@ -367,5 +367,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/.editorconfig
 .vscode/c_cpp_properties.json

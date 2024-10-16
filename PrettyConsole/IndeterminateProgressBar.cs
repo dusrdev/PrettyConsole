@@ -1,8 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-using ogConsole = System.Console;
-
 namespace PrettyConsole;
 
 public static partial class Console {
@@ -27,7 +25,7 @@ public static partial class Console {
         /// <summary>
         /// Gets or sets the foreground color of the progress bar.
         /// </summary>
-        public ConsoleColor ForegroundColor { get; set; } = Console.UnknownColor;
+        public ConsoleColor ForegroundColor { get; set; } = Color.DefaultForegroundColor;
 
         /// <summary>
         /// Gets or sets a value indicating whether to display the elapsed time in the progress bar.
@@ -38,14 +36,15 @@ public static partial class Console {
         /// Gets or sets the update rate (in ms) of the indeterminate progress bar.
         /// </summary>
         public int UpdateRate { get; set; } = 50;
-
-        private readonly string _emptyLine;
+        private readonly ReadOnlyMemory<char> _emptyLine;
+        private readonly char[] _buffer;
 
         /// <summary>
         /// Represents an indeterminate progress bar that continuously animates without a specific progress value.
         /// </summary>
         public IndeterminateProgressBar() {
-            _emptyLine = new string(' ', ogConsole.BufferWidth);
+            _emptyLine = WhiteSpace.AsMemory(0, baseConsole.BufferWidth);
+            _buffer = new char[20];
         }
 
         /// <summary>
@@ -54,8 +53,18 @@ public static partial class Console {
         /// <param name="task"></param>
         /// <param name="token"></param>
         /// <returns>The output of the running task</returns>
-        public async Task<T> RunAsync<T>(Task<T> task, CancellationToken token = default) {
-            await RunAsyncNonGeneric(task, token);
+        public async Task<T> RunAsync<T>(Task<T> task, CancellationToken token = default)
+            => await RunAsync(task, "", token);
+
+        /// <summary>
+        /// Runs the indeterminate progress bar while the specified task is running.
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="header">The header which to display before the progress char</param>
+        /// <param name="token"></param>
+        /// <returns>The output of the running task</returns>
+        public async Task<T> RunAsync<T>(Task<T> task, string header, CancellationToken token = default) {
+            await RunAsyncNonGeneric(task, header, token);
 
             return task.IsCompleted ? task.Result : await task;
         }
@@ -66,7 +75,17 @@ public static partial class Console {
         /// <param name="task"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task RunAsync(Task task, CancellationToken token = default) {
+        public async Task RunAsync(Task task, CancellationToken token = default)
+            => await RunAsync(task, "", token);
+
+        /// <summary>
+        /// Runs the indeterminate progress bar while the specified task is running.
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="header">The header which to display before the progress char</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task RunAsync(Task task, string header, CancellationToken token = default) {
             try {
                 if (task.Status is not TaskStatus.Running) {
                     task.Start();
@@ -76,31 +95,34 @@ public static partial class Console {
             }
 
             ResetColors();
-            var originalColor = ogConsole.ForegroundColor;
+            var originalColor = baseConsole.ForegroundColor;
             var startTime = Stopwatch.GetTimestamp();
-            var lineNum = ogConsole.CursorTop;
+            var lineNum = GetCurrentLine();
 
-            using var memoryOwner = Helper.ObtainMemory(20);
-
-            while (!task.IsCompleted) {
+            while (!task.IsCompleted && !token.IsCancellationRequested) {
                 // Await until the TaskAwaiter informs of completion
                 foreach (var c in Twirl) {
-                    // Cycle through the characters of twirl
-                    ogConsole.ForegroundColor = ForegroundColor;
-                    ogConsole.Write(c);
-                    ogConsole.ForegroundColor = originalColor;
-                    if (DisplayElapsedTime) {
-                        var elapsed = Stopwatch.GetElapsedTime(startTime);
-                        ogConsole.Write(' ');
-                        ogConsole.Out.Write(Helper.FormatElapsedTime(elapsed, memoryOwner.Memory.Span));
+                    if (header.Length > 0) {
+                        Error.Write(header);
+                        Error.Write(' ');
                     }
 
-                    ogConsole.Write(ExtraBuffer);
+                    // Cycle through the characters of twirl
+                    baseConsole.ForegroundColor = ForegroundColor;
+                    Error.Write(c);
+                    baseConsole.ForegroundColor = originalColor;
+                    if (DisplayElapsedTime) {
+                        var elapsed = Stopwatch.GetElapsedTime(startTime);
+                        Error.Write(" [Elapsed: ");
+                        Error.Write(Sharpify.Utils.DateAndTime.FormatTimeSpan(elapsed, _buffer));
+                        Error.Write(']');
+                    }
 
-                    ogConsole.SetCursorPosition(0, lineNum);
+                    Error.Write(ExtraBuffer);
+                    GoToLine(lineNum);
                     await Task.Delay(UpdateRate, token); // The update rate
-                    ogConsole.Write(_emptyLine);
-                    ogConsole.SetCursorPosition(0, lineNum);
+                    Error.Write(_emptyLine.Span);
+                    GoToLine(lineNum);
                     if (token.IsCancellationRequested) {
                         return;
                     }
@@ -111,6 +133,6 @@ public static partial class Console {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Task RunAsyncNonGeneric(Task task, CancellationToken token) => RunAsync(task, token);
+        private Task RunAsyncNonGeneric(Task task, string header, CancellationToken token) => RunAsync(task, header, token);
     }
 }

@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Authors>David Shnayder</Authors>
 		<Title>PrettyConsole</Title>
 		<Description>High performance, feature rich and easy to use wrap over System.Console</Description>
@@ -12,24 +11,30 @@
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>2.1.1</Version>
+		<Version>3.0.0-rc.2</Version>
 		<Nullable>enable</Nullable>
-        <PublishRespositoryUrl>true</PublishRespositoryUrl>
+		<PublishRespositoryUrl>true</PublishRespositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-        <PackageReadmeFile>CHANGELOG.md</PackageReadmeFile>
+		<PackageReadmeFile>CHANGELOG.md</PackageReadmeFile>
 		<AotCompatible>true</AotCompatible>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="\"/>
-		<None Include="CHANGELOG.md" Pack="true" PackagePath="\"/>
-        <None Include="Versions.md" Pack="true" PackagePath="\" />
+		<None Include="README.md" Pack="true" PackagePath="\" />
+		<None Include="CHANGELOG.md" Pack="true" PackagePath="\" />
+		<None Include="Versions.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+		<PackageReference Include="Sharpify" Version="2.4.0-alpha" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>PrettyConsole.Tests.Unit</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
 
 </Project>

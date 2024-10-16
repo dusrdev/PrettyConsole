@@ -5,14 +5,14 @@ namespace PrettyConsole.Tests;
 public interface IPrettyConsoleTest {
     string FeatureName { get; }
 
-    void Implementation();
+    ValueTask Implementation();
 
-    public void Render() {
-        WriteLine("Test: ", FeatureName * Color.Black / Color.White);
+    public async ValueTask Render() {
+        WriteLine(["Test: ", FeatureName * Color.Black / Color.White]);
         NewLine();
-        Implementation();
+        await Implementation();
         NewLine();
-        RequestAnyInput("Press any key to continue to next feature..." * Color.Green);
+        RequestAnyInput(["Press any key to continue to next feature..." * Color.Green]);
         NewLine();
     }
 }

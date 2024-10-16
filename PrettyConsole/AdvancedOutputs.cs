@@ -1,4 +1,4 @@
-using ogConsole = System.Console;
+using System.Runtime.CompilerServices;
 
 namespace PrettyConsole;
 
@@ -7,15 +7,15 @@ public static partial class Console {
     /// Clears the current line and overrides it with <paramref name="output"/>
     /// </summary>
     /// <param name="output"></param>
-    public static void OverrideCurrentLine(ColoredOutput output) {
-        using var memoryOwner = Helper.ObtainMemory(ogConsole.BufferWidth);
-        Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, ogConsole.BufferWidth);
-        emptyLine.Fill(' ');
-        var currentLine = ogConsole.CursorTop;
-        ogConsole.SetCursorPosition(0, currentLine);
-        ogConsole.Out.Write(emptyLine);
-        ogConsole.SetCursorPosition(0, currentLine);
-        Write(output);
+    [MethodImpl(MethodImplOptions.Synchronized)]
+    public static void OverrideCurrentLine(ReadOnlySpan<ColoredOutput> output) {
+        ReadOnlySpan<char> emptyLine = WhiteSpace.AsSpan(0, baseConsole.BufferWidth);
+        var currentLine = GetCurrentLine();
+        GoToLine(currentLine);
+        Error.Write(emptyLine);
+        GoToLine(currentLine);
+        WriteError(output);
+        GoToLine(currentLine);
     }
 
     private const int TypeWriteDefaultDelay = 200;
@@ -26,15 +26,13 @@ public static partial class Console {
     /// <param name="output"></param>
     /// <param name="delay">Delay in milliseconds between each character.</param>
     public static async Task TypeWrite(ColoredOutput output, int delay = TypeWriteDefaultDelay) {
-        ResetColors();
-        ogConsole.ForegroundColor = output.ForegroundColor;
-        ogConsole.BackgroundColor = output.BackgroundColor;
+        SetColors(output.ForegroundColor, output.BackgroundColor);
         for (int i = 0; i < output.Value.Length - 1; i++) {
-            ogConsole.Write(output.Value[i]);
+            Out.Write(output.Value[i]);
             await Task.Delay(delay);
         }
 
-        ogConsole.Write(output.Value[output.Value.Length - 1]);
+        Out.Write(output.Value[output.Value.Length - 1]);
         ResetColors();
     }
 

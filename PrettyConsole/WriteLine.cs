@@ -1,5 +1,3 @@
-using ogConsole = System.Console;
-
 namespace PrettyConsole;
 
 public static partial class Console {
@@ -12,84 +10,8 @@ public static partial class Console {
     /// </remarks>
     public static void WriteLine(ColoredOutput output) {
         Write(output);
-        ogConsole.WriteLine();
+        NewLine();
     }
-
-    /// <summary>
-    /// WriteLine a number of <see cref="ColoredOutput"/> to the console
-    /// </summary>
-    /// <remarks>
-    /// In overloads of WriteLine with multiple <see cref="ColoredOutput"/> parameters, only the last <see cref="ColoredOutput"/> will end the line.
-    /// </remarks>
-    public static void WriteLine(ColoredOutput output1, ColoredOutput output2) {
-        Write(output1);
-        WriteLine(output2);
-    }
-
-    /// <summary>
-    /// WriteLine a number of <see cref="ColoredOutput"/> to the console
-    /// </summary>
-    /// <remarks>
-    /// In overloads of WriteLine with multiple <see cref="ColoredOutput"/> parameters, only the last <see cref="ColoredOutput"/> will end the line.
-    /// </remarks>
-    public static void WriteLine(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3) {
-        Write(output1);
-        Write(output2);
-        WriteLine(output3);
-    }
-
-    /// <summary>
-    /// Write a number of <see cref="ColoredOutput"/> to the console
-    /// </summary>
-    /// <remarks>
-    /// In overloads of WriteLine with multiple <see cref="ColoredOutput"/> parameters, only the last <see cref="ColoredOutput"/> will end the line.
-    /// </remarks>
-    public static void WriteLine(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3,
-        ColoredOutput output4) {
-        Write(output1);
-        Write(output2);
-        Write(output3);
-        WriteLine(output4);
-    }
-
-    /// <summary>
-    /// WriteLine a number of <see cref="ColoredOutput"/> to the console
-    /// </summary>
-    /// <remarks>
-    /// In overloads of WriteLine with multiple <see cref="ColoredOutput"/> parameters, only the last <see cref="ColoredOutput"/> will end the line.
-    /// </remarks>
-    public static void WriteLine(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3,
-        ColoredOutput output4, ColoredOutput output5) {
-        Write(output1);
-        Write(output2);
-        Write(output3);
-        Write(output4);
-        WriteLine(output5);
-    }
-
-    /// <summary>
-    /// WriteLine a number of <see cref="ColoredOutput"/> to the console
-    /// </summary>
-    /// <remarks>
-    /// In overloads of WriteLine with multiple <see cref="ColoredOutput"/> parameters, only the last <see cref="ColoredOutput"/> will end the line.
-    /// </remarks>
-    public static void WriteLine(ColoredOutput output1, ColoredOutput output2, ColoredOutput output3,
-        ColoredOutput output4, ColoredOutput output5, ColoredOutput output6) {
-        Write(output1);
-        Write(output2);
-        Write(output3);
-        Write(output4);
-        Write(output5);
-        WriteLine(output6);
-    }
-
-    /// <summary>
-    /// WriteLine a number of <see cref="ColoredOutput"/> to the console
-    /// </summary>
-    /// <remarks>
-    /// In overloads of WriteLine with multiple <see cref="ColoredOutput"/> parameters, only the last <see cref="ColoredOutput"/> will end the line.
-    /// </remarks>
-    public static void WriteLine(params ColoredOutput[] outputs) => WriteLine(new ReadOnlySpan<ColoredOutput>(outputs));
 
     /// <summary>
     /// WriteLine a number of <see cref="ColoredOutput"/> to the console
@@ -102,16 +24,8 @@ public static partial class Console {
             return;
         }
 
-        if (outputs.Length is 1) {
-            WriteLine(outputs[0]);
-            return;
-        }
-
-        for (int i = 0; i < outputs.Length - 1; i++) {
-            Write(outputs[i]);
-        }
-
-        WriteLine(outputs[outputs.Length - 1]);
+        Write(outputs);
+        NewLine();
     }
 
     /// <summary>
@@ -122,10 +36,22 @@ public static partial class Console {
     /// To end line, use <see cref="WriteError(ColoredOutput)"/>
     /// </remarks>
     public static void WriteLineError(ColoredOutput output) {
-        ResetColors();
-        ogConsole.ForegroundColor = output.ForegroundColor;
-        ogConsole.BackgroundColor = output.BackgroundColor;
-        ogConsole.Error.WriteLine(output.Value);
-        ResetColors();
+        WriteError(output);
+        NewLineError();
+    }
+
+    /// <summary>
+    /// WriteLine a number of <see cref="ColoredOutput"/> to the console
+    /// </summary>
+    /// <remarks>
+    /// In overloads of WriteLine with multiple <see cref="ColoredOutput"/> parameters, only the last <see cref="ColoredOutput"/> will end the line.
+    /// </remarks>
+    public static void WriteLineError(ReadOnlySpan<ColoredOutput> outputs) {
+        if (outputs.Length is 0) {
+            return;
+        }
+
+        WriteError(outputs);
+        NewLineError();
     }
 }
