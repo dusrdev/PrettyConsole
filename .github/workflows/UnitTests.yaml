@@ -52,12 +52,6 @@ jobs:
           dotnet restore ${{ env.PROJECT_PATH }}
           dotnet restore ${{ env.TEST_PROJECT_PATH }}
 
-      # 6. Build
-      - name: Build
-        run: |
-          dotnet build ${{ env.PROJECT_PATH }} -c ${{ matrix.configuration }}
-          dotnet build ${{ env.TEST_PROJECT_PATH }} -c ${{ matrix.configuration }}
-
-      # 7. Run Unit Tests
+      # 6. Run Unit Tests
       - name: Run Unit Tests
         run: dotnet test ${{ env.TEST_PROJECT_PATH }} -c ${{ matrix.configuration }}
