@@ -97,9 +97,11 @@ NewLine(); // outputs a new line
 NewLineError(); // outputs a new line for the error stream
 SetColors(ConsoleColor foreground, ConsoleColor background); // sets the colors of the console output
 ResetColors(); // resets the colors of the console output
+int GetCurrentLine(); // returns the current line number
+GoToLine(int line); // moves the cursor to the specified line
 ```
 
-Combining `ClearNextLines` with `System.Console.SetCursorPosition` will enable you to efficiently use the same space in the console for continuous output, such as progress outputting, for some cases there are also built-in methods for this, more on that later.
+Combining `ClearNextLines` with `GoToLine` will enable you to efficiently use the same space in the console for continuous output, such as progress outputting, for some cases there are also built-in methods for this, more on that later.
 
 ### Advanced Outputs
 
@@ -138,7 +140,7 @@ There are two types of progress bars here, they both are implemented using a cla
 ```csharp
 var prg = new IndeterminateProgressBar(); // this setups the internal states
 // Then you need to provide either a Task or Task</T>, the progress bar binds to it and runs until the task completes
-await prg.RunAsync(task, cancellationToken);
+await prg.RunAsync(task, "Running...", cancellationToken); // There are also overloads without header
 // if the task is not started before being passed to the progress bar, it will be started automatically
 // It is even better this way to synchronize the runtime of the progress bar with the task
 ```
@@ -149,7 +151,7 @@ await prg.RunAsync(task, cancellationToken);
 
 ```csharp
 // ProgressBar implements IDisposable
-using var prg = new ProgressBar();
+var prg = new ProgressBar();
 // then on each time the progress percentage is actually changed, you call Update
 Update(percentage, ReadOnlySpan<char> header);
 // There are also overloads without header, and percentage can be either int or double (0-100)
