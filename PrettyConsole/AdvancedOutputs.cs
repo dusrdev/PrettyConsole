@@ -9,15 +9,13 @@ public static partial class Console {
     /// <param name="output"></param>
     [MethodImpl(MethodImplOptions.Synchronized)]
     public static void OverrideCurrentLine(ReadOnlySpan<ColoredOutput> output) {
-        using var memoryOwner = Utils.ObtainMemory(baseConsole.BufferWidth);
-        Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, baseConsole.BufferWidth);
-        emptyLine.Fill(' ');
-        var currentLine = baseConsole.CursorTop;
-        baseConsole.SetCursorPosition(0, currentLine);
+        ReadOnlySpan<char> emptyLine = WhiteSpace.AsSpan(0, baseConsole.BufferWidth);
+        var currentLine = GetCurrentLine();
+        GoToLine(currentLine);
         Error.Write(emptyLine);
-        baseConsole.SetCursorPosition(0, currentLine);
+        GoToLine(currentLine);
         WriteError(output);
-        baseConsole.SetCursorPosition(0, currentLine);
+        GoToLine(currentLine);
     }
 
     private const int TypeWriteDefaultDelay = 200;

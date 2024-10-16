@@ -97,7 +97,7 @@ public static partial class Console {
             ResetColors();
             var originalColor = baseConsole.ForegroundColor;
             var startTime = Stopwatch.GetTimestamp();
-            var lineNum = baseConsole.CursorTop;
+            var lineNum = GetCurrentLine();
 
             while (!task.IsCompleted && !token.IsCancellationRequested) {
                 // Await until the TaskAwaiter informs of completion
@@ -119,11 +119,10 @@ public static partial class Console {
                     }
 
                     Error.Write(ExtraBuffer);
-
-                    baseConsole.SetCursorPosition(0, lineNum);
+                    GoToLine(lineNum);
                     await Task.Delay(UpdateRate, token); // The update rate
                     Error.Write(_emptyLine.Span);
-                    baseConsole.SetCursorPosition(0, lineNum);
+                    GoToLine(lineNum);
                     if (token.IsCancellationRequested) {
                         return;
                     }

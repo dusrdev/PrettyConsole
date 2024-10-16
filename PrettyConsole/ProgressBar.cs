@@ -66,11 +66,11 @@ public static partial class Console {
 		public void Update(double percentage, ReadOnlySpan<char> header) {
 			ResetColors();
 			baseConsole.ForegroundColor = ForegroundColor;
-			var currentLine = baseConsole.CursorTop;
-			baseConsole.SetCursorPosition(0, currentLine);
+			var currentLine = GetCurrentLine();
+			GoToLine(currentLine);
 			Error.WriteLine(_emptyLine.Span);
 			Error.WriteLine(_emptyLine.Span);
-			baseConsole.SetCursorPosition(0, currentLine);
+			GoToLine(currentLine);
 			if (header.Length is not 0) {
 				Error.WriteLine(header);
 			}
@@ -87,7 +87,7 @@ public static partial class Console {
 			baseConsole.ForegroundColor = ForegroundColor;
 			Error.Write("] ");
 			Error.Write(Utils.FormatPercentage(percentage, _percentageBuffer));
-			baseConsole.SetCursorPosition(0, currentLine);
+			GoToLine(currentLine);
 			ResetColors();
 		}
     }
