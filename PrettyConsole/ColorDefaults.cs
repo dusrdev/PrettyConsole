@@ -1,6 +1,3 @@
-// ReSharper disable InconsistentNaming
-using System.Runtime.InteropServices;
-
 namespace PrettyConsole;
 
 public readonly partial record struct Color {
@@ -15,13 +12,6 @@ public readonly partial record struct Color {
 	public static readonly ConsoleColor DefaultBackgroundColor;
 
 	static Color() {
-		if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-			const ConsoleColor unknown = (ConsoleColor)(-1);
-			DefaultForegroundColor = unknown;
-			DefaultBackgroundColor = unknown;
-			return;
-		}
-
 		baseConsole.ResetColor();
 		DefaultForegroundColor = baseConsole.ForegroundColor;
 		DefaultBackgroundColor = baseConsole.BackgroundColor;
