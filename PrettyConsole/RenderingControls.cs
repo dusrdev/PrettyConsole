@@ -32,15 +32,12 @@ public static partial class Console {
     [MethodImpl(MethodImplOptions.Synchronized)]
     private static void ClearNextLines(int lines, TextWriter writer) {
         ResetColors();
-        using var memoryOwner = Utils.ObtainMemory(baseConsole.BufferWidth);
-        Span<char> emptyLine = memoryOwner.Memory.Span.Slice(0, baseConsole.BufferWidth);
-        emptyLine.Fill(' ');
-        var currentLine = baseConsole.CursorTop;
-        baseConsole.SetCursorPosition(0, currentLine);
+        ReadOnlySpan<char> emptyLine = WhiteSpace.AsSpan(0, baseConsole.BufferWidth);
+        var currentLine = GetCurrentLine();
         for (int i = 0; i < lines; i++) {
             writer.WriteLine(emptyLine);
         }
-        baseConsole.SetCursorPosition(0, currentLine);
+        GoToLine(currentLine);
     }
 
     /// <summary>
@@ -76,4 +73,16 @@ public static partial class Console {
     /// Resets the colors of the console output
     /// </summary>
     public static void ResetColors() => baseConsole.ResetColor();
+
+    /// <summary>
+    /// Gets the current line number
+    /// </summary>
+    /// <returns></returns>
+    public static int GetCurrentLine() => baseConsole.CursorTop;
+
+    /// <summary>
+    /// Moves the cursor to the specified line
+    /// </summary>
+    /// <param name="line"></param>
+    public static void GoToLine(int line) => baseConsole.SetCursorPosition(0, line);
 }
