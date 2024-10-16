@@ -1,5 +1,7 @@
 using System.Buffers;
 
+using Sharpify.Collections;
+
 namespace PrettyConsole;
 
 /// <summary>
@@ -13,8 +15,20 @@ internal static class Utils {
     /// <param name="buffer"></param>
     /// <returns></returns>
     internal static ReadOnlySpan<char> FormatPercentage(double percentage, Span<char> buffer) {
-        percentage.TryFormat(buffer, out int bytesWritten, "0,5:##0.##%");
-        return buffer.Slice(0, bytesWritten);
+        const int length = 5;
+        var rounded = Math.Round(percentage, 2);
+        var builder = StringBuffer.Create(buffer);
+        builder.Append(rounded);
+        if (builder.Position is length) {
+            return buffer.Slice(0, length);
+        }
+        var padding = length - builder.Position;
+        builder = StringBuffer.Create(buffer);
+        while (padding-- > 0) {
+            builder.Append(' ');
+        }
+        builder.Append(rounded);
+        return builder.WrittenSpan;
     }
 
     /// <summary>
