@@ -20,8 +20,8 @@ public readonly record struct ColoredOutput(string Value, ConsoleColor Foregroun
 	/// Creates a new instance of <see cref="ColoredOutput"/> with default background color
 	/// </summary>
 	/// <param name="value"></param>
-	/// <param name="ForegroundColor"></param>
-	public ColoredOutput(string value, ConsoleColor ForegroundColor) : this(value, ForegroundColor, Color.DefaultBackgroundColor) { }
+	/// <param name="foregroundColor"></param>
+	public ColoredOutput(string value, ConsoleColor foregroundColor) : this(value, foregroundColor, Color.DefaultBackgroundColor) { }
 
 	/// <summary>
 	/// Implicitly converts a string to a <see cref="ColoredOutput"/> with default colors.

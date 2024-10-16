@@ -44,11 +44,11 @@ public static partial class Console {
     /// <param name="format">item format</param>
     /// <param name="formatProvider">format provider</param>
     /// <typeparam name="T"></typeparam>
-    /// <exception cref="ArgumentException">If the result of formatted item length is > 50 characters</exception>
+    /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
     public static void Write<T>(T item, ConsoleColor foreground,
         ConsoleColor background, ReadOnlySpan<char> format, IFormatProvider? formatProvider)
     where T : ISpanFormattable {
-        const int bufferSize = 50;
+        const int bufferSize = 256;
         using var memoryOwner = Utils.ObtainMemory(bufferSize);
         var span = memoryOwner.Memory.Span;
         if (!item.TryFormat(span, out int charsWritten, format, formatProvider)) {
@@ -137,7 +137,7 @@ public static partial class Console {
     /// <param name="item"></param>
     /// <param name="foreground">foreground color</param>
     /// <typeparam name="T"></typeparam>
-    /// <exception cref="ArgumentException">If the result of formatted item length is > 50 characters</exception>
+    /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
     public static void WriteError<T>(T item, ConsoleColor foreground) where T : ISpanFormattable
         => WriteError(item, foreground, Color.DefaultBackgroundColor);
 
@@ -149,9 +149,9 @@ public static partial class Console {
     /// <param name="foreground">foreground color</param>
     /// <param name="background">background color</param>
     /// <typeparam name="T"></typeparam>
-    /// <exception cref="ArgumentException">If the result of formatted item length is > 50 characters</exception>
+    /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
     public static void WriteError<T>(T item, ConsoleColor foreground, ConsoleColor background) where T : ISpanFormattable {
-        const int bufferSize = 50;
+        const int bufferSize = 256;
         using var memoryOwner = Utils.ObtainMemory(bufferSize);
         var span = memoryOwner.Memory.Span;
         if (!item.TryFormat(span, out int charsWritten, ReadOnlySpan<char>.Empty, null)) {
