@@ -5,7 +5,7 @@ namespace PrettyConsole.Tests.Features;
 public sealed class ColoredOutputTest : IPrettyConsoleTest {
     public string FeatureName => "ColoredOutput";
 
-    public void Implementation() {
+    public ValueTask Implementation() {
         WriteLine(["foreground = Red, background = White\t", "Test" * Color.Red / Color.White]);
         WriteLine(["foreground = Green, background = Black\t", "Test" * Color.Green / Color.Black]);
         WriteLine(["foreground = Blue, background = Yellow\t", "Test" * Color.Blue / Color.Yellow]);
@@ -32,5 +32,6 @@ public sealed class ColoredOutputTest : IPrettyConsoleTest {
         WriteLine(["foreground = Black, background = Green\t", "Test" * Color.Black / Color.Green]);
         WriteLine(["foreground = Cyan, background = Magenta\t", "Test" * Color.Cyan / Color.Magenta]);
         WriteLine(["foreground = Magenta, background = Cyan\t", "Test" * Color.Magenta / Color.Cyan]);
+        return ValueTask.CompletedTask;
     }
 }
