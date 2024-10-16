@@ -36,14 +36,15 @@ public static partial class Console {
         /// Gets or sets the update rate (in ms) of the indeterminate progress bar.
         /// </summary>
         public int UpdateRate { get; set; } = 50;
-
-        private readonly string _emptyLine;
+        private readonly ReadOnlyMemory<char> _emptyLine;
+        private readonly char[] _buffer;
 
         /// <summary>
         /// Represents an indeterminate progress bar that continuously animates without a specific progress value.
         /// </summary>
         public IndeterminateProgressBar() {
-            _emptyLine = new string(' ', baseConsole.BufferWidth);
+            _emptyLine = WhiteSpace.AsMemory(0, baseConsole.BufferWidth);
+            _buffer = new char[20];
         }
 
         /// <summary>
@@ -52,8 +53,18 @@ public static partial class Console {
         /// <param name="task"></param>
         /// <param name="token"></param>
         /// <returns>The output of the running task</returns>
-        public async Task<T> RunAsync<T>(Task<T> task, CancellationToken token = default) {
-            await RunAsyncNonGeneric(task, token);
+        public async Task<T> RunAsync<T>(Task<T> task, CancellationToken token = default)
+            => await RunAsync(task, "", token);
+
+        /// <summary>
+        /// Runs the indeterminate progress bar while the specified task is running.
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="header">The header which to display before the progress char</param>
+        /// <param name="token"></param>
+        /// <returns>The output of the running task</returns>
+        public async Task<T> RunAsync<T>(Task<T> task, string header, CancellationToken token = default) {
+            await RunAsyncNonGeneric(task, header, token);
 
             return task.IsCompleted ? task.Result : await task;
         }
@@ -64,7 +75,17 @@ public static partial class Console {
         /// <param name="task"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task RunAsync(Task task, CancellationToken token = default) {
+        public async Task RunAsync(Task task, CancellationToken token = default)
+            => await RunAsync(task, "", token);
+
+        /// <summary>
+        /// Runs the indeterminate progress bar while the specified task is running.
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="header">The header which to display before the progress char</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task RunAsync(Task task, string header, CancellationToken token = default) {
             try {
                 if (task.Status is not TaskStatus.Running) {
                     task.Start();
@@ -78,11 +99,14 @@ public static partial class Console {
             var startTime = Stopwatch.GetTimestamp();
             var lineNum = baseConsole.CursorTop;
 
-            using var memoryOwner = Utils.ObtainMemory(20);
-
-            while (!task.IsCompleted) {
+            while (!task.IsCompleted && !token.IsCancellationRequested) {
                 // Await until the TaskAwaiter informs of completion
                 foreach (var c in Twirl) {
+                    if (header.Length > 0) {
+                        Error.Write(header);
+                        Error.Write(' ');
+                    }
+
                     // Cycle through the characters of twirl
                     baseConsole.ForegroundColor = ForegroundColor;
                     Error.Write(c);
@@ -90,7 +114,7 @@ public static partial class Console {
                     if (DisplayElapsedTime) {
                         var elapsed = Stopwatch.GetElapsedTime(startTime);
                         Error.Write(" [Elapsed: ");
-                        Error.Write(Sharpify.Utils.DateAndTime.FormatTimeSpan(elapsed, memoryOwner.Memory.Span));
+                        Error.Write(Sharpify.Utils.DateAndTime.FormatTimeSpan(elapsed, _buffer));
                         Error.Write(']');
                     }
 
@@ -98,7 +122,7 @@ public static partial class Console {
 
                     baseConsole.SetCursorPosition(0, lineNum);
                     await Task.Delay(UpdateRate, token); // The update rate
-                    Error.Write(_emptyLine);
+                    Error.Write(_emptyLine.Span);
                     baseConsole.SetCursorPosition(0, lineNum);
                     if (token.IsCancellationRequested) {
                         return;
@@ -110,6 +134,6 @@ public static partial class Console {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Task RunAsyncNonGeneric(Task task, CancellationToken token) => RunAsync(task, token);
+        private Task RunAsyncNonGeneric(Task task, string header, CancellationToken token) => RunAsync(task, header, token);
     }
 }
