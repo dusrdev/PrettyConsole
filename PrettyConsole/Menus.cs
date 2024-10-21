@@ -137,7 +137,7 @@ public static partial class Console {
                     Out.Write(emptySpaces);
                 }
 
-                builder = StringBuffer.Create(buffer);
+                builder.Reset();
                 builder.Append("  ");
                 builder.Append(j + 1);
                 builder.Append(") ");
@@ -209,7 +209,7 @@ public static partial class Console {
 
             var header = string.Join(columnSeparator, arrayToReturn, 0, columnsLength);
 
-            scoped Span<char> rowSeparation = stackalloc char[header.Length];
+            Span<char> rowSeparation = stackalloc char[header.Length];
             rowSeparation.Fill(rowSeparator);
 
             Out.WriteLine(header);
