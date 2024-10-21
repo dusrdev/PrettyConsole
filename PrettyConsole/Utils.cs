@@ -23,7 +23,7 @@ internal static class Utils {
             return buffer.Slice(0, length);
         }
         var padding = length - builder.Position;
-        builder = StringBuffer.Create(buffer);
+        builder.Reset();
         while (padding-- > 0) {
             builder.Append(' ');
         }

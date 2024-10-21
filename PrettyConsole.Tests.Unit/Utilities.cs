@@ -4,6 +4,8 @@ using System.Text;
 namespace PrettyConsole.Tests.Unit;
 
 public static class Utilities {
+	public static StringReader GetReader(string str) => new(str);
+
 	public static TextWriter GetWriter(out StringWriter writer) {
 		writer = new StringWriter(new StringBuilder(), CultureInfo.CurrentCulture);
 		return writer;

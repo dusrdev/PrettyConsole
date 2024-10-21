@@ -10,7 +10,7 @@ public static partial class Console {
     /// <returns>True if the parsing was successful, false otherwise</returns>
     public static bool TryReadLine<T>(ReadOnlySpan<ColoredOutput> message, out T? result) where T : IParsable<T> {
         Write(message);
-        var input = baseConsole.ReadLine();
+        var input = In.ReadLine();
         return T.TryParse(input, null, out result);
     }
 
@@ -24,8 +24,12 @@ public static partial class Console {
     /// <returns>True if the parsing was successful, false otherwise</returns>
     public static bool TryReadLine<T>(ReadOnlySpan<ColoredOutput> message, T @default, out T result) where T : IParsable<T> {
         var couldParse = TryReadLine(message, out T? innerResult);
-        result = innerResult ?? @default;
-        return couldParse;
+        if (couldParse) {
+            result = innerResult!;
+            return true;
+        }
+        result = @default;
+        return false;
     }
 
     /// <summary>
@@ -50,7 +54,7 @@ public static partial class Console {
     /// <returns>Whether the parsing was successful</returns>
     public static bool TryReadLine<TEnum>(ReadOnlySpan<ColoredOutput> message, bool ignoreCase, TEnum @default, out TEnum result) where TEnum : struct, Enum {
         Write(message);
-        var input = baseConsole.ReadLine();
+        var input = In.ReadLine();
         var res = Enum.TryParse(input, ignoreCase, out result);
         if (!res) {
             result = @default;
@@ -64,7 +68,7 @@ public static partial class Console {
     /// <remarks>
     /// You can use <see cref="Write(ColoredOutput)"/> or it's overloads in conjunction with this to create more complex input requests.
     /// </remarks>
-    public static string? ReadLine() => baseConsole.ReadLine();
+    public static string? ReadLine() => In.ReadLine();
 
     /// <summary>
     /// Used to request user input
@@ -94,7 +98,7 @@ public static partial class Console {
     /// <param name="default">The default value to return if parsing fails</param>
     /// <returns>The result of the parsing</returns>
     public static T ReadLine<T>(ReadOnlySpan<ColoredOutput> message, T @default) where T : IParsable<T> {
-        _ = TryReadLine(message, out T? result);
-        return result ?? @default;
+        _ = TryReadLine(message, @default, out T result);
+        return result;
     }
 }

@@ -1,6 +1,6 @@
 # Changelog
 
-## v3.0.0 - RC1
+## v3.0.0
 
 * Removed `Write` and `WriteLine` overloads that contains multiple `ColoredOutput`s, when using the overload with `ReadOnlySpan<ColoredOutput>` and `CollectionExpression`, the compiler generates an inline array to hold the elements, this is very efficient, and the reduced complexity allows usage of multiple `ColoredOutput`s in more places.
 * All overloads of all functions that previously took only one `ColoredOutput` now take a `ReadOnlySpan<ColoredOutput>` instead, as noted it will use an inline array, and the internal implementation also has fast paths for size 1.
@@ -20,3 +20,6 @@
 * The base methods which are used for outputting `ReadOnlySpan<ColoredOutput>` have been re-written to reduce assembly instructions, leading to about 15-20% runtime improvements across the board, and reducing by the binary size by a few bytes too lol.
 * `Console` and `Color` now have the correct attributes to disallow compilation on unsupported platforms, if anyone tries to use them now (even thought it should've been obvious that they shouldn't be used on unsupported platforms), it should display the right message at build time.
 * Removed all overloads that have options to change the input colors, it invites non-streamlined usage, and just increases the code complexity to maintain. Without them the code is simpler and more performant.
+* A lot of methods that used white-spaces in any shape or form were now optimized using pre-initialized static buffer.
+* `IndeterminateProgressBar` now has overloads that accept a `string header` that can be displayed before the progress char. There also was a change involving a secondary addition of catching the `CancellationToken`, removing up to 5 internal iterations.
+* Added `GetCurrentLine` and `GoToLine` methods to allow efficiently using the same space in the console for continuous output, such as progress outputting, and general control flow.

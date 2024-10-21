@@ -7,7 +7,12 @@ public static partial class Console {
 	/// Represents a progress bar that can be displayed in the console.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// The progress bar update isn't tied to unit of time, it's up to the user to update it as needed. By managing the when the Update method is called, the user can have a more precise control over the progress bar. More calls, means more frequent rendering but at the cost of performance (very frequent updates may cause the terminal to lose sync with the method and will produce visual bugs, such as items not rendering in the right place)
+	/// </para>
+	/// <para>
+	/// Updating the progress bar with decreasing percentages will cause visual bugs as it is optimized to skip rendering pre-filled characters.
+	/// </para>
 	/// </remarks>
 	public class ProgressBar {
 		/// <summary>
