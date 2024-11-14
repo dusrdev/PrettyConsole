@@ -17,13 +17,13 @@ public class Write {
 
     [Fact]
     public void Write_SpanFormattable_ForegroundColor() {
-        Write(3.14, Color.White);
+        Write(3.14, OutputPipe.Out, Color.White);
         _writer.ToStringAndFlush().Should().Be("3.14");
     }
 
     [Fact]
     public void Write_SpanFormattable_ForegroundAndBackgroundColor() {
-        Write(3.14, Color.White, Color.Black);
+        Write(3.14, OutputPipe.Out, Color.White, Color.Black);
         _writer.ToStringAndFlush().Should().Be("3.14");
     }
 
@@ -41,19 +41,19 @@ public class Write {
 
     [Fact]
     public void WriteError_ColoredOutput_Single() {
-        WriteError("Hello world!" * Color.Yellow);
+        Write("Hello world!" * Color.Yellow, OutputPipe.Error);
         _errorWriter.ToStringAndFlush().Should().Be("Hello world!");
     }
 
     [Fact]
     public void WriteError_ColoredOutput_Single2() {
-        WriteError(["Hello world!" * Color.Green]);
+        Write(["Hello world!" * Color.Green], OutputPipe.Error);
         _errorWriter.ToStringAndFlush().Should().Be("Hello world!");
     }
 
     [Fact]
     public void WriteError_ColoredOutput_Multiple() {
-        WriteError(["Hello " * Color.Green, "David" * Color.Yellow, "!"]);
+        Write(["Hello " * Color.Green, "David" * Color.Yellow, "!"], OutputPipe.Error);
         _errorWriter.ToStringAndFlush().Should().Be("Hello David!");
     }
 }

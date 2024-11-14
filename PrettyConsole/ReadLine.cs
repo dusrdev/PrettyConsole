@@ -9,7 +9,7 @@ public static partial class Console {
     /// <param name="result">The result of the parsing</param>
     /// <returns>True if the parsing was successful, false otherwise</returns>
     public static bool TryReadLine<T>(ReadOnlySpan<ColoredOutput> message, out T? result) where T : IParsable<T> {
-        Write(message);
+        Write(message, OutputPipe.Out);
         var input = In.ReadLine();
         return T.TryParse(input, null, out result);
     }
@@ -40,8 +40,9 @@ public static partial class Console {
     /// <param name="ignoreCase">Whether to ignore case when parsing</param>
     /// <param name="result">The result of the parsing</param>
     /// <returns>Whether the parsing was successful</returns>
-    public static bool TryReadLine<TEnum>(ReadOnlySpan<ColoredOutput> message, bool ignoreCase, out TEnum result) where TEnum : struct, Enum
-    => TryReadLine(message, ignoreCase, default, out result);
+    public static bool TryReadLine<TEnum>(ReadOnlySpan<ColoredOutput> message, bool ignoreCase, out TEnum result) where TEnum : struct, Enum {
+        return TryReadLine(message, ignoreCase, default, out result);
+    }
 
     /// <summary>
     /// Used to request user input, validates and converts common types.
@@ -53,7 +54,7 @@ public static partial class Console {
     /// <param name="result">The result of the parsing</param>
     /// <returns>Whether the parsing was successful</returns>
     public static bool TryReadLine<TEnum>(ReadOnlySpan<ColoredOutput> message, bool ignoreCase, TEnum @default, out TEnum result) where TEnum : struct, Enum {
-        Write(message);
+        Write(message, OutputPipe.Out);
         var input = In.ReadLine();
         var res = Enum.TryParse(input, ignoreCase, out result);
         if (!res) {
@@ -66,16 +67,18 @@ public static partial class Console {
     /// Used to request user input without any prepended message
     /// </summary>
     /// <remarks>
-    /// You can use <see cref="Write(ColoredOutput)"/> or it's overloads in conjunction with this to create more complex input requests.
+    /// You can use <see cref="Write(ColoredOutput, OutputPipe)"/> or it's overloads in conjunction with this to create more complex input requests.
     /// </remarks>
-    public static string? ReadLine() => In.ReadLine();
+    public static string? ReadLine() {
+        return In.ReadLine();
+    }
 
     /// <summary>
     /// Used to request user input
     /// </summary>
     /// <param name="message">The message to display to the user</param>
     public static string? ReadLine(ReadOnlySpan<ColoredOutput> message) {
-        Write(message);
+        Write(message, OutputPipe.Out);
         return ReadLine();
     }
 

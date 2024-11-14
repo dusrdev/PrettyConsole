@@ -30,23 +30,24 @@ public static partial class Console {
 		/// </summary>
 		public ConsoleColor ProgressColor { get; set; } = Color.DefaultForegroundColor;
 
-        private readonly char[] _progressBuffer;
-
-        private readonly char[] _percentageBuffer;
-
-		private readonly ReadOnlyMemory<char> _emptyLine;
+		private readonly char[] _percentageBuffer;
 
 		private int _currentProgress = 0;
+
+		private readonly char[] _pBuffer;
+
+#if NET9_0_OR_GREATER
+		private readonly Lock _lock = new();
+#else
+		private readonly object _lock = new();
+#endif
 
 		/// <summary>
 		/// Represents a progress bar that can be displayed in the console.
 		/// </summary>
 		public ProgressBar() {
-            int length = baseConsole.BufferWidth - 10;
-            _progressBuffer = new char[length];
-			_progressBuffer.AsSpan().Fill(' ');
-            _percentageBuffer = new char[20];
-			_emptyLine = WhiteSpace.AsMemory(0, baseConsole.BufferWidth);
+			_pBuffer = new char[baseConsole.BufferWidth];
+			_percentageBuffer = new char[20];
 		}
 
 		/// <summary>
@@ -67,33 +68,35 @@ public static partial class Console {
 		/// Updates the progress bar with the specified percentage and header text.
 		/// </summary>
 		/// <param name="percentage">The percentage value (0-100) representing the progress.</param>
-		/// <param name="header">The header text to be displayed above the progress bar.</param>
-		public void Update(double percentage, ReadOnlySpan<char> header) {
-			ResetColors();
-			baseConsole.ForegroundColor = ForegroundColor;
-			var currentLine = GetCurrentLine();
-			GoToLine(currentLine);
-			Error.WriteLine(_emptyLine.Span);
-			Error.WriteLine(_emptyLine.Span);
-			GoToLine(currentLine);
-			if (header.Length is not 0) {
-				Error.WriteLine(header);
+		/// <param name="status">The status text to be displayed after the progress bar.</param>
+		public void Update(double percentage, ReadOnlySpan<char> status) {
+			lock (_lock) {
+				if (status.Length is 0) {
+					status = Utils.FormatPercentage(percentage, _percentageBuffer);
+				}
+				int pLength = baseConsole.BufferWidth - status.Length - 5;
+				var p = (int)(pLength * percentage * 0.01);
+				if (p == _currentProgress) {
+					return;
+				}
+				_currentProgress = p;
+				ResetColors();
+				baseConsole.ForegroundColor = ForegroundColor;
+				var currentLine = GetCurrentLine();
+				ClearNextLines(1, OutputPipe.Error);
+				Error.Write('[');
+				baseConsole.ForegroundColor = ProgressColor;
+				Span<char> span = _pBuffer.AsSpan(0, p);
+				span.Fill(ProgressChar);
+				Span<char> end = WhiteSpace.AsSpan(0, pLength - p);
+				Error.Write(span);
+				Error.Write(end);
+				baseConsole.ForegroundColor = ForegroundColor;
+				Error.Write("] ");
+				Error.Write(status);
+				ResetColors();
+				GoToLine(currentLine);
 			}
-
-			Error.Write('[');
-			var p = (int)(_progressBuffer.Length * percentage * 0.01);
-			baseConsole.ForegroundColor = ProgressColor;
-			Span<char> span = _progressBuffer;
-			// full is only the part between old progress and new progress, the rest was written in previous iterations
-			Span<char> full = span.Slice(_currentProgress, p - _currentProgress);
-			full.Fill(ProgressChar);
-			_currentProgress = p;
-			Error.Write(span);
-			baseConsole.ForegroundColor = ForegroundColor;
-			Error.Write("] ");
-			Error.Write(Utils.FormatPercentage(percentage, _percentageBuffer));
-			GoToLine(currentLine);
-			ResetColors();
 		}
-    }
+	}
 }

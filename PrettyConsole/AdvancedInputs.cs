@@ -4,8 +4,9 @@ public static partial class Console {
     /// <summary>
     /// Used to wait for user input
     /// </summary>
-    public static void RequestAnyInput(string message = "Press any key to continue...") =>
+    public static void RequestAnyInput(string message = "Press any key to continue...") {
         RequestAnyInput([new ColoredOutput(message)]);
+    }
 
     /// <summary>
     /// Used to wait for user input
@@ -26,7 +27,9 @@ public static partial class Console {
     /// <remarks>
     /// It does not display a question mark or any other prompt, only the message
     /// </remarks>
-    public static bool Confirm(ReadOnlySpan<ColoredOutput> message) => Confirm(message, DefaultConfirmValues);
+    public static bool Confirm(ReadOnlySpan<ColoredOutput> message) {
+        return Confirm(message, DefaultConfirmValues);
+    }
 
     /// <summary>
     /// Used to get user confirmation

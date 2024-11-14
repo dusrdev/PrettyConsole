@@ -36,14 +36,12 @@ public static partial class Console {
         /// Gets or sets the update rate (in ms) of the indeterminate progress bar.
         /// </summary>
         public int UpdateRate { get; set; } = 50;
-        private readonly ReadOnlyMemory<char> _emptyLine;
         private readonly char[] _buffer;
 
         /// <summary>
         /// Represents an indeterminate progress bar that continuously animates without a specific progress value.
         /// </summary>
         public IndeterminateProgressBar() {
-            _emptyLine = WhiteSpace.AsMemory(0, baseConsole.BufferWidth);
             _buffer = new char[20];
         }
 
@@ -53,8 +51,9 @@ public static partial class Console {
         /// <param name="task"></param>
         /// <param name="token"></param>
         /// <returns>The output of the running task</returns>
-        public async Task<T> RunAsync<T>(Task<T> task, CancellationToken token = default)
-            => await RunAsync(task, "", token);
+        public async Task<T> RunAsync<T>(Task<T> task, CancellationToken token = default) {
+            return await RunAsync(task, string.Empty, token);
+        }
 
         /// <summary>
         /// Runs the indeterminate progress bar while the specified task is running.
@@ -75,8 +74,9 @@ public static partial class Console {
         /// <param name="task"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task RunAsync(Task task, CancellationToken token = default)
-            => await RunAsync(task, "", token);
+        public async Task RunAsync(Task task, CancellationToken token = default) {
+            await RunAsync(task, string.Empty, token);
+        }
 
         /// <summary>
         /// Runs the indeterminate progress bar while the specified task is running.
@@ -121,7 +121,7 @@ public static partial class Console {
                     Error.Write(ExtraBuffer);
                     GoToLine(lineNum);
                     await Task.Delay(UpdateRate, token); // The update rate
-                    Error.Write(_emptyLine.Span);
+                    Error.Write(WhiteSpace.AsSpan(0, baseConsole.BufferWidth));
                     GoToLine(lineNum);
                     if (token.IsCancellationRequested) {
                         return;

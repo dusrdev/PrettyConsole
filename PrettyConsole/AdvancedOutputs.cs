@@ -7,14 +7,12 @@ public static partial class Console {
     /// Clears the current line and overrides it with <paramref name="output"/>
     /// </summary>
     /// <param name="output"></param>
+    /// <param name="pipe">The output pipe to use</param>
     [MethodImpl(MethodImplOptions.Synchronized)]
-    public static void OverrideCurrentLine(ReadOnlySpan<ColoredOutput> output) {
-        ReadOnlySpan<char> emptyLine = WhiteSpace.AsSpan(0, baseConsole.BufferWidth);
+    public static void OverrideCurrentLine(ReadOnlySpan<ColoredOutput> output, OutputPipe pipe = OutputPipe.Error) {
         var currentLine = GetCurrentLine();
-        GoToLine(currentLine);
-        Error.Write(emptyLine);
-        GoToLine(currentLine);
-        WriteError(output);
+        ClearNextLines(1, pipe);
+        Write(output, pipe);
         GoToLine(currentLine);
     }
 

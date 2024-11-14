@@ -10,6 +10,6 @@ public sealed class IndeterminateProgressBarTest : IPrettyConsoleTest {
             ForegroundColor = Color.Red,
             DisplayElapsedTime = true
         };
-        await prg.RunAsync(Task.Delay(5000), "running...");
+        await prg.RunAsync(Task.Delay(1_000), "running...");
     }
 }
