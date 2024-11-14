@@ -36,14 +36,12 @@ public static partial class Console {
         /// Gets or sets the update rate (in ms) of the indeterminate progress bar.
         /// </summary>
         public int UpdateRate { get; set; } = 50;
-        private readonly ReadOnlyMemory<char> _emptyLine;
         private readonly char[] _buffer;
 
         /// <summary>
         /// Represents an indeterminate progress bar that continuously animates without a specific progress value.
         /// </summary>
         public IndeterminateProgressBar() {
-            _emptyLine = WhiteSpace.AsMemory(0, baseConsole.BufferWidth);
             _buffer = new char[20];
         }
 
@@ -123,7 +121,7 @@ public static partial class Console {
                     Error.Write(ExtraBuffer);
                     GoToLine(lineNum);
                     await Task.Delay(UpdateRate, token); // The update rate
-                    Error.Write(_emptyLine.Span);
+                    Error.Write(WhiteSpace.AsSpan(0, baseConsole.BufferWidth));
                     GoToLine(lineNum);
                     if (token.IsCancellationRequested) {
                         return;

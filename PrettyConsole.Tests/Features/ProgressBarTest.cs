@@ -17,7 +17,7 @@ public sealed class ProgressBarTest : IPrettyConsoleTest {
             prg.Update(percentage);
             await Task.Delay(1);
         }
-        ClearNextLinesError(1);
+        ClearNextLines(1, OutputPipe.Error);
         GoToLine(currentLine);
     }
 }

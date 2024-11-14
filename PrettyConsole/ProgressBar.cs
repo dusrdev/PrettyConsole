@@ -83,7 +83,7 @@ public static partial class Console {
 				ResetColors();
 				baseConsole.ForegroundColor = ForegroundColor;
 				var currentLine = GetCurrentLine();
-				ClearNextLinesError(1);
+				ClearNextLines(1, OutputPipe.Error);
 				Error.Write('[');
 				baseConsole.ForegroundColor = ProgressColor;
 				Span<char> span = _pBuffer.AsSpan(0, p);
