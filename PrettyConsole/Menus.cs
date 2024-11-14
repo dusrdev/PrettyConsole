@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Runtime.InteropServices;
 
 using Sharpify.Collections;
 
@@ -32,13 +33,13 @@ public static partial class Console {
         NewLine();
 
         if (!TryReadLine(["Enter your choice: "], out int selected)) {
-            return "";
+            return string.Empty;
         }
 
         selected--;
 
-        if ((uint)selected >= choices.Count) {
-            return "";
+        if ((uint)selected >= (uint)choices.Count) {
+            return string.Empty;
         }
 
         return choices[selected];
@@ -200,32 +201,32 @@ public static partial class Console {
 
 
         var columnsLength = columns.Length;
-        var arrayToReturn = ArrayPool<string>.Shared.Rent(columnsLength);
+        using var memoryOwner = MemoryPool<string>.Shared.Rent(columnsLength);
 
-        try {
-            for (int i = 0; i < columnsLength; i++) {
-                arrayToReturn[i] = headers[i].PadRight(lengths[i]);
-            }
-
-            var header = string.Join(columnSeparator, arrayToReturn, 0, columnsLength);
-
-            Span<char> rowSeparation = stackalloc char[header.Length];
-            rowSeparation.Fill(rowSeparator);
-
-            Out.WriteLine(header);
-            Out.WriteLine(rowSeparation);
-            for (int row = 0; row < height; row++) {
-                for (int i = 0; i < columnsLength; i++) {
-                    arrayToReturn[i] = columns[i][row].PadRight(lengths[i]);
-                }
-
-                var line = string.Join(columnSeparator, arrayToReturn, 0, columnsLength);
-                Out.WriteLine(line);
-            }
-
-            Out.WriteLine(rowSeparation);
-        } finally {
-            ArrayPool<string>.Shared.Return(arrayToReturn);
+        for (int i = 0; i < columnsLength; i++) {
+            memoryOwner.Memory.Span[i] = headers[i].PadRight(lengths[i]);
         }
+
+        ReadOnlyMemory<string> slice = memoryOwner.Memory.Slice(0, columnsLength);
+        var enumerable = MemoryMarshal.ToEnumerable(slice);
+        var header = string.Join(columnSeparator, enumerable);
+
+        Span<char> rowSeparation = stackalloc char[header.Length];
+        rowSeparation.Fill(rowSeparator);
+
+        Out.WriteLine(header);
+        Out.WriteLine(rowSeparation);
+        for (int row = 0; row < height; row++) {
+            for (int i = 0; i < columnsLength; i++) {
+                memoryOwner.Memory.Span[i] = columns[i][row].PadRight(lengths[i]);
+            }
+
+            slice = memoryOwner.Memory.Slice(0, columnsLength);
+            enumerable = MemoryMarshal.ToEnumerable(slice);
+            var line = string.Join(columnSeparator, enumerable);
+            Out.WriteLine(line);
+        }
+
+        Out.WriteLine(rowSeparation);
     }
 }

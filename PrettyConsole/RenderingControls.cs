@@ -35,7 +35,7 @@ public static partial class Console {
         ReadOnlySpan<char> emptyLine = WhiteSpace.AsSpan(0, baseConsole.BufferWidth);
         var currentLine = GetCurrentLine();
         for (int i = 0; i < lines; i++) {
-            writer.WriteLine(emptyLine);
+            writer.Write(emptyLine);
         }
         GoToLine(currentLine);
     }

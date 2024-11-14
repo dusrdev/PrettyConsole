@@ -40,8 +40,9 @@ public static partial class Console {
     /// <param name="ignoreCase">Whether to ignore case when parsing</param>
     /// <param name="result">The result of the parsing</param>
     /// <returns>Whether the parsing was successful</returns>
-    public static bool TryReadLine<TEnum>(ReadOnlySpan<ColoredOutput> message, bool ignoreCase, out TEnum result) where TEnum : struct, Enum
-    => TryReadLine(message, ignoreCase, default, out result);
+    public static bool TryReadLine<TEnum>(ReadOnlySpan<ColoredOutput> message, bool ignoreCase, out TEnum result) where TEnum : struct, Enum {
+        return TryReadLine(message, ignoreCase, default, out result);
+    }
 
     /// <summary>
     /// Used to request user input, validates and converts common types.
@@ -68,7 +69,9 @@ public static partial class Console {
     /// <remarks>
     /// You can use <see cref="Write(ColoredOutput)"/> or it's overloads in conjunction with this to create more complex input requests.
     /// </remarks>
-    public static string? ReadLine() => In.ReadLine();
+    public static string? ReadLine() {
+        return In.ReadLine();
+    }
 
     /// <summary>
     /// Used to request user input

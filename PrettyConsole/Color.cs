@@ -11,33 +11,39 @@ namespace PrettyConsole;
 [UnsupportedOSPlatform("ios")]
 [UnsupportedOSPlatform("tvos")]
 public readonly partial record struct Color(ConsoleColor ConsoleColor) {
-	/// <summary>
-	/// Implicitly converts a <see cref="Color"/> to a <see cref="ConsoleColor"/>.
-	/// </summary>
-	/// <param name="color">The <see cref="Color"/> to convert.</param>
-	/// <returns>The <see cref="ConsoleColor"/> value associated with the specified <see cref="Color"/>.</returns>
-	public static implicit operator ConsoleColor(Color color) => color.ConsoleColor;
+    /// <summary>
+    /// Implicitly converts a <see cref="Color"/> to a <see cref="ConsoleColor"/>.
+    /// </summary>
+    /// <param name="color">The <see cref="Color"/> to convert.</param>
+    /// <returns>The <see cref="ConsoleColor"/> value associated with the specified <see cref="Color"/>.</returns>
+    public static implicit operator ConsoleColor(Color color) {
+        return color.ConsoleColor;
+    }
 
-	/// <summary>
-	/// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
-	/// </summary>
-	/// <param name="value">The string value to combine with the color.</param>
-	/// <param name="color">The color to apply to the string value.</param>
-	/// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
-	public static ColoredOutput operator *(string value, Color color) => new(value, color, DefaultBackgroundColor);
+    /// <summary>
+    /// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
+    /// </summary>
+    /// <param name="value">The string value to combine with the color.</param>
+    /// <param name="color">The color to apply to the string value.</param>
+    /// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
+    public static ColoredOutput operator *(string value, Color color) {
+        return new(value, color, DefaultBackgroundColor);
+    }
 
-	/// <summary>
-	/// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
-	/// </summary>
-	/// <param name="value">The string value to combine with the color.</param>
-	/// <param name="color">The color to apply to the string value.</param>
-	/// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
-	public static ColoredOutput operator /(string value, Color color) => new(value, DefaultForegroundColor, color);
+    /// <summary>
+    /// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
+    /// </summary>
+    /// <param name="value">The string value to combine with the color.</param>
+    /// <param name="color">The color to apply to the string value.</param>
+    /// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
+    public static ColoredOutput operator /(string value, Color color) {
+        return new(value, DefaultForegroundColor, color);
+    }
 
-	/// <summary>
-	/// Gets a <see cref="Color"/> object representing the color black.
-	/// </summary>
-	public static readonly Color Black = new(ConsoleColor.Black);
+    /// <summary>
+    /// Gets a <see cref="Color"/> object representing the color black.
+    /// </summary>
+    public static readonly Color Black = new(ConsoleColor.Black);
 
 	/// <summary>
 	/// Gets a <see cref="Color"/> object representing the color dark blue.

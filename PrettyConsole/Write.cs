@@ -2,13 +2,19 @@ namespace PrettyConsole;
 
 public static partial class Console {
     /// <summary>
+    /// The size of the buffer used for <see cref="ISpanFormattable"/> items
+    /// </summary>
+    private const int SpanFormattableBufferSize = 256;
+
+    /// <summary>
     /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer
     /// </summary>
     /// <param name="item"></param>
     /// <typeparam name="T"></typeparam>
     /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
-    public static void Write<T>(T item) where T : ISpanFormattable
-        => Write(item, Color.DefaultForegroundColor, Color.DefaultBackgroundColor, ReadOnlySpan<char>.Empty, null);
+    public static void Write<T>(T item) where T : ISpanFormattable {
+        Write(item, Color.DefaultForegroundColor, Color.DefaultBackgroundColor, ReadOnlySpan<char>.Empty, null);
+    }
 
     /// <summary>
     /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer,
@@ -18,8 +24,9 @@ public static partial class Console {
     /// <param name="foreground">foreground color</param>
     /// <typeparam name="T"></typeparam>
     /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
-    public static void Write<T>(T item, ConsoleColor foreground) where T : ISpanFormattable
-        => Write(item, foreground, Color.DefaultBackgroundColor, ReadOnlySpan<char>.Empty, null);
+    public static void Write<T>(T item, ConsoleColor foreground) where T : ISpanFormattable {
+        Write(item, foreground, Color.DefaultBackgroundColor, ReadOnlySpan<char>.Empty, null);
+    }
 
     /// <summary>
     /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer,
@@ -31,8 +38,9 @@ public static partial class Console {
     /// <typeparam name="T"></typeparam>
     /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
     public static void Write<T>(T item, ConsoleColor foreground,
-        ConsoleColor background) where T : ISpanFormattable
-        => Write(item, foreground, background, ReadOnlySpan<char>.Empty, null);
+        ConsoleColor background) where T : ISpanFormattable {
+        Write(item, foreground, background, ReadOnlySpan<char>.Empty, null);
+    }
 
     /// <summary>
     /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer,
@@ -48,11 +56,10 @@ public static partial class Console {
     public static void Write<T>(T item, ConsoleColor foreground,
         ConsoleColor background, ReadOnlySpan<char> format, IFormatProvider? formatProvider)
     where T : ISpanFormattable {
-        const int bufferSize = 256;
-        using var memoryOwner = Utils.ObtainMemory(bufferSize);
+        using var memoryOwner = Utils.ObtainMemory(SpanFormattableBufferSize);
         var span = memoryOwner.Memory.Span;
         if (!item.TryFormat(span, out int charsWritten, format, formatProvider)) {
-            throw new ArgumentException($"Formatted item length > {bufferSize}, please use a different overload", nameof(item));
+            throw new ArgumentException($"Formatted item length > {SpanFormattableBufferSize}, please use a different overload", nameof(item));
         }
         Write(span.Slice(0, charsWritten), foreground, background);
     }
@@ -63,8 +70,9 @@ public static partial class Console {
     /// </summary>
     /// <param name="span"></param>
     /// <param name="foreground">foreground color</param>
-    public static void Write(ReadOnlySpan<char> span, ConsoleColor foreground)
-        => Write(span, foreground, Color.DefaultBackgroundColor);
+    public static void Write(ReadOnlySpan<char> span, ConsoleColor foreground) {
+        Write(span, foreground, Color.DefaultBackgroundColor);
+    }
 
     /// <summary>
     /// Writes a <see cref="ReadOnlySpan{Char}"/> without boxing directly to the output writer,
@@ -138,8 +146,9 @@ public static partial class Console {
     /// <param name="foreground">foreground color</param>
     /// <typeparam name="T"></typeparam>
     /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
-    public static void WriteError<T>(T item, ConsoleColor foreground) where T : ISpanFormattable
-        => WriteError(item, foreground, Color.DefaultBackgroundColor);
+    public static void WriteError<T>(T item, ConsoleColor foreground) where T : ISpanFormattable {
+        WriteError(item, foreground, Color.DefaultBackgroundColor);
+    }
 
     /// <summary>
     /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer,
@@ -151,11 +160,10 @@ public static partial class Console {
     /// <typeparam name="T"></typeparam>
     /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
     public static void WriteError<T>(T item, ConsoleColor foreground, ConsoleColor background) where T : ISpanFormattable {
-        const int bufferSize = 256;
-        using var memoryOwner = Utils.ObtainMemory(bufferSize);
+        using var memoryOwner = Utils.ObtainMemory(SpanFormattableBufferSize);
         var span = memoryOwner.Memory.Span;
         if (!item.TryFormat(span, out int charsWritten, ReadOnlySpan<char>.Empty, null)) {
-            throw new ArgumentException($"Formatted item length > {bufferSize}, please use a different overload", nameof(item));
+            throw new ArgumentException($"Formatted item length > {SpanFormattableBufferSize}, please use a different overload", nameof(item));
         }
         WriteError(span.Slice(0, charsWritten), foreground, background);
     }
@@ -166,8 +174,9 @@ public static partial class Console {
     /// </summary>
     /// <param name="span"></param>
     /// <param name="foreground">foreground color</param>
-    public static void WriteError(ReadOnlySpan<char> span, ConsoleColor foreground)
-        => WriteError(span, foreground, Color.DefaultBackgroundColor);
+    public static void WriteError(ReadOnlySpan<char> span, ConsoleColor foreground) {
+        WriteError(span, foreground, Color.DefaultBackgroundColor);
+    }
 
     /// <summary>
     /// Writes a <see cref="ReadOnlySpan{Char}"/> without boxing directly to the output writer,

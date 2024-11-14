@@ -53,8 +53,9 @@ public static partial class Console {
         /// <param name="task"></param>
         /// <param name="token"></param>
         /// <returns>The output of the running task</returns>
-        public async Task<T> RunAsync<T>(Task<T> task, CancellationToken token = default)
-            => await RunAsync(task, "", token);
+        public async Task<T> RunAsync<T>(Task<T> task, CancellationToken token = default) {
+            return await RunAsync(task, string.Empty, token);
+        }
 
         /// <summary>
         /// Runs the indeterminate progress bar while the specified task is running.
@@ -75,8 +76,9 @@ public static partial class Console {
         /// <param name="task"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task RunAsync(Task task, CancellationToken token = default)
-            => await RunAsync(task, "", token);
+        public async Task RunAsync(Task task, CancellationToken token = default) {
+            await RunAsync(task, string.Empty, token);
+        }
 
         /// <summary>
         /// Runs the indeterminate progress bar while the specified task is running.

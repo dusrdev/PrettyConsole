@@ -8,13 +8,16 @@ public sealed class ProgressBarTest : IPrettyConsoleTest {
     public async ValueTask Implementation() {
         var prg = new ProgressBar {
             ProgressColor = Color.Yellow,
-            ProgressChar = '#'
+            ProgressChar = '»'
         };
-        const int count = 10_000;
+        const int count = 1_000;
+        var currentLine = GetCurrentLine();
         for (int i = 1; i <= count; i++) {
             double percentage = 100 * (double)i / count;
-            prg.Update(percentage, "Running...");
+            prg.Update(percentage);
             await Task.Delay(1);
         }
+        ClearNextLinesError(1);
+        GoToLine(currentLine);
     }
 }

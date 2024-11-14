@@ -7,6 +7,9 @@ public static partial class Console {
     /// Clears the current line and overrides it with <paramref name="output"/>
     /// </summary>
     /// <param name="output"></param>
+    /// <remarks>
+    /// This function uses the <see cref="Error"/> TextWriter
+    /// </remarks>
     [MethodImpl(MethodImplOptions.Synchronized)]
     public static void OverrideCurrentLine(ReadOnlySpan<ColoredOutput> output) {
         ReadOnlySpan<char> emptyLine = WhiteSpace.AsSpan(0, baseConsole.BufferWidth);
