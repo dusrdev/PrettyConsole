@@ -23,13 +23,13 @@ public class WriteLine {
 
     [Fact]
     public void WriteLineError_ColoredOutput_Single() {
-        WriteLineError("Hello world!" * Color.Green);
+        WriteLine("Hello world!" * Color.Green, OutputPipe.Error);
         _errorWriter.ToStringAndFlush().Should().Be("Hello world!".WithNewLine());
     }
 
     [Fact]
     public void WriteLineError_ColoredOutput_Multiple() {
-        WriteLineError(["Hello " * Color.Green, "David" * Color.Yellow, "!"]);
+        WriteLine(["Hello " * Color.Green, "David" * Color.Yellow, "!"], OutputPipe.Error);
         _errorWriter.ToStringAndFlush().Should().Be("Hello David!".WithNewLine());
     }
 }

@@ -11,7 +11,7 @@ public static partial class Console {
     /// </remarks>
     public static void WriteLine(ColoredOutput output, OutputPipe pipe = OutputPipe.Out) {
         Write(output, pipe);
-        NewLine();
+        NewLine(pipe);
     }
 
     /// <summary>
@@ -28,7 +28,7 @@ public static partial class Console {
         }
 
         Write(outputs, pipe);
-        NewLine();
+        NewLine(pipe);
     }
 
     /// <summary>
