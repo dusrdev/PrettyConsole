@@ -11,12 +11,13 @@ public static partial class Console {
     /// </remarks>
     public static void ClearNextLines(int lines, OutputPipe pipe = OutputPipe.Error) {
         if (pipe == OutputPipe.Error) {
-            ClearNextLines(lines, Error);
+            InternalClearNextLines(lines, Error);
             return;
         }
-        ClearNextLines(lines, Out);
+        InternalClearNextLines(lines, Out);
+        return;
 
-        static void ClearNextLines(int lines, TextWriter writer) {
+        static void InternalClearNextLines(int lines, TextWriter writer) {
             ReadOnlySpan<char> emptyLine = WhiteSpace.AsSpan(0, baseConsole.BufferWidth);
             var currentLine = GetCurrentLine();
             for (int i = 0; i < lines; i++) {
