@@ -68,13 +68,13 @@ public static partial class Console {
 		/// Updates the progress bar with the specified percentage and header text.
 		/// </summary>
 		/// <param name="percentage">The percentage value (0-100) representing the progress.</param>
-		/// <param name="header">The header text to be displayed above the progress bar.</param>
-		public void Update(double percentage, ReadOnlySpan<char> header) {
+		/// <param name="status">The status text to be displayed after the progress bar.</param>
+		public void Update(double percentage, ReadOnlySpan<char> status) {
 			lock (_lock) {
-				if (header.Length is 0) {
-					header = Utils.FormatPercentage(percentage, _percentageBuffer);
+				if (status.Length is 0) {
+					status = Utils.FormatPercentage(percentage, _percentageBuffer);
 				}
-				int pLength = baseConsole.BufferWidth - header.Length - 5;
+				int pLength = baseConsole.BufferWidth - status.Length - 5;
 				var p = (int)(pLength * percentage * 0.01);
 				if (p == _currentProgress) {
 					return;
@@ -93,7 +93,7 @@ public static partial class Console {
 				Error.Write(end);
 				baseConsole.ForegroundColor = ForegroundColor;
 				Error.Write("] ");
-				Error.Write(header);
+				Error.Write(status);
 				ResetColors();
 				GoToLine(currentLine);
 			}
