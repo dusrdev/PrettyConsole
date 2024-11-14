@@ -22,7 +22,7 @@ Everything starts off with the using statements, I recommend using the `Console`
 
 ```csharp
 using static PrettyConsole.Console; // Access to all Console methods
-using PrettyConsole; // Access to the Color struct
+using PrettyConsole; // Access to the Color struct and OutputPipe enum
 ```
 
 ### ColoredOutput
@@ -43,16 +43,18 @@ same goes for the background.
 The most basic method for outputting is `Write`, which has multiple overloads:
 
 ```csharp
-Write(ColoredOutput);
-Write(ReadOnlySpan<ColoredOutput>); // use collections expression for the compiler to inline the array
-Write(ReadOnlySpan<char>, ConsoleColor); // no string allocation with ReadOnlySpan<char>
-Write(ReadOnlySpan<char>, ConsoleColor, ConsoleColor);
-Write(T, ConsoleColor); // no string allocation with T : ISpanFormattable
-Write(T, ConsoleColor, ConsoleColor);
-Write(T, ConsoleColor, ConsoleColor, ReadOnlySpan<char>, IFormatProvider?);
+Write(ColoredOutput, OutputPipe pipe = OutputPipe.Out);
+Write(ReadOnlySpan<ColoredOutput>, OutputPipe pipe = OutputPipe.Out); // use collections expression for the compiler to inline the array
+Write(ReadOnlySpan<char>, OutputPipe pipe = OutputPipe.Out); // no string allocation with ReadOnlySpan<char>
+Write(ReadOnlySpan<char>, OutputPip, ConsoleColor); // no string allocation with ReadOnlySpan<char>
+Write(ReadOnlySpan<char>, OutputPipe, ConsoleColor, ConsoleColor);
+Write(T , OutputPipe pipe = OutputPipe.Out); // no string allocation with T : ISpanFormattable
+Write(T, OutputPipe, ConsoleColor);
+Write(T, OutputPipe, ConsoleColor, ConsoleColor);
+Write(T, OutputPipe, ConsoleColor, ConsoleColor, ReadOnlySpan<char>, IFormatProvider?);
 ```
 
-There are also overloads for `WriteLine` and `WriteError`, `WriteError` has the same overloads exactly as `Write` but uses the `Error` stream, this means you can output metrics or whatever, and if you pipe the output to another cli, it will be displayed correctly. `WriteLine` only has overloads for `ColoredOutput` and `ReadOnlySpan<ColoredOutput>`. But you can use `Write` followed by `NewLine` to bridge the gap.
+Overload for `WriteLine` are available with the same parameters
 
 ### Basic Inputs
 
@@ -91,10 +93,8 @@ bool Confirm(ReadOnlySpan<ColoredOutput> message, ReadOnlySpan<string> trueValue
 To aid in rendering and building your own complex outputs, there are many methods that simplify some processes.
 
 ```csharp
-ClearNextLines(int lines); // clears the next lines
-ClearNextLinesError(int lines); // clears the next lines for the error stream
-NewLine(); // outputs a new line
-NewLineError(); // outputs a new line for the error stream
+ClearNextLines(int lines, OutputPipe pipe = OutputPipe.Error); // clears the next lines
+NewLine(OutputPipe pipe = OutputPipe.Out); // outputs a new line
 SetColors(ConsoleColor foreground, ConsoleColor background); // sets the colors of the console output
 ResetColors(); // resets the colors of the console output
 int GetCurrentLine(); // returns the current line number
@@ -108,7 +108,7 @@ Combining `ClearNextLines` with `GoToLine` will enable you to efficiently use th
 ```csharp
 // This method will essentially write a line, clear it, go back to same position
 // This allows a form of text-only progress bar
-void OverrideCurrentLine(ReadOnlySpan<ColoredOutput> output);
+void OverrideCurrentLine(ReadOnlySpan<ColoredOutput> output, OutputPipe pipe = OutputPipe.Error);
 // This methods will write a character at a time, with a delay between each character
 async Task TypeWrite(ColoredOutput output, int delay = TypeWriteDefaultDelay);
 async Task TypeWriteLine(ColoredOutput output, int delay = TypeWriteDefaultDelay);
@@ -153,7 +153,7 @@ await prg.RunAsync(task, "Running...", cancellationToken); // There are also ove
 // ProgressBar implements IDisposable
 var prg = new ProgressBar();
 // then on each time the progress percentage is actually changed, you call Update
-Update(percentage, ReadOnlySpan<char> header);
+Update(percentage, ReadOnlySpan<char> status);
 // There are also overloads without header, and percentage can be either int or double (0-100)
 // Also, you can change some of the visual properties of the progress bar after initialization
 // by using the properties of the ProgressBar class
