@@ -16,8 +16,10 @@ public static partial class Console {
     /// </para>
     /// </remarks>
     public class IndeterminateProgressBar {
-        // Constant pattern containing the characters needed for the indeterminate progress bar
-        private const string Twirl = "-\\|/";
+        /// <summary>
+        /// Contains the characters that will be iterated through while running
+        /// </summary>
+        public string Twirl { get; set; } = "-\\|/";
 
         // A whitespace the length of 10 spaces
         private const string ExtraBuffer = "          ";
@@ -97,7 +99,7 @@ public static partial class Console {
             ResetColors();
             var originalColor = baseConsole.ForegroundColor;
             var startTime = Stopwatch.GetTimestamp();
-            var lineNum = GetCurrentLine();
+            // var lineNum = GetCurrentLine();
 
             while (!task.IsCompleted && !token.IsCancellationRequested) {
                 // Await until the TaskAwaiter informs of completion
@@ -119,10 +121,11 @@ public static partial class Console {
                     }
 
                     Error.Write(ExtraBuffer);
-                    GoToLine(lineNum);
                     await Task.Delay(UpdateRate, token); // The update rate
-                    Error.Write(WhiteSpace.AsSpan(0, baseConsole.BufferWidth));
-                    GoToLine(lineNum);
+                    ClearNextLines(1, OutputPipe.Error);
+                    // GoToLine(lineNum);
+                    // Error.Write(WhiteSpace.AsSpan(0, baseConsole.BufferWidth));
+                    // GoToLine(lineNum);
                     if (token.IsCancellationRequested) {
                         return;
                     }
