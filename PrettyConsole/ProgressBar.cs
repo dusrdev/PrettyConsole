@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Buffers;
+using System.Runtime.CompilerServices;
 
 namespace PrettyConsole;
 
@@ -30,25 +31,15 @@ public static partial class Console {
 		/// </summary>
 		public ConsoleColor ProgressColor { get; set; } = Color.DefaultForegroundColor;
 
-		private readonly char[] _percentageBuffer;
+		private readonly char[] _percentageBuffer = new char[20];
 
 		private int _currentProgress = 0;
-
-		private readonly char[] _pBuffer;
 
 #if NET9_0_OR_GREATER
 		private readonly Lock _lock = new();
 #else
 		private readonly object _lock = new();
 #endif
-
-		/// <summary>
-		/// Represents a progress bar that can be displayed in the console.
-		/// </summary>
-		public ProgressBar() {
-			_pBuffer = new char[baseConsole.BufferWidth];
-			_percentageBuffer = new char[20];
-		}
 
 		/// <summary>
 		/// Updates the progress bar with the specified percentage.
@@ -72,27 +63,39 @@ public static partial class Console {
 		public void Update(double percentage, ReadOnlySpan<char> status) {
 			lock (_lock) {
 				percentage = Math.Clamp(percentage, 0, 100);
+				var bufferWidth = baseConsole.BufferWidth;
+				using var buffer = MemoryPool<char>.Shared.Rent(bufferWidth);
 
 				if (status.Length is 0) {
 					status = Utils.FormatPercentage(percentage, _percentageBuffer);
 				}
-				int pLength = baseConsole.BufferWidth - status.Length - 5;
-				var p = (int)(pLength * percentage * 0.01);
+				int pLength = Math.Max(0, bufferWidth - status.Length - 5);
+				var p = Math.Clamp((int)(pLength * percentage * 0.01), 0, pLength);
 				if (p == _currentProgress) {
 					return;
 				}
 				_currentProgress = p;
+
 				ResetColors();
 				baseConsole.ForegroundColor = ForegroundColor;
 				var currentLine = GetCurrentLine();
 				ClearNextLines(1, OutputPipe.Error);
 				Error.Write('[');
 				baseConsole.ForegroundColor = ProgressColor;
-				Span<char> span = _pBuffer.AsSpan(0, p);
-				span.Fill(ProgressChar);
-				Span<char> end = WhiteSpace.AsSpan(0, pLength - p);
-				Error.Write(span);
-				Error.Write(end);
+
+				Span<char> span = buffer.Memory.Span;
+				Span<char> progressSpan = span.Slice(0, p);
+				progressSpan.Fill(ProgressChar);
+
+				var tailLength = Math.Max(0, pLength - p);
+				if (tailLength > 0) {
+					Span<char> whiteSpaceSpan = span.Slice(p, tailLength);
+					whiteSpaceSpan.Fill(' ');
+					p += tailLength;
+				}
+
+				Error.Write(span.Slice(0, p));
+
 				baseConsole.ForegroundColor = ForegroundColor;
 				Error.Write("] ");
 				Error.Write(status);
