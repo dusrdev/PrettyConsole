@@ -15,6 +15,7 @@ public static partial class Console {
         static void InternalClearNextLines(int lines, TextWriter writer) {
             var lineLength = baseConsole.BufferWidth;
             var currentLine = GetCurrentLine();
+            GoToLine(currentLine);
             for (int i = 0; i < lines; i++) {
                 writer.WriteWhiteSpaces(lineLength);
             }
