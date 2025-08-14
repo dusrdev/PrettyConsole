@@ -144,46 +144,49 @@ public static partial class Console {
                 = new(["|", "/", "-", "\\"]);
 
             /// <summary>
-            /// A bounce animation sequence
-            /// </summary>
-            public static readonly ReadOnlyCollection<string> Bounce
-                = new(["<", ">", "=", "=", "<", ">"]);
-
-            /// <summary>
-            /// A dots animation sequence
-            /// </summary>
-            public static readonly ReadOnlyCollection<string> Dots
-                = new([".", "o", "O", "°", "O", "o", "."]);
-
-            /// <summary>
             /// A braille animation sequence
             /// </summary>
             public static readonly ReadOnlyCollection<string> Braille
                 = new(["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]);
 
             /// <summary>
-            /// An arrow animation sequence
-            /// </summary>
-            public static readonly ReadOnlyCollection<string> Arrow
-                = new(["-", "~", ">"]);
-
-            /// <summary>
-            /// A brackets animation sequence
-            /// </summary>
-            public static readonly ReadOnlyCollection<string> Brackets
-                = new(["<", "(", "[", "{", "}", "]", ")", ">"]);
-
-            /// <summary>
             /// A running person animation sequence
             /// </summary>
             public static readonly ReadOnlyCollection<string> RunningPerson
-                = new(["🧍", "🚶‍➡️", "🏃‍➡️"]);
+                = new(["🧎‍➡️", "🧍", "🚶‍➡️", "🏃‍➡️", " "]);
 
             /// <summary>
-            /// A sad smiley animation sequence
+            /// A sad smiley animation sequence ("what's taking so long??")
             /// </summary>
             public static readonly ReadOnlyCollection<string> SadSmiley
-                = new(["😞", "😣", "😖", "😫", "😩"]);
+                = new(["😞", "😣", "😖", "😫", "😩", " "]);
+
+            /// <summary>
+            /// A pulse animation sequence
+            /// </summary>
+            public static readonly ReadOnlyCollection<string> Pulse
+                = new(["•", "●", "•", " "]);
+
+            /// <summary>
+            /// A loading-bar animation sequence
+            /// </summary>
+            public static readonly ReadOnlyCollection<string> LoadingBar
+                = new(["[    ]", "[=   ]", "[==  ]", "[=== ]", "[====]", "[ ===]", "[  ==]", "[   =]", "[    ]"]);
+
+            /// <summary>
+            /// An ASCII ping-pong animation sequence
+            /// </summary>
+            public static readonly ReadOnlyCollection<string> PingPongAscii
+                = new([
+                    "|o    |",
+                    "| o   |",
+                    "|  o  |",
+                    "|   o |",
+                    "|    o|",
+                    "|   o |",
+                    "|  o  |",
+                    "| o   |",
+                ]);
         }
     }
 }
