@@ -27,7 +27,8 @@
 
 	<ItemGroup>
 		<PackageReleaseNotes>
-
+			- Fixed possible issues in progress bar that could by caused by writing to buffer out of bounds
+			- 
 		</PackageReleaseNotes>
 	</ItemGroup>
 
