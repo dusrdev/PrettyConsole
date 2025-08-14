@@ -9,10 +9,4 @@ namespace PrettyConsole;
 [UnsupportedOSPlatform("browser")]
 [UnsupportedOSPlatform("ios")]
 [UnsupportedOSPlatform("tvos")]
-public static partial class Console {
-	internal static readonly char[] WhiteSpace = new char[256];
-
-	static Console() {
-		WhiteSpace.AsSpan().Fill(' ');
-	}
-}
+public static partial class Console;
