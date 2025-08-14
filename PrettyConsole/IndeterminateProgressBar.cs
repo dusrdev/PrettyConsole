@@ -99,7 +99,6 @@ public static partial class Console {
             ResetColors();
             var originalColor = baseConsole.ForegroundColor;
             var startTime = Stopwatch.GetTimestamp();
-            // var lineNum = GetCurrentLine();
 
             while (!task.IsCompleted && !token.IsCancellationRequested) {
                 // Await until the TaskAwaiter informs of completion
@@ -116,16 +115,13 @@ public static partial class Console {
                     if (DisplayElapsedTime) {
                         var elapsed = Stopwatch.GetElapsedTime(startTime);
                         Error.Write(" [Elapsed: ");
-                        Error.Write(Sharpify.Utils.DateAndTime.FormatTimeSpan(elapsed, _buffer));
+                        Error.Write(Utils.FormatTimeSpan(elapsed, _buffer));
                         Error.Write(']');
                     }
 
                     Error.Write(ExtraBuffer);
                     await Task.Delay(UpdateRate, token); // The update rate
                     ClearNextLines(1, OutputPipe.Error);
-                    // GoToLine(lineNum);
-                    // Error.Write(WhiteSpace.AsSpan(0, baseConsole.BufferWidth));
-                    // GoToLine(lineNum);
                     if (token.IsCancellationRequested) {
                         return;
                     }

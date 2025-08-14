@@ -1,7 +1,5 @@
 using System.Buffers;
 
-using Sharpify.Collections;
-
 namespace PrettyConsole;
 
 /// <summary>
@@ -16,19 +14,67 @@ internal static class Utils {
     /// <returns></returns>
     internal static ReadOnlySpan<char> FormatPercentage(double percentage, Span<char> buffer) {
         const int length = 5;
-        var rounded = Math.Round(percentage, 2);
-        var builder = StringBuffer.Create(buffer);
-        builder.Append(rounded);
-        if (builder.Position is length) {
-            return buffer.Slice(0, length);
+        percentage = Math.Round(Math.Clamp(percentage, 0, 100), 2, MidpointRounding.AwayFromZero);
+
+        percentage.TryFormat(buffer, out int written);
+        if (written == length) {
+            return buffer.Slice(0, written);
         }
-        var padding = length - builder.Position;
-        builder.Reset();
-        while (padding-- > 0) {
-            builder.Append(' ');
+
+        var padding = length - written;
+        buffer.Slice(0, padding).Fill(' ');
+        percentage.TryFormat(buffer.Slice(padding), out written);
+
+        return buffer.Slice(0, padding + written);
+    }
+
+    /// <summary>
+    /// Formats <paramref name="timeSpan"/>
+    /// </summary>
+    /// <param name="timeSpan"></param>
+    /// <param name="buffer"></param>
+    /// <returns></returns>
+    internal static ReadOnlySpan<char> FormatTimeSpan(TimeSpan timeSpan, Span<char> buffer) {
+        // < 1s  → "500ms"
+        int written;
+
+        if (timeSpan.TotalSeconds < 1) {
+            if (!timeSpan.Milliseconds.TryFormat(buffer, out written)) {
+                return ReadOnlySpan<char>.Empty;
+            }
+            "ms".CopyTo(buffer.Slice(written));
+            return buffer.Slice(0, written + 2);
         }
-        builder.Append(rounded);
-        return builder.WrittenSpan;
+
+        // < 60s → "SS:MMMs" (zero-padded)
+        if (timeSpan.TotalSeconds < 60) {
+            if (!buffer.TryWrite($"{timeSpan.Seconds:00}:{timeSpan.Milliseconds:000}s", out written)) {
+                return ReadOnlySpan<char>.Empty;
+            }
+            return buffer.Slice(0, written);
+        }
+
+        // < 1h  → "MM:SSm"
+        if (timeSpan.TotalSeconds < 3600) {
+            if (!buffer.TryWrite($"{timeSpan.Minutes:00}:{timeSpan.Seconds:00}m", out written)) {
+                return ReadOnlySpan<char>.Empty;
+            }
+            return buffer.Slice(0, written);
+        }
+
+        // < 1d  → "HH:MMhr"
+        if (timeSpan.TotalSeconds < 86400) {
+            if (!buffer.TryWrite($"{timeSpan.Hours:00}:{timeSpan.Minutes:00}hr", out written)) {
+                return ReadOnlySpan<char>.Empty;
+            }
+            return buffer.Slice(0, written);
+        }
+
+        // ≥ 1d  → "DD:HHd"
+        if (!buffer.TryWrite($"{timeSpan.Days:00}:{timeSpan.Hours:00}d", out written)) {
+            return ReadOnlySpan<char>.Empty;
+        }
+        return buffer.Slice(0, written);
     }
 
     /// <summary>

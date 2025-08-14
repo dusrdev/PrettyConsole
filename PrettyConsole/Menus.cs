@@ -1,8 +1,6 @@
 using System.Buffers;
 using System.Runtime.InteropServices;
 
-using Sharpify.Collections;
-
 namespace PrettyConsole;
 
 public static partial class Console {
