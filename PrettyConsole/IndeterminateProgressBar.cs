@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -22,7 +23,7 @@ public static partial class Console {
         /// <remarks>
         /// You can also choose from some defaults in <see cref="Patterns"/>
         /// </remarks>
-        public string AnimationSequence { get; set; } = Patterns.Twirl;
+        public ReadOnlyCollection<string> AnimationSequence { get; set; } = Patterns.Twirl;
 
         // A length of whitespace padding to the end
         private const int PaddingLength = 10;
@@ -40,8 +41,8 @@ public static partial class Console {
         /// <summary>
         /// Gets or sets the update rate (in ms) of the indeterminate progress bar.
         /// </summary>
-        /// <remarks>Default = 50</remarks>
-        public int UpdateRate { get; set; } = 50;
+        /// <remarks>Default = 200</remarks>
+        public int UpdateRate { get; set; } = 200;
 
         private static readonly char[] TempBuffer = new char[20];
 
@@ -139,32 +140,50 @@ public static partial class Console {
             /// <summary>
             /// A twirl animation sequence
             /// </summary>
-            public const string Twirl = "|/-\\";
+            public static readonly ReadOnlyCollection<string> Twirl
+                = new(["|", "/", "-", "\\"]);
 
             /// <summary>
             /// A bounce animation sequence
             /// </summary>
-            public const string Bounce = "<>==<>";
+            public static readonly ReadOnlyCollection<string> Bounce
+                = new(["<", ">", "=", "=", "<", ">"]);
 
             /// <summary>
             /// A dots animation sequence
             /// </summary>
-            public const string Dots = ".oO°Oo.";
+            public static readonly ReadOnlyCollection<string> Dots
+                = new([".", "o", "O", "°", "O", "o", "."]);
 
             /// <summary>
             /// A braille animation sequence
             /// </summary>
-            public const string Braille = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏";
+            public static readonly ReadOnlyCollection<string> Braille
+                = new(["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]);
 
             /// <summary>
             /// An arrow animation sequence
             /// </summary>
-            public const string Arrow = "--~~>>";
+            public static readonly ReadOnlyCollection<string> Arrow
+                = new(["-", "~", ">"]);
 
             /// <summary>
             /// A brackets animation sequence
             /// </summary>
-            public const string Brackets = "<<(([[{{}}]]))>>";
+            public static readonly ReadOnlyCollection<string> Brackets
+                = new(["<", "(", "[", "{", "}", "]", ")", ">"]);
+
+            /// <summary>
+            /// A running person animation sequence
+            /// </summary>
+            public static readonly ReadOnlyCollection<string> RunningPerson
+                = new(["🧍", "🚶‍➡️", "🏃‍➡️"]);
+
+            /// <summary>
+            /// A sad smiley animation sequence
+            /// </summary>
+            public static readonly ReadOnlyCollection<string> SadSmiley
+                = new(["😞", "😣", "😖", "😫", "😩"]);
         }
     }
 }
