@@ -22,12 +22,8 @@ public static partial class Console {
         Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
 
         for (int i = 0; i < choices.Count; i++) {
-            var builder = StringBuffer.Create(buffer);
-            builder.Append("  ");
-            builder.Append(i + 1);
-            builder.Append(") ");
-            builder.Append(choices[i]);
-            Out.WriteLine(builder.WrittenSpan);
+            buffer.TryWrite($" {i + 1}) {choices[i]}", out var written);
+            Out.WriteLine(buffer.Slice(0, written));
         }
 
         NewLine();
@@ -61,12 +57,8 @@ public static partial class Console {
         Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
 
         for (int i = 0; i < choices.Count; i++) {
-            var builder = StringBuffer.Create(buffer);
-            builder.Append("  ");
-            builder.Append(i + 1);
-            builder.Append(") ");
-            builder.Append(choices[i]);
-            Out.WriteLine(builder.WrittenSpan);
+            buffer.TryWrite($" {i + 1}) {choices[i]}", out var written);
+            Out.WriteLine(buffer.Slice(0, written));
         }
 
         NewLine();
