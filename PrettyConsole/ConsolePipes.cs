@@ -15,4 +15,15 @@ public static partial class Console {
 	/// The standard input stream.
 	/// </summary>
 	public static TextReader In { get; internal set; } = baseConsole.In;
+
+	/// <summary>
+	/// Gets the appropriate <see cref="TextWriter"/> based on <paramref name="pipe"/> 
+	/// </summary>
+	/// <param name="pipe"></param>
+	/// <returns></returns>
+	internal static TextWriter GetWriter(OutputPipe pipe)
+		=> pipe switch {
+			OutputPipe.Error => Error,
+			_ => Out
+		};
 }
