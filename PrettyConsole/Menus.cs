@@ -109,33 +109,29 @@ public static partial class Console {
         var menuKeys = menu.Keys.ToArray();
         var maxMainOption = menuKeys.Max(static x => x.Length) + 10; // Used to make sub-tree prefix spaces uniform
 
-        Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
-        Span<char> emptySpaces = stackalloc char[maxMainOption];
-        emptySpaces.Fill(' ');
+        using var memOwner = MemoryPool<char>.Shared.Rent(baseConsole.BufferWidth);
+        Span<char> buffer = memOwner.Memory.Span;
 
         //Enumerate options and sub-options
         for (int i = 0; i < menuKeys.Length; i++) {
             var mainEntry = menuKeys[i];
             var subChoices = menu[mainEntry];
-            var builder = StringBuffer.Create(buffer);
-            builder.Append("  ");
-            builder.Append(i + 1);
-            builder.Append(") ");
-            builder.Append(mainEntry);
-            var remainingLength = maxMainOption - builder.Position;
-            builder.Append(emptySpaces.Slice(0, remainingLength));
-            Out.Write(builder.WrittenSpan);
+
+            buffer.TryWrite($"  {i + 1}) {mainEntry}", out int written);
+            Out.Write(buffer.Slice(0, written));
+
+            var remainingLength = maxMainOption - written;
+            if (remainingLength > 0) {
+                Out.WriteWhiteSpaces(remainingLength);
+            }
+
             for (int j = 0; j < subChoices.Count; j++) {
                 if (j is not 0) {
-                    Out.Write(emptySpaces);
+                    Out.WriteWhiteSpaces(maxMainOption);
                 }
 
-                builder.Reset();
-                builder.Append("  ");
-                builder.Append(j + 1);
-                builder.Append(") ");
-                builder.Append(subChoices[j]);
-                Out.WriteLine(builder.WrittenSpan);
+                buffer.TryWrite($"  {j + 1}) {subChoices[j]}", out written);
+                Out.WriteLine(buffer.Slice(0, written));
             }
 
             NewLine();
