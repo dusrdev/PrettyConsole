@@ -89,11 +89,7 @@ public static partial class Console {
     /// <param name="background">background color</param>
     public static void Write(ReadOnlySpan<char> span, OutputPipe pipe, ConsoleColor foreground, ConsoleColor background) {
         SetColors(foreground, background);
-        if (pipe == OutputPipe.Out) {
-            Out.Write(span);
-        } else {
-            Error.Write(span);
-        }
+        GetWriter(pipe).Write(span);
         ResetColors();
     }
 
@@ -107,11 +103,7 @@ public static partial class Console {
     /// </remarks>
     public static void Write(ColoredOutput output, OutputPipe pipe = OutputPipe.Out) {
         SetColors(output.ForegroundColor, output.BackgroundColor);
-        if (pipe == OutputPipe.Out) {
-            Out.Write(output.Value);
-        } else {
-            Error.Write(output.Value);
-        }
+        GetWriter(pipe).Write(output.Value);
         ResetColors();
     }
 
