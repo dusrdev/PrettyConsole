@@ -15,21 +15,24 @@
 		<PublishRespositoryUrl>true</PublishRespositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<PackageReadmeFile>CHANGELOG.md</PackageReadmeFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<AotCompatible>true</AotCompatible>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="\" />
-		<None Include="CHANGELOG.md" Pack="true" PackagePath="\" />
-		<None Include="Versions.md" Pack="true" PackagePath="\" />
+		<None Include="../README.md" Pack="true" PackagePath="/" Link="README.md" />
 	</ItemGroup>
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
-			- Fixed possible issues with out-of-bounds buffer writing that affected ClearNextLines, and both ProgressBar`s
-			- IndeterminateProgressBar.Twirl is now customizable
-			- Sharpify is no longer a dependency
+			- Fixed issue that could sometimes cause writing into buffers beyond their bounds -
+			throwing an exception. Possibly effected:
+			  - `ProgressBar` and `IndeterminateProgressBar`
+			  - `ClearNextLines`
+			- `IndeterminateProgressBar` will no allow customization of the animated sequence via
+			the property `AnimationSequence`, and it also includes an inner class `Patterns` that
+			contains some constant sequences that could be used with it.
+			- Dropped `Sharpify` as a dependency - `PrettyConsole` is now self-sufficient
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
