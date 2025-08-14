@@ -6,7 +6,8 @@
   - `ProgressBar` and `IndeterminateProgressBar`
   - `ClearNextLines`
 - `IndeterminateProgressBar` will no allow customization of the animated sequence via the property `AnimationSequence`, and it also includes an inner class `Patterns` that contains some constant sequences that could be used with it.
-- Dropped `Sharpify` as a dependency - `PrettyConsole` is now self-sufficient
+- `IndeterminateProgressBar.UpdateRate` is 200 ms by default.
+- Dropped `Sharpify` as a dependency - `PrettyConsole` is now self-sufficient.
 
 ## v3.1.0
 
