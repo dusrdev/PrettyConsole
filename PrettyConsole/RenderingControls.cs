@@ -10,18 +10,13 @@ public static partial class Console {
     /// Useful for clearing output of overriding functions, like the ProgressBar
     /// </remarks>
     public static void ClearNextLines(int lines, OutputPipe pipe = OutputPipe.Error) {
-        if (pipe == OutputPipe.Error) {
-            InternalClearNextLines(lines, Error);
-            return;
-        }
-        InternalClearNextLines(lines, Out);
-        return;
+        InternalClearNextLines(lines, GetWriter(pipe));
 
         static void InternalClearNextLines(int lines, TextWriter writer) {
-            ReadOnlySpan<char> emptyLine = WhiteSpace.AsSpan(0, baseConsole.BufferWidth);
+            var lineLength = baseConsole.BufferWidth;
             var currentLine = GetCurrentLine();
             for (int i = 0; i < lines; i++) {
-                writer.Write(emptyLine);
+                writer.WriteWhiteSpace(lineLength);
             }
             GoToLine(currentLine);
         }
@@ -30,19 +25,13 @@ public static partial class Console {
     /// <summary>
     /// Used to clear all previous outputs to the console
     /// </summary>
-    public static void Clear() {
-        baseConsole.Clear();
-    }
+    public static void Clear() => baseConsole.Clear();
 
     /// <summary>
     /// Used to end current line or write an empty one, depends whether the current line has any text
     /// </summary>
     public static void NewLine(OutputPipe pipe = OutputPipe.Out) {
-        if (pipe == OutputPipe.Out) {
-            Out.WriteLine();
-            return;
-        }
-        Error.WriteLine();
+        GetWriter(pipe).WriteLine();
     }
 
     /// <summary>
