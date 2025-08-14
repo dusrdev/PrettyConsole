@@ -24,8 +24,8 @@ public static partial class Console {
         /// </remarks>
         public string AnimationSequence { get; set; } = Patterns.Twirl;
 
-        // A whitespace the length of 10 spaces
-        private const string ExtraBuffer = "          ";
+        // A length of whitespace padding to the end
+        private const int PaddingLength = 10;
 
         /// <summary>
         /// Gets or sets the foreground color of the progress bar.
@@ -40,15 +40,10 @@ public static partial class Console {
         /// <summary>
         /// Gets or sets the update rate (in ms) of the indeterminate progress bar.
         /// </summary>
+        /// <remarks>Default = 50</remarks>
         public int UpdateRate { get; set; } = 50;
-        private readonly char[] _buffer;
 
-        /// <summary>
-        /// Represents an indeterminate progress bar that continuously animates without a specific progress value.
-        /// </summary>
-        public IndeterminateProgressBar() {
-            _buffer = new char[20];
-        }
+        private static readonly char[] TempBuffer = new char[20];
 
         /// <summary>
         /// Runs the indeterminate progress bar while the specified task is running.
@@ -118,11 +113,11 @@ public static partial class Console {
                     if (DisplayElapsedTime) {
                         var elapsed = Stopwatch.GetElapsedTime(startTime);
                         Error.Write(" [Elapsed: ");
-                        Error.Write(Utils.FormatTimeSpan(elapsed, _buffer));
+                        Error.Write(Utils.FormatTimeSpan(elapsed, TempBuffer));
                         Error.Write(']');
                     }
 
-                    Error.Write(ExtraBuffer);
+                    Error.WriteWhiteSpaces(PaddingLength);
                     await Task.Delay(UpdateRate, token); // The update rate
                     ClearNextLines(1, OutputPipe.Error);
                     if (token.IsCancellationRequested) {
@@ -136,30 +131,40 @@ public static partial class Console {
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private Task RunAsyncNonGeneric(Task task, string header, CancellationToken token) => RunAsync(task, header, token);
-    }
-
-    /// <summary>
-    /// Provides constant animation sequences that can be used for <see cref="IndeterminateProgressBar.AnimationSequence"/>
-    /// </summary>
-    public static class Patterns {
-        /// <summary>
-        /// A twirl animation sequence
-        /// </summary>
-        public const string Twirl = "|/-\\";
 
         /// <summary>
-        /// A bounce animation sequence
+        /// Provides constant animation sequences that can be used for <see cref="AnimationSequence"/>
         /// </summary>
-        public const string Bounce = "<>==<>";
+        public static class Patterns {
+            /// <summary>
+            /// A twirl animation sequence
+            /// </summary>
+            public const string Twirl = "|/-\\";
 
-        /// <summary>
-        /// A dots animation sequence
-        /// </summary>
-        public const string Dots = ".oO°Oo.";
+            /// <summary>
+            /// A bounce animation sequence
+            /// </summary>
+            public const string Bounce = "<>==<>";
 
-        /// <summary>
-        /// A braille animation sequence
-        /// </summary>
-        public const string Braille = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏";
+            /// <summary>
+            /// A dots animation sequence
+            /// </summary>
+            public const string Dots = ".oO°Oo.";
+
+            /// <summary>
+            /// A braille animation sequence
+            /// </summary>
+            public const string Braille = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏";
+
+            /// <summary>
+            /// An arrow animation sequence
+            /// </summary>
+            public const string Arrow = "--~~>>";
+
+            /// <summary>
+            /// A brackets animation sequence
+            /// </summary>
+            public const string Brackets = "<<(([[{{}}]]))>>";
+        }
     }
 }
