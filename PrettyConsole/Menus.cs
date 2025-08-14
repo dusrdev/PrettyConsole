@@ -17,7 +17,8 @@ public static partial class Console {
         where TList : IList<string> {
         WriteLine(title);
 
-        Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
+        using var memoryOwner = MemoryPool<char>.Shared.Rent(baseConsole.BufferWidth);
+        Span<char> buffer = memoryOwner.Memory.Span;
 
         for (int i = 0; i < choices.Count; i++) {
             buffer.TryWrite($" {i + 1}) {choices[i]}", out var written);
@@ -52,7 +53,8 @@ public static partial class Console {
         where TList : IList<string> {
         WriteLine(title);
 
-        Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
+        using var memoryOwner = MemoryPool<char>.Shared.Rent(baseConsole.BufferWidth);
+        Span<char> buffer = memoryOwner.Memory.Span;
 
         for (int i = 0; i < choices.Count; i++) {
             buffer.TryWrite($" {i + 1}) {choices[i]}", out var written);
