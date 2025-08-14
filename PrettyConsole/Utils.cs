@@ -41,7 +41,7 @@ internal static class Utils {
     /// </summary>
     /// <param name="writer"></param>
     /// <param name="length"></param>
-    internal static void WriteWhiteSpace(this TextWriter writer, int length) {
+    internal static void WriteWhiteSpaces(this TextWriter writer, int length) {
         if (length <= 0) {
             return;
         }

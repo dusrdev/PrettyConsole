@@ -16,7 +16,7 @@ public static partial class Console {
             var lineLength = baseConsole.BufferWidth;
             var currentLine = GetCurrentLine();
             for (int i = 0; i < lines; i++) {
-                writer.WriteWhiteSpace(lineLength);
+                writer.WriteWhiteSpaces(lineLength);
             }
             GoToLine(currentLine);
         }
