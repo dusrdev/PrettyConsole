@@ -19,7 +19,10 @@ public static partial class Console {
         /// <summary>
         /// Contains the characters that will be iterated through while running
         /// </summary>
-        public string Twirl { get; set; } = "-\\|/";
+        /// <remarks>
+        /// You can also choose from some defaults in <see cref="Patterns"/>
+        /// </remarks>
+        public string AnimationSequence { get; set; } = Patterns.Twirl;
 
         // A whitespace the length of 10 spaces
         private const string ExtraBuffer = "          ";
@@ -102,7 +105,7 @@ public static partial class Console {
 
             while (!task.IsCompleted && !token.IsCancellationRequested) {
                 // Await until the TaskAwaiter informs of completion
-                foreach (var c in Twirl) {
+                foreach (var c in AnimationSequence) {
                     if (header.Length > 0) {
                         Error.Write(header);
                         Error.Write(' ');
@@ -133,5 +136,30 @@ public static partial class Console {
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private Task RunAsyncNonGeneric(Task task, string header, CancellationToken token) => RunAsync(task, header, token);
+    }
+
+    /// <summary>
+    /// Provides constant animation sequences that can be used for <see cref="IndeterminateProgressBar.AnimationSequence"/>
+    /// </summary>
+    public static class Patterns {
+        /// <summary>
+        /// A twirl animation sequence
+        /// </summary>
+        public const string Twirl = "|/-\\";
+
+        /// <summary>
+        /// A bounce animation sequence
+        /// </summary>
+        public const string Bounce = "<>==<>";
+
+        /// <summary>
+        /// A dots animation sequence
+        /// </summary>
+        public const string Dots = ".oO°Oo.";
+
+        /// <summary>
+        /// A braille animation sequence
+        /// </summary>
+        public const string Braille = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏";
     }
 }
