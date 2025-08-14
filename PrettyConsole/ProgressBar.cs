@@ -71,6 +71,8 @@ public static partial class Console {
 		/// <param name="status">The status text to be displayed after the progress bar.</param>
 		public void Update(double percentage, ReadOnlySpan<char> status) {
 			lock (_lock) {
+				percentage = Math.Clamp(percentage, 0, 100);
+
 				if (status.Length is 0) {
 					status = Utils.FormatPercentage(percentage, _percentageBuffer);
 				}
