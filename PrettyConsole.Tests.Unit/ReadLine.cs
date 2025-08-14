@@ -6,7 +6,7 @@ public class ReadLine {
         Out = Utilities.GetWriter(out var _);
         var reader = Utilities.GetReader("Hello world!");
         In = reader;
-        ReadLine().Should().Be("Hello world!");
+        Assert.Equal("Hello world!", ReadLine());
     }
 
     [Fact]
@@ -14,7 +14,7 @@ public class ReadLine {
         Out = Utilities.GetWriter(out var _);
         var reader = Utilities.GetReader("Hello world!");
         In = reader;
-        ReadLine(["Enter something:"]).Should().Be("Hello world!");
+        Assert.Equal("Hello world!", ReadLine(["Enter something:"]));
     }
 
     [Fact]
@@ -22,7 +22,7 @@ public class ReadLine {
         Out = Utilities.GetWriter(out var _);
         var reader = Utilities.GetReader("5");
         In = reader;
-        ReadLine<int>(["Enter num:"]).Should().Be(5);
+        Assert.Equal(5, ReadLine<int>(["Enter num:"]));
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public class ReadLine {
         Out = Utilities.GetWriter(out var _);
         var reader = Utilities.GetReader("Hello");
         In = reader;
-        ReadLine(["Enter num:"], 5).Should().Be(5);
+        Assert.Equal(5, ReadLine(["Enter num:"], 5));
     }
 
     [Fact]
@@ -38,8 +38,8 @@ public class ReadLine {
         Out = Utilities.GetWriter(out var _);
         var reader = Utilities.GetReader("Hello");
         In = reader;
-        TryReadLine(["Enter num:"], 5, out int num).Should().BeFalse();
-        num.Should().Be(5);
+        Assert.False(TryReadLine(["Enter num:"], 5, out int num));
+        Assert.Equal(5, num);
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class ReadLine {
         Out = Utilities.GetWriter(out var _);
         var reader = Utilities.GetReader("bLack");
         In = reader;
-        TryReadLine(["Enter color:"], true, out ConsoleColor color).Should().BeTrue();
-        color.Should().Be(ConsoleColor.Black);
+        Assert.True(TryReadLine(["Enter color:"], true, out ConsoleColor color));
+        Assert.Equal(ConsoleColor.Black, color);
     }
 }

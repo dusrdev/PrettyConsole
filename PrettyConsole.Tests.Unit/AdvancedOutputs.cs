@@ -5,13 +5,13 @@ public class AdvancedOutputs {
     public async Task TypeWrite_Regular() {
         Out = Utilities.GetWriter(out var stringWriter);
         await TypeWrite("Hello world!" * Color.Green, 10);
-        stringWriter.ToString().Should().Contain("Hello world!");
+        Assert.Contains("Hello world!", stringWriter.ToString());
     }
 
     [Fact]
     public async Task TypeWriteLine_Regular() {
         Out = Utilities.GetWriter(out var stringWriter);
         await TypeWriteLine("Hello world!" * Color.Green, 10);
-        stringWriter.ToString().Should().Contain("Hello world!" + Environment.NewLine);
+        Assert.Contains("Hello world!" + Environment.NewLine, stringWriter.ToString());
     }
 }
