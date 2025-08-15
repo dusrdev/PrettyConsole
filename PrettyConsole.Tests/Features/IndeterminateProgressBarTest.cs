@@ -7,9 +7,11 @@ public sealed class IndeterminateProgressBarTest : IPrettyConsoleTest {
 
     public async ValueTask Implementation() {
         var prg = new IndeterminateProgressBar {
-            ForegroundColor = Color.Red,
+            AnimationSequence = IndeterminateProgressBar.Patterns.Braille,
+            ForegroundColor = Color.Magenta,
+            // UpdateRate = 120,
             DisplayElapsedTime = true
         };
-        await prg.RunAsync(Task.Delay(1_000), "running...");
+        await prg.RunAsync(Task.Delay(5_000), "running...");
     }
 }
