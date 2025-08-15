@@ -44,7 +44,7 @@ public static partial class Console {
         /// <remarks>Default = 200</remarks>
         public int UpdateRate { get; set; } = 200;
 
-        private static readonly char[] TempBuffer = new char[20];
+        private static readonly char[] TempBuffer = new char[128];
 
         /// <summary>
         /// Runs the indeterminate progress bar while the specified task is running.
@@ -96,34 +96,72 @@ public static partial class Console {
             }
 
             ResetColors();
-            var originalColor = baseConsole.ForegroundColor;
-            var startTime = Stopwatch.GetTimestamp();
+            ConsoleColor originalColor = baseConsole.ForegroundColor;
+            long startTime = Stopwatch.GetTimestamp();
+            long updateRateAsTicks = TimeSpan.FromMilliseconds(UpdateRate).Ticks;
+
+            // Maintain a stable cadence that accounts for render time
+            long nextTick = startTime;
+            int seqIndex = 0;
+
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+
+            // Cancel the delay token as soon as the bound task completes
+            _ = task.ContinueWith(static (t, state) => ((CancellationTokenSource)state!).Cancel(), linkedCts,
+                CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
             while (!task.IsCompleted && !token.IsCancellationRequested) {
-                // Await until the TaskAwaiter informs of completion
-                foreach (var c in AnimationSequence) {
-                    if (header.Length > 0) {
-                        Error.Write(header);
-                        Error.Write(' ');
-                    }
+                // Render a single frame
+                if (header.Length > 0) {
+                    Error.Write(header);
+                    Error.Write(' ');
+                }
 
-                    // Cycle through the characters of twirl
-                    baseConsole.ForegroundColor = ForegroundColor;
-                    Error.Write(c);
-                    baseConsole.ForegroundColor = originalColor;
-                    if (DisplayElapsedTime) {
-                        var elapsed = Stopwatch.GetElapsedTime(startTime);
-                        Error.Write(" [Elapsed: ");
-                        Error.Write(Utils.FormatTimeSpan(elapsed, TempBuffer));
-                        Error.Write(']');
-                    }
+                baseConsole.ForegroundColor = ForegroundColor;
+                Error.Write(AnimationSequence[seqIndex]);
+                baseConsole.ForegroundColor = originalColor;
 
-                    Error.WriteWhiteSpaces(PaddingLength);
-                    await Task.Delay(UpdateRate, token); // The update rate
-                    ClearNextLines(1, OutputPipe.Error);
-                    if (token.IsCancellationRequested) {
-                        return;
+                if (DisplayElapsedTime) {
+                    var elapsed = Stopwatch.GetElapsedTime(startTime);
+                    const string elapsedLabel = " [Elapsed: ";
+                    Span<char> buf = TempBuffer;
+                    elapsedLabel.CopyTo(buf);
+                    int length = elapsedLabel.Length;
+                    length += Utils.FormatTimeSpan(elapsed, buf.Slice(length));
+                    buf.Slice(length)[0] = ']';
+                    length += 1;
+                    Error.Write(buf.Slice(0, length));
+                }
+
+                Error.WriteWhiteSpaces(PaddingLength);
+
+                // Compute sleep to maintain UpdateRate between frame starts
+                var now = Stopwatch.GetTimestamp();
+                nextTick += updateRateAsTicks;
+                var remaining = nextTick - now;
+
+                if (remaining > 0) {
+                    try {
+                        var remainingTimeSpan = TimeSpan.FromTicks(remaining);
+                        if (remainingTimeSpan.TotalMilliseconds > 0) {
+                            await Task.Delay(remainingTimeSpan, linkedCts.Token).ConfigureAwait(false);
+                        }
+                    } catch (OperationCanceledException) {
+                        // Either external cancellation or task completed
                     }
+                }
+
+                // Always clear once per frame
+                ClearNextLines(1, OutputPipe.Error);
+
+                if (token.IsCancellationRequested || task.IsCompleted) {
+                    break;
+                }
+
+                // Advance animation sequence index without allocations
+                seqIndex++;
+                if (seqIndex == AnimationSequence.Count) {
+                    seqIndex = 0;
                 }
             }
 
