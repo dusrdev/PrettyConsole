@@ -65,8 +65,17 @@ public static partial class Console {
 		/// <param name="percentage">The percentage value (0-100) representing the progress.</param>
 		/// <param name="status">The status text to be displayed after the progress bar.</param>
 		public void Update(double percentage, ReadOnlySpan<char> status) {
+			// Non-locking fast path: compute the desired progress and early-return if unchanged.
+			percentage = Math.Clamp(percentage, 0, 100);
+			int predictedWidth = GetWidthOrDefault();
+			int predictedLength = Math.Max(0, predictedWidth - status.Length - 8);
+			int predictedP = Math.Clamp((int)(predictedLength * percentage * 0.01), 0, predictedLength);
+			if (predictedP == Volatile.Read(ref _currentProgress)) {
+				return;
+			}
+
 			lock (_lock) {
-				percentage = Math.Clamp(percentage, 0, 100);
+				// Recompute under lock to avoid races and use a consistent width/buffer state.
 				int bufferWidth = GetWidthOrDefault();
 
 				// Ensure buffer capacity
