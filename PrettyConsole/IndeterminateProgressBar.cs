@@ -111,27 +111,29 @@ public static partial class Console {
                 CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
             while (!task.IsCompleted && !token.IsCancellationRequested) {
-                // Render a single frame
-                if (header.Length > 0) {
-                    Error.Write(header);
-                    Error.Write(' ');
+                try {
+                    baseConsole.ForegroundColor = ForegroundColor;
+                    Error.Write(AnimationSequence[seqIndex]);
+                } finally {
+                    baseConsole.ForegroundColor = originalColor;
                 }
 
-                baseConsole.ForegroundColor = ForegroundColor;
-                Error.Write(AnimationSequence[seqIndex]);
-                baseConsole.ForegroundColor = originalColor;
+                if (header.Length > 0) {
+                    Error.Write(' ');
+                    Error.Write(header);
+                }
 
                 if (DisplayElapsedTime) {
-                    var elapsed = Stopwatch.GetElapsedTime(startTime);
-                    const string elapsedLabel = " [Elapsed: ";
-                    Span<char> buf = TempBuffer;
-                    elapsedLabel.CopyTo(buf);
-                    int length = elapsedLabel.Length;
-                    length += Utils.FormatTimeSpan(elapsed, buf.Slice(length));
-                    buf.Slice(length)[0] = ']';
-                    length += 1;
-                    Error.Write(buf.Slice(0, length));
-                }
+                        var elapsed = Stopwatch.GetElapsedTime(startTime);
+                        const string elapsedLabel = " [Elapsed: ";
+                        Span<char> buf = TempBuffer;
+                        elapsedLabel.CopyTo(buf);
+                        int length = elapsedLabel.Length;
+                        length += Utils.FormatTimeSpan(elapsed, buf.Slice(length));
+                        buf.Slice(length)[0] = ']';
+                        length += 1;
+                        Error.Write(buf.Slice(0, length));
+                    }
 
                 Error.WriteWhiteSpaces(PaddingLength);
 
