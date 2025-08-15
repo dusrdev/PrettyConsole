@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace PrettyConsole;
 
@@ -83,15 +84,15 @@ public static partial class Console {
 				CollectionsMarshal.SetCount(_buffer, bufferWidth);
 				Span<char> buf = CollectionsMarshal.AsSpan(_buffer);
 
-				int pLength = Math.Max(0, bufferWidth - status.Length - 8);
+				// Format percentage now to get its exact length and avoid overflow
+				var percentageSpan = Utils.FormatPercentage(percentage, _percentageBuffer);
+				// Compute pLength using exact overhead: " [" (2) + "] " (2) + percentage length
+				int pLength = Math.Max(0, bufferWidth - status.Length - 4 - percentageSpan.Length);
 				int p = Math.Clamp((int)(pLength * percentage * 0.01), 0, pLength);
 				if (p == _currentProgress) {
 					return;
 				}
 				_currentProgress = p;
-
-				// Defer percentage formatting until after we know we'll render
-				var percentageSpan = Utils.FormatPercentage(percentage, _percentageBuffer);
 
 				var currentLine = GetCurrentLine();
 				try {
