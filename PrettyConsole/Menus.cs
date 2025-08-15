@@ -17,7 +17,7 @@ public static partial class Console {
         where TList : IList<string> {
         WriteLine(title);
 
-        using var memoryOwner = MemoryPool<char>.Shared.Rent(baseConsole.BufferWidth);
+        using var memoryOwner = MemoryPool<char>.Shared.Rent(GetWidthOrDefault());
         Span<char> buffer = memoryOwner.Memory.Span;
 
         for (int i = 0; i < choices.Count; i++) {
@@ -53,7 +53,7 @@ public static partial class Console {
         where TList : IList<string> {
         WriteLine(title);
 
-        using var memoryOwner = MemoryPool<char>.Shared.Rent(baseConsole.BufferWidth);
+        using var memoryOwner = MemoryPool<char>.Shared.Rent(GetWidthOrDefault());
         Span<char> buffer = memoryOwner.Memory.Span;
 
         for (int i = 0; i < choices.Count; i++) {
@@ -109,7 +109,7 @@ public static partial class Console {
         var menuKeys = menu.Keys.ToArray();
         var maxMainOption = menuKeys.Max(static x => x.Length) + 10; // Used to make sub-tree prefix spaces uniform
 
-        using var memOwner = MemoryPool<char>.Shared.Rent(baseConsole.BufferWidth);
+        using var memOwner = MemoryPool<char>.Shared.Rent(GetWidthOrDefault());
         Span<char> buffer = memOwner.Memory.Span;
 
         //Enumerate options and sub-options

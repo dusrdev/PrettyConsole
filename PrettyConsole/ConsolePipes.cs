@@ -17,7 +17,7 @@ public static partial class Console {
 	public static TextReader In { get; internal set; } = baseConsole.In;
 
 	/// <summary>
-	/// Gets the appropriate <see cref="TextWriter"/> based on <paramref name="pipe"/> 
+	/// Gets the appropriate <see cref="TextWriter"/> based on <paramref name="pipe"/>
 	/// </summary>
 	/// <param name="pipe"></param>
 	/// <returns></returns>
@@ -26,4 +26,16 @@ public static partial class Console {
 			OutputPipe.Error => Error,
 			_ => Out
 		};
+
+	/// <summary>
+    /// Returns the current console buffer width or <paramref name="defaultWidth"/> if <see cref="baseConsole.IsOutputRedirected"/>
+    /// </summary>
+    /// <param name="defaultWidth"></param>
+    /// <returns></returns>
+    internal static int GetWidthOrDefault(int defaultWidth = 120) {
+        if (baseConsole.IsOutputRedirected) {
+            return defaultWidth;
+        }
+        return baseConsole.BufferWidth;
+    }
 }
