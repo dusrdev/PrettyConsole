@@ -74,44 +74,48 @@ public static partial class Console {
 				CollectionsMarshal.SetCount(_buffer, bufferWidth);
 				Span<char> buf = CollectionsMarshal.AsSpan(_buffer);
 
-				var percentageSpan = Utils.FormatPercentage(percentage, _percentageBuffer);
-				int pLength = Math.Max(0, bufferWidth - status.Length - 12);
+				int pLength = Math.Max(0, bufferWidth - status.Length - 8);
 				int p = Math.Clamp((int)(pLength * percentage * 0.01), 0, pLength);
 				if (p == _currentProgress) {
 					return;
 				}
 				_currentProgress = p;
 
-				ResetColors();
-				baseConsole.ForegroundColor = ForegroundColor;
+				// Defer percentage formatting until after we know we'll render
+				var percentageSpan = Utils.FormatPercentage(percentage, _percentageBuffer);
+
 				var currentLine = GetCurrentLine();
-				ClearNextLines(1, OutputPipe.Error);
-				if (status.Length != 0) {
-					Error.Write(status);
+				try {
+					ResetColors();
+					baseConsole.ForegroundColor = ForegroundColor;
+					ClearNextLines(1, OutputPipe.Error);
+					if (status.Length != 0) {
+						Error.Write(status);
+					}
+					Error.Write(" [");
+					baseConsole.ForegroundColor = ProgressColor;
+
+					Span<char> progressSpan = buf.Slice(0, p);
+					progressSpan.Fill(ProgressChar);
+
+					int tailLength = Math.Max(0, pLength - p);
+					if (tailLength > 0) {
+						Span<char> whiteSpaceSpan = buf.Slice(p, tailLength);
+						whiteSpaceSpan.Fill(' ');
+						p += tailLength;
+					}
+
+					Error.Write(buf.Slice(0, p));
+
+					baseConsole.ForegroundColor = ForegroundColor;
+					Error.Write("] ");
+					Error.Write(percentageSpan);
+					GoToLine(currentLine);
+				} finally {
+					// Ensure colors and buffer are reset even if an exception occurs mid-render
+					ResetColors();
+					_buffer.Clear();
 				}
-				Error.Write(" [");
-				baseConsole.ForegroundColor = ProgressColor;
-
-				Span<char> progressSpan = buf.Slice(0, p);
-				progressSpan.Fill(ProgressChar);
-
-				int tailLength = Math.Max(0, pLength - p);
-				if (tailLength > 0) {
-					Span<char> whiteSpaceSpan = buf.Slice(p, tailLength);
-					whiteSpaceSpan.Fill(' ');
-					p += tailLength;
-				}
-
-				Error.Write(buf.Slice(0, p));
-
-				baseConsole.ForegroundColor = ForegroundColor;
-				Error.Write("] ");
-				Error.Write(percentageSpan);
-				ResetColors();
-				GoToLine(currentLine);
-
-				// Reset buffer
-				_buffer.Clear();
 			}
 		}
 	}
