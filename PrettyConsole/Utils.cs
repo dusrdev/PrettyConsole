@@ -33,48 +33,48 @@ internal static class Utils {
     /// </summary>
     /// <param name="timeSpan"></param>
     /// <param name="buffer"></param>
-    /// <returns></returns>
-    internal static ReadOnlySpan<char> FormatTimeSpan(TimeSpan timeSpan, Span<char> buffer) {
+    /// <returns>The number of characters written to <paramref name="buffer"/></returns>
+    internal static int FormatTimeSpan(TimeSpan timeSpan, Span<char> buffer) {
         // < 1s  → "500ms"
         int written;
 
         if (timeSpan.TotalSeconds < 1) {
             if (!timeSpan.Milliseconds.TryFormat(buffer, out written)) {
-                return ReadOnlySpan<char>.Empty;
+                return 0;
             }
             "ms".CopyTo(buffer.Slice(written));
-            return buffer.Slice(0, written + 2);
+            return written + 2;
         }
 
         // < 60s → "SS:MMMs" (zero-padded)
         if (timeSpan.TotalSeconds < 60) {
             if (!buffer.TryWrite($"{timeSpan.Seconds:00}:{timeSpan.Milliseconds:000}s", out written)) {
-                return ReadOnlySpan<char>.Empty;
+                return 0;
             }
-            return buffer.Slice(0, written);
+            return written;
         }
 
         // < 1h  → "MM:SSm"
         if (timeSpan.TotalSeconds < 3600) {
             if (!buffer.TryWrite($"{timeSpan.Minutes:00}:{timeSpan.Seconds:00}m", out written)) {
-                return ReadOnlySpan<char>.Empty;
+                return 0;
             }
-            return buffer.Slice(0, written);
+            return written;
         }
 
         // < 1d  → "HH:MMhr"
         if (timeSpan.TotalSeconds < 86400) {
             if (!buffer.TryWrite($"{timeSpan.Hours:00}:{timeSpan.Minutes:00}hr", out written)) {
-                return ReadOnlySpan<char>.Empty;
+                return 0;
             }
-            return buffer.Slice(0, written);
+            return written;
         }
 
         // ≥ 1d  → "DD:HHd"
         if (!buffer.TryWrite($"{timeSpan.Days:00}:{timeSpan.Hours:00}d", out written)) {
-            return ReadOnlySpan<char>.Empty;
+            return 0;
         }
-        return buffer.Slice(0, written);
+        return written;
     }
 
     /// <summary>
