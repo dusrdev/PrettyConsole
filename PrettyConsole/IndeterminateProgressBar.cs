@@ -140,11 +140,22 @@ public static partial class Console {
                 nextTick += updateRateAsTicks;
                 var remaining = nextTick - now;
 
-                if (remaining > 0) {
+                if (remaining <= 0) {
+                    // If we are late by >= one period, snap schedule to now to avoid burst catch-up
+                    if (-remaining >= updateRateAsTicks) {
+                        nextTick = now;
+                    }
+                } else {
                     try {
-                        var remainingTimeSpan = TimeSpan.FromTicks(remaining);
-                        if (remainingTimeSpan.TotalMilliseconds > 0) {
-                            await Task.Delay(remainingTimeSpan, linkedCts.Token).ConfigureAwait(false);
+                        // Coarse delay for most of the remainder
+                        var remainingMs = (int)TimeSpan.FromTicks(remaining).TotalMilliseconds;
+                        if (remainingMs > 1) {
+                            await Task.Delay(remainingMs - 1, linkedCts.Token).ConfigureAwait(false);
+                        }
+                        // Fine spin for the last ~1ms to improve smoothness
+                        var sw = new SpinWait();
+                        while (!linkedCts.IsCancellationRequested && Stopwatch.GetTimestamp() < nextTick) {
+                            sw.SpinOnce();
                         }
                     } catch (OperationCanceledException) {
                         // Either external cancellation or task completed
