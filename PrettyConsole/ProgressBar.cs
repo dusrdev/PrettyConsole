@@ -67,18 +67,16 @@ public static partial class Console {
 		public void Update(double percentage, ReadOnlySpan<char> status) {
 			lock (_lock) {
 				percentage = Math.Clamp(percentage, 0, 100);
-                int bufferWidth = GetWidthOrDefault();
+				int bufferWidth = GetWidthOrDefault();
 
 				// Ensure buffer capacity
 				_buffer.EnsureCapacity(bufferWidth);
 				CollectionsMarshal.SetCount(_buffer, bufferWidth);
 				Span<char> buf = CollectionsMarshal.AsSpan(_buffer);
 
-				if (status.Length is 0) {
-					status = Utils.FormatPercentage(percentage, _percentageBuffer);
-				}
-				int pLength = Math.Max(0, bufferWidth - status.Length - 5);
-                int p = Math.Clamp((int)(pLength * percentage * 0.01), 0, pLength);
+				var percentageSpan = Utils.FormatPercentage(percentage, _percentageBuffer);
+				int pLength = Math.Max(0, bufferWidth - status.Length - 12);
+				int p = Math.Clamp((int)(pLength * percentage * 0.01), 0, pLength);
 				if (p == _currentProgress) {
 					return;
 				}
@@ -88,13 +86,16 @@ public static partial class Console {
 				baseConsole.ForegroundColor = ForegroundColor;
 				var currentLine = GetCurrentLine();
 				ClearNextLines(1, OutputPipe.Error);
-				Error.Write('[');
+				if (status.Length != 0) {
+					Error.Write(status);
+				}
+				Error.Write(" [");
 				baseConsole.ForegroundColor = ProgressColor;
 
 				Span<char> progressSpan = buf.Slice(0, p);
 				progressSpan.Fill(ProgressChar);
 
-                int tailLength = Math.Max(0, pLength - p);
+				int tailLength = Math.Max(0, pLength - p);
 				if (tailLength > 0) {
 					Span<char> whiteSpaceSpan = buf.Slice(p, tailLength);
 					whiteSpaceSpan.Fill(' ');
@@ -105,7 +106,7 @@ public static partial class Console {
 
 				baseConsole.ForegroundColor = ForegroundColor;
 				Error.Write("] ");
-				Error.Write(status);
+				Error.Write(percentageSpan);
 				ResetColors();
 				GoToLine(currentLine);
 
