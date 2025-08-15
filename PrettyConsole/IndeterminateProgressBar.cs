@@ -211,12 +211,6 @@ public static partial class Console {
                 = new(["😞", "😣", "😖", "😫", "😩", " "]);
 
             /// <summary>
-            /// A pulse animation sequence
-            /// </summary>
-            public static readonly ReadOnlyCollection<string> Pulse
-                = new(["•", "●", "•", " "]);
-
-            /// <summary>
             /// A loading-bar animation sequence
             /// </summary>
             public static readonly ReadOnlyCollection<string> LoadingBar
@@ -225,16 +219,16 @@ public static partial class Console {
             /// <summary>
             /// An ASCII ping-pong animation sequence
             /// </summary>
-            public static readonly ReadOnlyCollection<string> PingPongAscii
+            public static readonly ReadOnlyCollection<string> PingPong
                 = new([
-                    "|o    |",
-                    "| o   |",
-                    "|  o  |",
-                    "|   o |",
-                    "|    o|",
-                    "|   o |",
-                    "|  o  |",
-                    "| o   |",
+                    "|•    |",
+                    "| •   |",
+                    "|  •  |",
+                    "|   • |",
+                    "|    •|",
+                    "|   • |",
+                    "|  •  |",
+                    "| •   |",
                 ]);
         }
     }
