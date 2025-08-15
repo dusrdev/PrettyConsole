@@ -1,6 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace PrettyConsole;
 
@@ -68,30 +67,27 @@ public static partial class Console {
 		public void Update(double percentage, ReadOnlySpan<char> status) {
 			// Non-locking fast path: compute the desired progress and early-return if unchanged.
 			percentage = Math.Clamp(percentage, 0, 100);
-			int predictedWidth = GetWidthOrDefault();
-			int predictedLength = Math.Max(0, predictedWidth - status.Length - 8);
-			int predictedP = Math.Clamp((int)(predictedLength * percentage * 0.01), 0, predictedLength);
-			if (predictedP == Volatile.Read(ref _currentProgress)) {
+
+			int bufferWidth = GetWidthOrDefault();
+			// Compute pLength using exact overhead: " [" (2) + "] " (2) + percentage length (5)
+			int pLength = Math.Max(0, bufferWidth - status.Length - 4 - 5);
+			int p = Math.Clamp((int)(pLength * percentage * 0.01), 0, pLength);
+
+			if (p == Volatile.Read(ref _currentProgress)) {
 				return;
 			}
 
 			lock (_lock) {
-				// Recompute under lock to avoid races and use a consistent width/buffer state.
-				int bufferWidth = GetWidthOrDefault();
-
-				// Ensure buffer capacity
-				_buffer.EnsureCapacity(bufferWidth);
-				CollectionsMarshal.SetCount(_buffer, bufferWidth);
-				Span<char> buf = CollectionsMarshal.AsSpan(_buffer);
-
-				// Format percentage now to get its exact length and avoid overflow
-				var percentageSpan = Utils.FormatPercentage(percentage, _percentageBuffer);
-				// Compute pLength using exact overhead: " [" (2) + "] " (2) + percentage length
-				int pLength = Math.Max(0, bufferWidth - status.Length - 4 - percentageSpan.Length);
-				int p = Math.Clamp((int)(pLength * percentage * 0.01), 0, pLength);
+				// It's possible another thread updated while we were waiting; re-check only the progress value.
 				if (p == _currentProgress) {
 					return;
 				}
+
+				// Prepare the buffer exactly for the characters we will write for the bar (pLength)
+				_buffer.EnsureCapacity(pLength);
+				CollectionsMarshal.SetCount(_buffer, pLength);
+				Span<char> buf = CollectionsMarshal.AsSpan(_buffer);
+
 				_currentProgress = p;
 
 				var currentLine = GetCurrentLine();
@@ -105,21 +101,26 @@ public static partial class Console {
 					Error.Write(" [");
 					baseConsole.ForegroundColor = ProgressColor;
 
-					Span<char> progressSpan = buf.Slice(0, p);
-					progressSpan.Fill(ProgressChar);
+					// Fill the progress portion
+					if (p > 0) {
+						Span<char> progressSpan = buf.Slice(0, p);
+						progressSpan.Fill(ProgressChar);
+					}
 
+					// Fill the remaining tail with spaces
 					int tailLength = Math.Max(0, pLength - p);
 					if (tailLength > 0) {
 						Span<char> whiteSpaceSpan = buf.Slice(p, tailLength);
 						whiteSpaceSpan.Fill(' ');
-						p += tailLength;
 					}
 
-					Error.Write(buf.Slice(0, p));
+					// Write the entire bar (progress + tail)
+					Error.Write(buf.Slice(0, pLength));
 
 					baseConsole.ForegroundColor = ForegroundColor;
 					Error.Write("] ");
-					Error.Write(percentageSpan);
+					// Write percentage
+					Error.Write(Utils.FormatPercentage(percentage, _percentageBuffer));
 					GoToLine(currentLine);
 				} finally {
 					// Ensure colors and buffer are reset even if an exception occurs mid-render
