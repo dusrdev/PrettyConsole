@@ -36,12 +36,7 @@ public static partial class Console {
 
 		private int _currentProgress;
 
-
-#if NET9_0_OR_GREATER
 		private readonly Lock _lock = new();
-#else
-        private readonly object _lock = new();
-#endif
 
 		/// <summary>
 		/// Updates the progress bar with the specified percentage.
