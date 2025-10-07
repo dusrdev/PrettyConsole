@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>net9.0;net8.0</TargetFrameworks>
-		<LangVersion>13</LangVersion>
+		<LangVersion>latest</LangVersion>
 		<Authors>David Shnayder</Authors>
 		<Title>PrettyConsole</Title>
 		<Description>High performance, feature rich and easy to use wrap over System.Console</Description>
@@ -36,6 +36,8 @@
 			common CLIs.
 			- ProgressBar had numeral optimizations and should perform better in all scenarios.
 			- Dropped Sharpify as a dependency - PrettyConsole is now self-sufficient.
+			- Color received 2 new implicit operators, enabling it to convert a combination with any object
+			to ColoredOutput, which means you can write much less verbose statements with .ToString() calls.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
