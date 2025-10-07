@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net9.0;net8.0</TargetFrameworks>
+		<TargetFramework>net9.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -37,6 +37,7 @@
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
+			- Dropped Sharpify as a dependency - PrettyConsole is now self-sufficient.
 			- Fixed issue that could sometimes cause writing into buffers beyond their bounds -
 			throwing an exception.
 			- IndeterminateProgressBar will no allow customization of the animated sequence via
@@ -46,10 +47,10 @@
 			- IndeterminateProgressBar header is now positioned right of the animation. Similar to
 			common CLIs.
 			- ProgressBar had numeral optimizations and should perform better in all scenarios.
-			- Dropped Sharpify as a dependency - PrettyConsole is now self-sufficient.
 			- Color received 2 new implicit operators, enabling it to convert a combination with any object
 			to ColoredOutput, which means you can write much less verbose statements with .ToString() calls.
 			- Internal buffer pooling system was upgraded to further reduce allocations and relief more pressure from the GC.
+			- Write/WriteLine overload for T, will no longer throw an exception when a capacity above 256 characters is required to format the type, and also support ref structs.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
