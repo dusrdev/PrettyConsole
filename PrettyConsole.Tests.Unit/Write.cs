@@ -28,6 +28,13 @@ public class Write {
     }
 
     [Fact]
+    public void Write_SpanFormattable_VeryLongObjectFormat() {
+        var obj = new LongFormatStud();
+        Write(obj);
+        Assert.Equal(new string('X', LongFormatStud.Length), _writer.ToStringAndFlush());
+    }
+
+    [Fact]
     public void Write_ColoredOutput_Single() {
         Write("Hello world!" * Color.Green);
         Assert.Equal("Hello world!", _writer.ToStringAndFlush());
@@ -55,5 +62,24 @@ public class Write {
     public void WriteError_ColoredOutput_Multiple() {
         Write(["Hello " * Color.Green, "David" * Color.Yellow, "!"], OutputPipe.Error);
         Assert.Equal("Hello David!", _errorWriter.ToStringAndFlush());
+    }
+
+    private readonly ref struct LongFormatStud : ISpanFormattable {
+        public const int Length = 1024;
+
+        public string ToString(string? format, IFormatProvider? formatProvider) {
+            return new string('X', Length);
+        }
+
+        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) {
+            if (destination.Length < Length) {
+                charsWritten = 0;
+                return false;
+            }
+            var slice = destination.Slice(0, Length);
+            slice.Fill('X');
+            charsWritten = Length;
+            return true;
+        }
     }
 }
