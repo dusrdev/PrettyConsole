@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Globalization;
 
 namespace PrettyConsole;
@@ -112,10 +111,4 @@ internal static class Utils {
             writer.Write(full.AsSpan(0, length));
         }
     }
-
-    /// <summary>
-    /// Rents a memory owner from the shared memory pool
-    /// </summary>
-    /// <param name="length">The minimum length</param>
-    internal static IMemoryOwner<char> ObtainMemory(int length) => MemoryPool<char>.Shared.Rent(length);
 }

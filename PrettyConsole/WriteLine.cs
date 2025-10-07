@@ -37,7 +37,9 @@ public static partial class Console {
     /// <param name="item"></param>
     /// <param name="pipe">The output pipe to use</param>
     /// <typeparam name="T"></typeparam>
-    /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
+    /// <remarks>
+    /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 256, to ensure the fastest execution speed, it is recommend that <typeparamref name="T"/> would be able to format to a smaller length string than that.
+    /// </remarks>
     public static void WriteLine<T>(T item, OutputPipe pipe = OutputPipe.Out) where T : ISpanFormattable {
         WriteLine(item, pipe, Color.DefaultForegroundColor, Color.DefaultBackgroundColor, ReadOnlySpan<char>.Empty, null);
     }
@@ -50,7 +52,9 @@ public static partial class Console {
     /// <param name="pipe">The output pipe to use</param>
     /// <param name="foreground">foreground color</param>
     /// <typeparam name="T"></typeparam>
-    /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
+    /// <remarks>
+    /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 256, to ensure the fastest execution speed, it is recommend that <typeparamref name="T"/> would be able to format to a smaller length string than that.
+    /// </remarks>
     public static void WriteLine<T>(T item, OutputPipe pipe, ConsoleColor foreground) where T : ISpanFormattable {
         WriteLine(item, pipe, foreground, Color.DefaultBackgroundColor, ReadOnlySpan<char>.Empty, null);
     }
@@ -64,7 +68,9 @@ public static partial class Console {
     /// <param name="foreground">foreground color</param>
     /// <param name="background">background color</param>
     /// <typeparam name="T"></typeparam>
-    /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
+    /// <remarks>
+    /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 256, to ensure the fastest execution speed, it is recommend that <typeparamref name="T"/> would be able to format to a smaller length string than that.
+    /// </remarks>
     public static void WriteLine<T>(T item, OutputPipe pipe, ConsoleColor foreground,
         ConsoleColor background) where T : ISpanFormattable {
         WriteLine(item, pipe, foreground, background, ReadOnlySpan<char>.Empty, null);
@@ -81,7 +87,9 @@ public static partial class Console {
     /// <param name="format">item format</param>
     /// <param name="formatProvider">format provider</param>
     /// <typeparam name="T"></typeparam>
-    /// <exception cref="ArgumentException">If the result of formatted item length is > 256 characters</exception>
+    /// <remarks>
+    /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 256, to ensure the fastest execution speed, it is recommend that <typeparamref name="T"/> would be able to format to a smaller length string than that.
+    /// </remarks>
     public static void WriteLine<T>(T item, OutputPipe pipe, ConsoleColor foreground,
         ConsoleColor background, ReadOnlySpan<char> format, IFormatProvider? formatProvider)
     where T : ISpanFormattable {

@@ -1,4 +1,6 @@
-﻿namespace PrettyConsole;
+﻿using System.Runtime.CompilerServices;
+
+namespace PrettyConsole;
 
 public static partial class Console {
 	/// <summary>
@@ -21,6 +23,7 @@ public static partial class Console {
 	/// </summary>
 	/// <param name="pipe"></param>
 	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 	internal static TextWriter GetWriter(OutputPipe pipe)
 		=> pipe switch {
 			OutputPipe.Error => Error,
@@ -28,14 +31,15 @@ public static partial class Console {
 		};
 
 	/// <summary>
-    /// Returns the current console buffer width or <paramref name="defaultWidth"/> if <see cref="baseConsole.IsOutputRedirected"/>
-    /// </summary>
-    /// <param name="defaultWidth"></param>
-    /// <returns></returns>
-    internal static int GetWidthOrDefault(int defaultWidth = 120) {
-        if (baseConsole.IsOutputRedirected) {
-            return defaultWidth;
-        }
-        return baseConsole.BufferWidth;
-    }
+	/// Returns the current console buffer width or <paramref name="defaultWidth"/> if <see cref="baseConsole.IsOutputRedirected"/>
+	/// </summary>
+	/// <param name="defaultWidth"></param>
+	/// <returns></returns>
+	[MethodImpl(MethodImplOptions.AggressiveOptimization)]
+	internal static int GetWidthOrDefault(int defaultWidth = 120) {
+		if (baseConsole.IsOutputRedirected) {
+			return defaultWidth;
+		}
+		return baseConsole.BufferWidth;
+	}
 }

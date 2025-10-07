@@ -10,17 +10,14 @@ public static partial class Console {
     /// Useful for clearing output of overriding functions, like the ProgressBar
     /// </remarks>
     public static void ClearNextLines(int lines, OutputPipe pipe = OutputPipe.Error) {
-        InternalClearNextLines(lines, GetWriter(pipe));
-
-        static void InternalClearNextLines(int lines, TextWriter writer) {
-            var lineLength = GetWidthOrDefault();
-            var currentLine = GetCurrentLine();
-            GoToLine(currentLine);
-            for (int i = 0; i < lines; i++) {
-                writer.WriteWhiteSpaces(lineLength);
-            }
-            GoToLine(currentLine);
+        var textWriter = GetWriter(pipe);
+        var lineLength = GetWidthOrDefault();
+        var currentLine = GetCurrentLine();
+        GoToLine(currentLine);
+        for (int i = 0; i < lines; i++) {
+            textWriter.WriteWhiteSpaces(lineLength);
         }
+        GoToLine(currentLine);
     }
 
     /// <summary>

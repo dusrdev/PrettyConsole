@@ -49,6 +49,7 @@
 			- Dropped Sharpify as a dependency - PrettyConsole is now self-sufficient.
 			- Color received 2 new implicit operators, enabling it to convert a combination with any object
 			to ColoredOutput, which means you can write much less verbose statements with .ToString() calls.
+			- Internal buffer pooling system was upgraded to further reduce allocations and relief more pressure from the GC.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

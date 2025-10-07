@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace PrettyConsole;
 
@@ -43,8 +44,6 @@ public static partial class Console {
         /// </summary>
         /// <remarks>Default = 200</remarks>
         public int UpdateRate { get; set; } = 200;
-
-        private static readonly char[] TempBuffer = new char[128];
 
         /// <summary>
         /// Runs the indeterminate progress bar while the specified task is running.
@@ -124,16 +123,19 @@ public static partial class Console {
                 }
 
                 if (DisplayElapsedTime) {
-                        var elapsed = Stopwatch.GetElapsedTime(startTime);
-                        const string elapsedLabel = " [Elapsed: ";
-                        Span<char> buf = TempBuffer;
-                        elapsedLabel.CopyTo(buf);
-                        int length = elapsedLabel.Length;
-                        length += Utils.FormatTimeSpan(elapsed, buf.Slice(length));
-                        buf.Slice(length)[0] = ']';
-                        length += 1;
-                        Error.Write(buf.Slice(0, length));
-                    }
+                    var elapsed = Stopwatch.GetElapsedTime(startTime);
+                    const string elapsedLabel = " [Elapsed: ";
+                    using var bufferOwner = BufferPool.Shared.Rent();
+                    var buf = bufferOwner.Buffer;
+                    CollectionsMarshal.SetCount(buf, 256); // starting size is 256
+                    Span<char> span = CollectionsMarshal.AsSpan(buf);
+                    elapsedLabel.CopyTo(span);
+                    int length = elapsedLabel.Length;
+                    length += Utils.FormatTimeSpan(elapsed, span.Slice(length));
+                    span.Slice(length)[0] = ']';
+                    length += 1;
+                    Error.Write(buf.Slice(0, length));
+                }
 
                 Error.WriteWhiteSpaces(PaddingLength);
 

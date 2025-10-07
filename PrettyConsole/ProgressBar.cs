@@ -34,9 +34,6 @@ public static partial class Console {
 		// small buffer to write percentages
 		private readonly char[] _percentageBuffer = new char[20];
 
-		// The buffer used for writing the progress
-		private readonly List<char> _buffer = new(256);
-
 		private int _currentProgress;
 
 
@@ -85,9 +82,10 @@ public static partial class Console {
 				}
 
 				// Prepare the buffer exactly for the characters we will write for the bar (pLength)
-				_buffer.EnsureCapacity(pLength);
-				CollectionsMarshal.SetCount(_buffer, pLength);
-				Span<char> buf = CollectionsMarshal.AsSpan(_buffer);
+				using var listOwner = BufferPool.Shared.Rent();
+				listOwner.Buffer.EnsureCapacity(pLength);
+				CollectionsMarshal.SetCount(listOwner.Buffer, pLength);
+				Span<char> buf = CollectionsMarshal.AsSpan(listOwner.Buffer);
 
 				_currentProgress = p;
 
@@ -126,7 +124,6 @@ public static partial class Console {
 				} finally {
 					// Ensure colors and buffer are reset even if an exception occurs mid-render
 					ResetColors();
-					_buffer.Clear();
 				}
 			}
 		}
