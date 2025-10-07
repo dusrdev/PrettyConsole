@@ -40,7 +40,8 @@ public static partial class Console {
     /// <remarks>
     /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 256, to ensure the fastest execution speed, it is recommend that <typeparamref name="T"/> would be able to format to a smaller length string than that.
     /// </remarks>
-    public static void WriteLine<T>(T item, OutputPipe pipe = OutputPipe.Out) where T : ISpanFormattable {
+    public static void WriteLine<T>(T item, OutputPipe pipe = OutputPipe.Out)
+    where T : ISpanFormattable, allows ref struct {
         WriteLine(item, pipe, Color.DefaultForegroundColor, Color.DefaultBackgroundColor, ReadOnlySpan<char>.Empty, null);
     }
 
@@ -55,7 +56,8 @@ public static partial class Console {
     /// <remarks>
     /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 256, to ensure the fastest execution speed, it is recommend that <typeparamref name="T"/> would be able to format to a smaller length string than that.
     /// </remarks>
-    public static void WriteLine<T>(T item, OutputPipe pipe, ConsoleColor foreground) where T : ISpanFormattable {
+    public static void WriteLine<T>(T item, OutputPipe pipe, ConsoleColor foreground)
+    where T : ISpanFormattable, allows ref struct {
         WriteLine(item, pipe, foreground, Color.DefaultBackgroundColor, ReadOnlySpan<char>.Empty, null);
     }
 
@@ -72,7 +74,7 @@ public static partial class Console {
     /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 256, to ensure the fastest execution speed, it is recommend that <typeparamref name="T"/> would be able to format to a smaller length string than that.
     /// </remarks>
     public static void WriteLine<T>(T item, OutputPipe pipe, ConsoleColor foreground,
-        ConsoleColor background) where T : ISpanFormattable {
+        ConsoleColor background) where T : ISpanFormattable, allows ref struct {
         WriteLine(item, pipe, foreground, background, ReadOnlySpan<char>.Empty, null);
     }
 
@@ -92,7 +94,7 @@ public static partial class Console {
     /// </remarks>
     public static void WriteLine<T>(T item, OutputPipe pipe, ConsoleColor foreground,
         ConsoleColor background, ReadOnlySpan<char> format, IFormatProvider? formatProvider)
-    where T : ISpanFormattable {
+    where T : ISpanFormattable, allows ref struct {
         Write(item, pipe, foreground, background, format, formatProvider);
         NewLine(pipe);
     }
