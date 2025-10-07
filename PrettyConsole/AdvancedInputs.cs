@@ -48,7 +48,7 @@ public static partial class Console {
         }
 
         foreach (var value in trueValues) {
-            if (input.Equals(value, StringComparison.InvariantCultureIgnoreCase)) {
+            if (input.Equals(value, StringComparison.OrdinalIgnoreCase)) {
                 return true;
             }
         }

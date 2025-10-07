@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Globalization;
 
 namespace PrettyConsole;
 
@@ -15,15 +16,16 @@ internal static class Utils {
     internal static ReadOnlySpan<char> FormatPercentage(double percentage, Span<char> buffer) {
         const int length = 5;
         percentage = Math.Round(Math.Clamp(percentage, 0, 100), 2, MidpointRounding.AwayFromZero);
+        var currentCulture = CultureInfo.CurrentCulture;
 
-        percentage.TryFormat(buffer, out int written);
+        percentage.TryFormat(buffer, out int written, provider: currentCulture);
         if (written == length) {
             return buffer.Slice(0, written);
         }
 
         var padding = length - written;
         buffer.Slice(0, padding).Fill(' ');
-        percentage.TryFormat(buffer.Slice(padding), out written);
+        percentage.TryFormat(buffer.Slice(padding), out written, provider: currentCulture);
 
         return buffer.Slice(0, padding + written);
     }
@@ -39,7 +41,7 @@ internal static class Utils {
         int written;
 
         if (timeSpan.TotalSeconds < 1) {
-            if (!timeSpan.Milliseconds.TryFormat(buffer, out written)) {
+            if (!timeSpan.Milliseconds.TryFormat(buffer, out written, provider: CultureInfo.CurrentCulture)) {
                 return 0;
             }
             "ms".CopyTo(buffer.Slice(written));

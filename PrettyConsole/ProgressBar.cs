@@ -37,12 +37,13 @@ public static partial class Console {
 		// The buffer used for writing the progress
 		private readonly List<char> _buffer = new(256);
 
-		private int _currentProgress = 0;
+		private int _currentProgress;
+
 
 #if NET9_0_OR_GREATER
 		private readonly Lock _lock = new();
 #else
-		private readonly object _lock = new();
+        private readonly object _lock = new();
 #endif
 
 		/// <summary>
