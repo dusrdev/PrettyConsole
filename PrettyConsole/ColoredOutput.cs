@@ -37,10 +37,6 @@ public readonly record struct ColoredOutput(string Value, ConsoleColor Foregroun
         return new(new string(buffer));
     }
 
-    // public static implicit operator ColoredOutput(object? value) {
-    //     return value is null ? new(string.Empty) : new(value.ToString() ?? string.Empty);
-    // }
-
     /// <summary>
     /// Creates a new instance of <see cref="ColoredOutput"/> with a different background color
     /// </summary>
