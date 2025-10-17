@@ -11,6 +11,11 @@ public readonly partial record struct Color {
 	/// </summary>
 	public static readonly ConsoleColor DefaultBackgroundColor;
 
+	/// <summary>
+	/// Returns a tuple of the default foreground and background colors
+	/// </summary>
+	public static readonly (ConsoleColor fg, ConsoleColor bg) Default = (DefaultForegroundColor, DefaultBackgroundColor);
+
 	static Color() {
 		baseConsole.ResetColor();
 		DefaultForegroundColor = baseConsole.ForegroundColor;
