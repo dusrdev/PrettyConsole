@@ -54,6 +54,13 @@ public class ColorTests {
     }
 
     [Fact]
+    public void Color_DivideColorOperator() {
+        var (fg, bg) = Color.Red / Color.Blue;
+        Assert.Equal(ConsoleColor.Red, fg);
+        Assert.Equal(ConsoleColor.Blue, bg);
+	}
+
+    [Fact]
     public void Color_AsteriskOperator() {
         var coloredOutput = "Hello" * Color.Green;
         Assert.Equal(ConsoleColor.Green, coloredOutput.ForegroundColor);
@@ -71,6 +78,13 @@ public class ColorTests {
     public void Color_ObjectOperator() {
         var coloredOutput = 3 * Color.Green;
         Assert.Equal("3", coloredOutput.Value);
+    }
+
+    [Fact]
+    public void Color_DefaultColors() {
+        Assert.Equal(System.Console.ForegroundColor, Color.DefaultForegroundColor);
+        Assert.Equal(System.Console.BackgroundColor, Color.DefaultBackgroundColor);
+        Assert.Equal((System.Console.ForegroundColor, System.Console.BackgroundColor), Color.Default);
     }
 
     [Fact]
