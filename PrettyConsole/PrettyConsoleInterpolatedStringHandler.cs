@@ -86,7 +86,6 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// Sets the console foreground color to <paramref name="color"/>.
     /// </summary>
     public void AppendFormatted(ConsoleColor color) {
-        // _ = _pipe;
         Console.SetColors(color, baseConsole.BackgroundColor);
     }
 
@@ -94,17 +93,19 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// Sets the console foreground color to <paramref name="color"/>.
     /// </summary>
     public void AppendFormatted(Color color) {
-        // _ = _pipe;
         Console.SetColors(color, baseConsole.BackgroundColor);
     }
 
     /// <summary>
-	/// Sets the foreground and background colors of the console
-	/// </summary>
-	/// <param name="colors"></param>
-    public void AppendFormatted((ConsoleColor foreground, ConsoleColor background) colors) {
-        // _ = _pipe;
+    /// Sets the foreground and background colors of the console
+    /// </summary>
+    /// <param name="colors"></param>
+    /// <param name="alignment"></param>
+    public void AppendFormatted((ConsoleColor foreground, ConsoleColor background) colors, int alignment = 0) {
         Console.SetColors(colors.foreground, colors.background);
+        if (alignment != 0) {
+            AppendSpan(ReadOnlySpan<char>.Empty, alignment);
+        }
     }
 
     /// <summary>
