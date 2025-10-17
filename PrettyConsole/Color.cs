@@ -21,6 +21,21 @@ public readonly partial record struct Color(ConsoleColor ConsoleColor) {
 	}
 
 	/// <summary>
+	/// Creates a tuple for foreground and background color
+	/// </summary>
+	/// <param name="foreground"></param>
+	/// <param name="background"></param>
+	/// <returns></returns>
+	public static (ConsoleColor fg, ConsoleColor bg) operator /(Color foreground, Color background) {
+		return (foreground, background);
+	}
+
+	/// <summary>
+	/// Returns a tuple of the default foreground and background colors
+	/// </summary>
+	public static (ConsoleColor fg, ConsoleColor bg) Default => (DefaultForegroundColor, DefaultBackgroundColor);
+
+	/// <summary>
 	/// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
 	/// </summary>
 	/// <param name="value">The string value to combine with the color.</param>
