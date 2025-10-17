@@ -211,7 +211,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
             CollectionsMarshal.SetCount(buffer, upperBound);
             var span = CollectionsMarshal.AsSpan(buffer);
             if (value.TryFormat(span, out int charsWritten, formatSpan, _provider)) {
-                AppendSpan(span[..charsWritten], alignment);
+                AppendSpan(span.Slice(0, charsWritten), alignment);
                 break;
             }
 
@@ -257,11 +257,12 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
             return;
         }
 
-        Span<char> spaces = stackalloc char[Math.Min(count, 32)];
-        spaces.Fill(' ');
+        const string paddingChunk = "                                ";
+
+        ReadOnlySpan<char> chunk = paddingChunk;
         while (count > 0) {
-            int segmentLength = Math.Min(count, spaces.Length);
-            _writer.Write(spaces[..segmentLength]);
+            int segmentLength = Math.Min(count, chunk.Length);
+            _writer.Write(chunk.Slice(0, segmentLength));
             count -= segmentLength;
         }
     }
