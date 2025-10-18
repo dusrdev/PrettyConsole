@@ -17,15 +17,8 @@ public static partial class Console {
         where TList : IList<string> {
         WriteLine(title);
 
-        using var bufferOwner = BufferPool.Shared.Rent(out var buffer);
-        var width = GetWidthOrDefault();
-        buffer.EnsureCapacity(width);
-        CollectionsMarshal.SetCount(buffer, width);
-        var span = CollectionsMarshal.AsSpan(buffer);
-
         for (int i = 0; i < choices.Count; i++) {
-            span.TryWrite($" {i + 1}) {choices[i]}", out var written);
-            Out.WriteLine(span.Slice(0, written));
+            WriteLine($" {i + 1}) {choices[i]}");
         }
 
         NewLine();
@@ -56,15 +49,8 @@ public static partial class Console {
         where TList : IList<string> {
         WriteLine(title);
 
-        using var bufferOwner = BufferPool.Shared.Rent(out var buffer);
-        var width = GetWidthOrDefault();
-        buffer.EnsureCapacity(width);
-        CollectionsMarshal.SetCount(buffer, width);
-        var span = CollectionsMarshal.AsSpan(buffer);
-
         for (int i = 0; i < choices.Count; i++) {
-            span.TryWrite($" {i + 1}) {choices[i]}", out var written);
-            Out.WriteLine(span.Slice(0, written));
+            WriteLine($" {i + 1}) {choices[i]}");
         }
 
         NewLine();
