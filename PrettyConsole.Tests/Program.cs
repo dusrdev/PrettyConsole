@@ -11,8 +11,6 @@ using static PrettyConsole.Console;
 // 	.Select(x => (IPrettyConsoleTest)Activator.CreateInstance(x)!)
 // 	.ToArray();
 
-Write(5);
-
 var tests = new IPrettyConsoleTest[] {
 	new ColoredOutputTest(),
 	new SelectionTest(),
