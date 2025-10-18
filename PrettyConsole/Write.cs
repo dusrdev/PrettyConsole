@@ -133,8 +133,21 @@ public static partial class Console {
     /// To end line, use <see cref="WriteLine(ColoredOutput, OutputPipe)"/>
     /// </remarks>
     public static void Write(ColoredOutput output, OutputPipe pipe = OutputPipe.Out) {
+        WriteCore(output, GetWriter(pipe));
+    }
+
+    /// <summary>
+    /// Write a <see cref="ColoredOutput"/> to the error console
+    /// </summary>
+    /// <param name="output"/>
+    /// <param name="writer">The writer to use</param>
+    /// <remarks>
+    /// To end line, use <see cref="WriteLine(ColoredOutput, OutputPipe)"/>
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void WriteCore(ColoredOutput output, TextWriter writer) {
         SetColors(output.ForegroundColor, output.BackgroundColor);
-        GetWriter(pipe).Write(output.Value);
+        writer.Write(output.Value);
         ResetColors();
     }
 
@@ -144,11 +157,21 @@ public static partial class Console {
     /// <param name="outputs"></param>
     /// <param name="pipe">The output pipe to use</param>
     public static void Write(ReadOnlySpan<ColoredOutput> outputs, OutputPipe pipe = OutputPipe.Out) {
+        WriteCore(outputs, GetWriter(pipe));
+    }
+
+    /// <summary>
+    /// Write a number of <see cref="ColoredOutput"/> to the console
+    /// </summary>
+    /// <param name="outputs"></param>
+    /// <param name="writer">The writer to use</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void WriteCore(ReadOnlySpan<ColoredOutput> outputs, TextWriter writer) {
         if (outputs.Length is 0) {
             return;
         }
         foreach (var output in outputs) {
-            Write(output, pipe);
+            WriteCore(output, writer);
         }
     }
 }
