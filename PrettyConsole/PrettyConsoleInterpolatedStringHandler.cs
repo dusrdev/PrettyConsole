@@ -14,6 +14,16 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     private readonly IFormatProvider? _provider;
 
     /// <summary>
+    /// Creates a new handler that writes to <see cref="OutputPipe.Out"/> .
+    /// </summary>
+    /// <param name="literalLength">Estimated literal length supplied by the compiler.</param>
+    /// <param name="formattedCount">Formatted item count supplied by the compiler.</param>
+    /// <param name="shouldAppend">Always <see langword="true"/>; reserved for future short-circuiting.</param>
+    public PrettyConsoleInterpolatedStringHandler(int literalLength, int formattedCount, out bool shouldAppend)
+        : this(literalLength, formattedCount, OutputPipe.Out, provider: null, out shouldAppend) {
+    }
+
+    /// <summary>
     /// Creates a new handler that writes to <paramref name="pipe"/>.
     /// </summary>
     /// <param name="literalLength">Estimated literal length supplied by the compiler.</param>
@@ -42,7 +52,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <summary>
     /// Appends a literal segment supplied by the compiler.
     /// </summary>
-    public void AppendLiteral(string value) {
+    public readonly void AppendLiteral(string value) {
         if (!string.IsNullOrEmpty(value)) {
             _writer.Write(value);
         }
@@ -54,7 +64,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="value">Formatted string.</param>
     /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
     /// <param name="format">Unused string format specifier.</param>
-    public void AppendFormatted(string? value, int alignment = 0, string? format = null) {
+    public readonly void AppendFormatted(string? value, int alignment = 0, string? format = null) {
         AppendString(value, alignment);
     }
 
@@ -63,7 +73,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     /// <param name="value">Characters to write.</param>
     /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
-    public void AppendFormatted(scoped ReadOnlySpan<char> value, int alignment = 0) {
+    public readonly void AppendFormatted(scoped ReadOnlySpan<char> value, int alignment = 0) {
         AppendSpan(value, alignment);
     }
 
@@ -72,7 +82,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     /// <param name="value">Character to write.</param>
     /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
-    public void AppendFormatted(char value, int alignment = 0) {
+    public readonly void AppendFormatted(char value, int alignment = 0) {
         if (alignment == 0) {
             _writer.Write(value);
             return;
@@ -85,14 +95,14 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <summary>
     /// Sets the console foreground color to <paramref name="color"/>.
     /// </summary>
-    public void AppendFormatted(ConsoleColor color) {
+    public readonly void AppendFormatted(ConsoleColor color) {
         Console.SetColors(color, baseConsole.BackgroundColor);
     }
 
     /// <summary>
     /// Sets the console foreground color to <paramref name="color"/>.
     /// </summary>
-    public void AppendFormatted(Color color) {
+    public readonly void AppendFormatted(Color color) {
         Console.SetColors(color, baseConsole.BackgroundColor);
     }
 
@@ -101,7 +111,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     /// <param name="colors"></param>
     /// <param name="alignment"></param>
-    public void AppendFormatted((ConsoleColor foreground, ConsoleColor background) colors, int alignment = 0) {
+    public readonly void AppendFormatted((ConsoleColor foreground, ConsoleColor background) colors, int alignment = 0) {
         Console.SetColors(colors.foreground, colors.background);
         if (alignment != 0) {
             AppendSpan(ReadOnlySpan<char>.Empty, alignment);
@@ -113,7 +123,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     /// <param name="output">Segment to write.</param>
     /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
-    public void AppendFormatted(ColoredOutput output, int alignment = 0) {
+    public readonly void AppendFormatted(ColoredOutput output, int alignment = 0) {
         Console.Write(output, _pipe);
         if (alignment != 0) {
             AppendSpan(ReadOnlySpan<char>.Empty, alignment);
@@ -124,7 +134,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// Writes a buffer of <see cref="ColoredOutput"/> items.
     /// </summary>
     /// <param name="outputs">Segments to write.</param>
-    public void AppendFormatted(ReadOnlySpan<ColoredOutput> outputs) {
+    public readonly void AppendFormatted(ReadOnlySpan<ColoredOutput> outputs) {
         if (outputs.Length is 0) {
             return;
         }
@@ -132,30 +142,66 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
+    /// Append timeSpan with or without elapsed time formatting (human readable)
+    /// </summary>
+    /// <param name="timeSpan"></param>
+    /// <param name="format"></param>
+    public readonly void AppendFormatted(TimeSpan timeSpan, string? format = null) {
+        if (format != "hr") {
+            AppendSpanFormattable(timeSpan, 0, format);
+            return;
+        }
+        if (timeSpan.TotalSeconds < 1) {
+            AppendSpanFormattable(timeSpan.Milliseconds, 0, null);
+            AppendSpan("ms", 0);
+        } else if (timeSpan.TotalSeconds < 60) {
+            AppendSpanFormattable(timeSpan.Seconds, 0, "00");
+            AppendFormatted(':');
+            AppendSpanFormattable(timeSpan.Milliseconds, 0, "00");
+            AppendFormatted('s');
+        } else if (timeSpan.TotalSeconds < 3600) {
+            AppendSpanFormattable(timeSpan.Minutes, 0, "00");
+            AppendFormatted(':');
+            AppendSpanFormattable(timeSpan.Seconds, 0, "00");
+            AppendFormatted('m');
+        } else if (timeSpan.TotalSeconds < 86400) {
+            AppendSpanFormattable(timeSpan.Hours, 0, "00");
+            AppendFormatted(':');
+            AppendSpanFormattable(timeSpan.Minutes, 0, "00");
+            AppendSpan("hr", 0);
+        } else {
+            AppendSpanFormattable(timeSpan.Days, 0, "00");
+            AppendFormatted(':');
+            AppendSpanFormattable(timeSpan.Hours, 0, "00");
+            AppendSpan("d", 0);
+        }
+    }
+
+    /// <summary>
     /// Appends a value type that implements <see cref="ISpanFormattable"/> without boxing.
     /// </summary>
-    public void AppendFormatted<T>(T value) where T : ISpanFormattable {
+    public readonly void AppendFormatted<T>(T value) where T : ISpanFormattable {
         AppendSpanFormattable(value, alignment: 0, format: null);
     }
 
     /// <summary>
     /// Appends a value type that implements <see cref="ISpanFormattable"/> without boxing while respecting alignment.
     /// </summary>
-    public void AppendFormatted<T>(T value, int alignment) where T : ISpanFormattable {
+    public readonly void AppendFormatted<T>(T value, int alignment) where T : ISpanFormattable {
         AppendSpanFormattable(value, alignment, format: null);
     }
 
     /// <summary>
     /// Appends a value type that implements <see cref="ISpanFormattable"/> without boxing using the provided format string.
     /// </summary>
-    public void AppendFormatted<T>(T value, string? format) where T : ISpanFormattable {
+    public readonly void AppendFormatted<T>(T value, string? format) where T : ISpanFormattable {
         AppendSpanFormattable(value, alignment: 0, format);
     }
 
     /// <summary>
     /// Appends a value type that implements <see cref="ISpanFormattable"/> without boxing using alignment and format string.
     /// </summary>
-    public void AppendFormatted<T>(T value, int alignment, string? format) where T : ISpanFormattable {
+    public readonly void AppendFormatted<T>(T value, int alignment, string? format) where T : ISpanFormattable {
         AppendSpanFormattable(value, alignment, format);
     }
 
@@ -165,7 +211,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="value">Value to write.</param>
     /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
     /// <param name="format">Optional format specifier.</param>
-    public void AppendFormatted(object? value, int alignment = 0, string? format = null) {
+    public readonly void AppendFormatted(object? value, int alignment = 0, string? format = null) {
         if (value is null) {
             AppendSpan(ReadOnlySpan<char>.Empty, alignment);
             return;
@@ -199,7 +245,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
         AppendString(value.ToString(), alignment);
     }
 
-    private void AppendSpanFormattable<T>(T value, int alignment, string? format)
+    private readonly void AppendSpanFormattable<T>(T value, int alignment, string? format)
     where T : ISpanFormattable {
         using var owner = BufferPool.Shared.Rent(out var buffer);
         int upperBound = BufferPool.ListStartingSize;
@@ -218,7 +264,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
         }
     }
 
-    private void AppendString(string? value, int alignment) {
+    private readonly void AppendString(string? value, int alignment) {
         if (string.IsNullOrEmpty(value)) {
             AppendSpan(ReadOnlySpan<char>.Empty, alignment);
             return;
@@ -227,7 +273,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
         AppendSpan(value.AsSpan(), alignment);
     }
 
-    private void AppendSpan(scoped ReadOnlySpan<char> span, int alignment) {
+    private readonly void AppendSpan(scoped ReadOnlySpan<char> span, int alignment) {
         if (alignment != 0) {
             bool leftAlign = alignment < 0;
             int width = Math.Abs(alignment);
@@ -251,7 +297,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
         }
     }
 
-    private void WritePadding(int count) {
+    private readonly void WritePadding(int count) {
         if (count <= 0) {
             return;
         }
