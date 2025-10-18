@@ -17,6 +17,15 @@ public static partial class Console {
     }
 
     /// <summary>
+    /// Used to wait for user input
+    /// </summary>
+    /// <param name="handler">Interpolated string handler that streams the content.</param>
+    public static void RequestAnyInput([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
+        ResetColors();
+        _ = baseConsole.ReadKey();
+    }
+
+    /// <summary>
     /// Used to get user confirmation with the default values ["y", "yes"]
     /// </summary>
     public static ReadOnlySpan<string> DefaultConfirmValues => new[] { "y", "yes" };
@@ -24,11 +33,23 @@ public static partial class Console {
     /// <summary>
     /// Used to get user confirmation with the default values ["y", "yes"] or just pressing enter
     /// </summary>
+    /// <param name="message"></param>
     /// <remarks>
     /// It does not display a question mark or any other prompt, only the message
     /// </remarks>
     public static bool Confirm(ReadOnlySpan<ColoredOutput> message) {
         return Confirm(message, DefaultConfirmValues);
+    }
+
+    /// <summary>
+    /// Used to get user confirmation with the default values ["y", "yes"] or just pressing enter
+    /// </summary>
+    /// <param name="handler">Interpolated string handler that streams the content.</param>
+    /// <remarks>
+    /// It does not display a question mark or any other prompt, only the message
+    /// </remarks>
+    public static bool Confirm([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
+        return Confirm(DefaultConfirmValues, true, handler);
     }
 
     /// <summary>
@@ -42,6 +63,31 @@ public static partial class Console {
     /// </remarks>
     public static bool Confirm(ReadOnlySpan<ColoredOutput> message, ReadOnlySpan<string> trueValues, bool emptyIsTrue = true) {
         Write(message);
+        var input = In.ReadLine();
+        if (input is null or { Length: 0 }) {
+            return emptyIsTrue;
+        }
+
+        foreach (var value in trueValues) {
+            if (input.Equals(value, StringComparison.OrdinalIgnoreCase)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Used to get user confirmation
+    /// </summary>
+    /// <param name="trueValues">a collection of values that indicate positive confirmation</param>
+    /// <param name="emptyIsTrue">if simply pressing enter is considered positive or not</param>
+    /// <param name="handler">Interpolated string handler that streams the content.</param>
+    /// <remarks>
+    /// It does not display a question mark or any other prompt, only the message
+    /// </remarks>
+    public static bool Confirm(ReadOnlySpan<string> trueValues, bool emptyIsTrue = true, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
+        ResetColors();
         var input = In.ReadLine();
         if (input is null or { Length: 0 }) {
             return emptyIsTrue;
