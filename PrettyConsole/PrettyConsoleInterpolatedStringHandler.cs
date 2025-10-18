@@ -301,14 +301,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
             return;
         }
 
-        const string paddingChunk = "                                ";
-
-        ReadOnlySpan<char> chunk = paddingChunk;
-        while (count > 0) {
-            int segmentLength = Math.Min(count, chunk.Length);
-            _writer.Write(chunk.Slice(0, segmentLength));
-            count -= segmentLength;
-        }
+        _writer.WriteWhiteSpaces(count);
     }
 }
 #pragma warning restore CA1822 // Mark members as static
