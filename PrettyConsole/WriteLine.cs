@@ -2,6 +2,25 @@ namespace PrettyConsole;
 
 public static partial class Console {
     /// <summary>
+    /// Writes interpolated content using <see cref="PrettyConsoleInterpolatedStringHandler"/> to <see cref="OutputPipe.Out"/>.
+    /// </summary>
+    /// <param name="handler">Interpolated string handler that streams the content.</param>
+    public static void WriteLine([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
+        ResetColors();
+        NewLine(OutputPipe.Out);
+    }
+
+    /// <summary>
+    /// Writes interpolated content using <see cref="PrettyConsoleInterpolatedStringHandler"/>.
+    /// </summary>
+    /// <param name="pipe">Destination pipe. Defaults to <see cref="OutputPipe.Out"/>.</param>
+    /// <param name="handler">Interpolated string handler that streams the content.</param>
+    public static void WriteLine(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] PrettyConsoleInterpolatedStringHandler handler = default) {
+        ResetColors();
+        NewLine(pipe);
+    }
+
+    /// <summary>
     /// Write a <see cref="ColoredOutput"/> to the error console
     /// </summary>
     /// <param name="output"/>

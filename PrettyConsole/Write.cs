@@ -4,6 +4,23 @@ namespace PrettyConsole;
 
 public static partial class Console {
     /// <summary>
+    /// Writes interpolated content using <see cref="PrettyConsoleInterpolatedStringHandler"/> to <see cref="OutputPipe.Out"/>.
+    /// </summary>
+    /// <param name="handler">Interpolated string handler that streams the content.</param>
+    public static void Write([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
+        ResetColors();
+	}
+
+    /// <summary>
+    /// Writes interpolated content using <see cref="PrettyConsoleInterpolatedStringHandler"/>.
+    /// </summary>
+    /// <param name="pipe">Destination pipe. Defaults to <see cref="OutputPipe.Out"/>.</param>
+    /// <param name="handler">Interpolated string handler that streams the content.</param>
+    public static void Write(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] PrettyConsoleInterpolatedStringHandler handler = default) {
+        ResetColors();
+    }
+
+    /// <summary>
     /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer
     /// </summary>
     /// <param name="item"></param>
