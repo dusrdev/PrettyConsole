@@ -10,6 +10,20 @@ public class WriteLine {
     }
 
     [Fact]
+    public void WriteLine_Interpolated_AppendsNewLine() {
+        var originalOut = Out;
+        var writer = new StringWriter();
+        Out = writer;
+
+        try {
+            WriteLine(OutputPipe.Out, $"Line {7}");
+            Assert.Equal($"Line 7{writer.NewLine}", writer.ToString());
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Fact]
     public void WriteLine_ColoredOutput_Single() {
         WriteLine("Hello world!" * Color.Green);
         Assert.Equal("Hello world!".WithNewLine(), _writer.ToStringAndFlush());
