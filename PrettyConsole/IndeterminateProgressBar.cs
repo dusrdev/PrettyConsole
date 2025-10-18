@@ -1,7 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace PrettyConsole;
 
@@ -124,16 +122,7 @@ public static partial class Console {
 
                 if (DisplayElapsedTime) {
                     var elapsed = Stopwatch.GetElapsedTime(startTime);
-                    const string elapsedLabel = " [Elapsed: ";
-                    using var bufferOwner = BufferPool.Shared.Rent(out var buf);
-                    CollectionsMarshal.SetCount(buf, 256); // starting size is 256
-                    Span<char> span = CollectionsMarshal.AsSpan(buf);
-                    elapsedLabel.CopyTo(span);
-                    int length = elapsedLabel.Length;
-                    length += Utils.FormatTimeSpan(elapsed, span.Slice(length));
-                    span.Slice(length)[0] = ']';
-                    length += 1;
-                    Error.Write(buf.Slice(0, length));
+                    Write(OutputPipe.Error, $" [Elapsed: {elapsed:hr}]");
                 }
 
                 Error.WriteWhiteSpaces(PaddingLength);

@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace PrettyConsole;
 
@@ -30,9 +29,6 @@ public static partial class Console {
 		/// Gets or sets the color of the progress portion of the bar.
 		/// </summary>
 		public ConsoleColor ProgressColor { get; set; } = Color.DefaultForegroundColor;
-
-		// small buffer to write percentages
-		private readonly char[] _percentageBuffer = new char[20];
 
 		private int _currentProgress;
 
@@ -114,7 +110,7 @@ public static partial class Console {
 					baseConsole.ForegroundColor = ForegroundColor;
 					Error.Write("] ");
 					// Write percentage
-					Error.Write(Utils.FormatPercentage(percentage, _percentageBuffer));
+					Write(OutputPipe.Error, $"{percentage, 5:##.##}");
 					GoToLine(currentLine);
 				} finally {
 					// Ensure colors and buffer are reset even if an exception occurs mid-render
