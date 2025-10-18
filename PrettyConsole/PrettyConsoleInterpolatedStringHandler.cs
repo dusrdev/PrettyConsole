@@ -8,7 +8,6 @@ namespace PrettyConsole;
 /// </summary>
 [InterpolatedStringHandler]
 public readonly ref struct PrettyConsoleInterpolatedStringHandler {
-    private readonly OutputPipe _pipe;
     private readonly TextWriter _writer;
     private readonly IFormatProvider? _provider;
 
@@ -42,7 +41,6 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="provider">Optional format provider used when formatting values.</param>
     /// <param name="shouldAppend">Always <see langword="true"/>; reserved for future short-circuiting.</param>
     public PrettyConsoleInterpolatedStringHandler(int literalLength, int formattedCount, OutputPipe pipe, IFormatProvider? provider, out bool shouldAppend) {
-        _pipe = pipe;
         _writer = Console.GetWriter(pipe);
         _provider = provider;
         shouldAppend = true;
@@ -123,7 +121,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="output">Segment to write.</param>
     /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
     public readonly void AppendFormatted(ColoredOutput output, int alignment = 0) {
-        Console.Write(output, _pipe);
+        Console.WriteCore(output, _writer);
         if (alignment != 0) {
             AppendSpan(ReadOnlySpan<char>.Empty, alignment);
         }
@@ -137,7 +135,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
         if (outputs.Length is 0) {
             return;
         }
-        Console.Write(outputs, _pipe);
+        Console.WriteCore(outputs, _writer);
     }
 
     /// <summary>
