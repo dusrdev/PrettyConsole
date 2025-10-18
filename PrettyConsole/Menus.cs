@@ -17,8 +17,7 @@ public static partial class Console {
         where TList : IList<string> {
         WriteLine(title);
 
-        using var bufferOwner = BufferPool.Shared.Rent();
-        var buffer = bufferOwner.Buffer;
+        using var bufferOwner = BufferPool.Shared.Rent(out var buffer);
         var width = GetWidthOrDefault();
         buffer.EnsureCapacity(width);
         CollectionsMarshal.SetCount(buffer, width);
@@ -57,8 +56,7 @@ public static partial class Console {
         where TList : IList<string> {
         WriteLine(title);
 
-        using var bufferOwner = BufferPool.Shared.Rent();
-        var buffer = bufferOwner.Buffer;
+        using var bufferOwner = BufferPool.Shared.Rent(out var buffer);
         var width = GetWidthOrDefault();
         buffer.EnsureCapacity(width);
         CollectionsMarshal.SetCount(buffer, width);
@@ -117,8 +115,7 @@ public static partial class Console {
         var menuKeys = menu.Keys.ToArray();
         var maxMainOption = menuKeys.Max(static x => x.Length) + 10; // Used to make sub-tree prefix spaces uniform
 
-        using var bufferOwner = BufferPool.Shared.Rent();
-        var buffer = bufferOwner.Buffer;
+        using var bufferOwner = BufferPool.Shared.Rent(out var buffer);
         var width = GetWidthOrDefault();
         buffer.EnsureCapacity(width);
         CollectionsMarshal.SetCount(buffer, width);

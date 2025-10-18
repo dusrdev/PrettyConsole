@@ -77,10 +77,10 @@ public static partial class Console {
 				}
 
 				// Prepare the buffer exactly for the characters we will write for the bar (pLength)
-				using var listOwner = BufferPool.Shared.Rent();
-				listOwner.Buffer.EnsureCapacity(pLength);
-				CollectionsMarshal.SetCount(listOwner.Buffer, pLength);
-				Span<char> buf = CollectionsMarshal.AsSpan(listOwner.Buffer);
+				using var listOwner = BufferPool.Shared.Rent(out var list);
+				list.EnsureCapacity(pLength);
+				CollectionsMarshal.SetCount(list, pLength);
+				Span<char> buf = CollectionsMarshal.AsSpan(list);
 
 				_currentProgress = p;
 

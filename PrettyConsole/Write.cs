@@ -67,9 +67,8 @@ public static partial class Console {
     public static void Write<T>(T item, OutputPipe pipe, ConsoleColor foreground,
         ConsoleColor background, ReadOnlySpan<char> format, IFormatProvider? formatProvider)
     where T : ISpanFormattable, allows ref struct {
-        using var listOwner = BufferPool.Shared.Rent();
+        using var listOwner = BufferPool.Shared.Rent(out var lst);
         int upperBound = BufferPool.ListStartingSize;
-        var lst = listOwner.Buffer;
         while (true) {
             lst.EnsureCapacity(upperBound);
             CollectionsMarshal.SetCount(lst, upperBound);

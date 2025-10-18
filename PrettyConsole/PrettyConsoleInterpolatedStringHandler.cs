@@ -201,8 +201,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
 
     private void AppendSpanFormattable<T>(T value, int alignment, string? format)
     where T : ISpanFormattable {
-        using var owner = BufferPool.Shared.Rent();
-        var buffer = owner.Buffer;
+        using var owner = BufferPool.Shared.Rent(out var buffer);
         int upperBound = BufferPool.ListStartingSize;
         var formatSpan = format is null ? ReadOnlySpan<char>.Empty : format.AsSpan();
 

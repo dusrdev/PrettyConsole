@@ -125,8 +125,7 @@ public static partial class Console {
                 if (DisplayElapsedTime) {
                     var elapsed = Stopwatch.GetElapsedTime(startTime);
                     const string elapsedLabel = " [Elapsed: ";
-                    using var bufferOwner = BufferPool.Shared.Rent();
-                    var buf = bufferOwner.Buffer;
+                    using var bufferOwner = BufferPool.Shared.Rent(out var buf);
                     CollectionsMarshal.SetCount(buf, 256); // starting size is 256
                     Span<char> span = CollectionsMarshal.AsSpan(buf);
                     elapsedLabel.CopyTo(span);
