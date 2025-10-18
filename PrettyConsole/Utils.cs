@@ -1,83 +1,9 @@
-using System.Globalization;
-
 namespace PrettyConsole;
 
 /// <summary>
 /// A static class containing utility methods
 /// </summary>
 internal static class Utils {
-    /// <summary>
-    /// Returns a formatted percentage string, i.e 0,5:##0.##%
-    /// </summary>
-    /// <param name="percentage"></param>
-    /// <param name="buffer"></param>
-    /// <returns></returns>
-    internal static ReadOnlySpan<char> FormatPercentage(double percentage, Span<char> buffer) {
-        const int length = 5;
-        percentage = Math.Round(Math.Clamp(percentage, 0, 100), 2, MidpointRounding.AwayFromZero);
-        var currentCulture = CultureInfo.CurrentCulture;
-
-        percentage.TryFormat(buffer, out int written, provider: currentCulture);
-        if (written == length) {
-            return buffer.Slice(0, written);
-        }
-
-        var padding = length - written;
-        buffer.Slice(0, padding).Fill(' ');
-        percentage.TryFormat(buffer.Slice(padding), out written, provider: currentCulture);
-
-        return buffer.Slice(0, padding + written);
-    }
-
-    /// <summary>
-    /// Formats <paramref name="timeSpan"/>
-    /// </summary>
-    /// <param name="timeSpan"></param>
-    /// <param name="buffer"></param>
-    /// <returns>The number of characters written to <paramref name="buffer"/></returns>
-    internal static int FormatTimeSpan(TimeSpan timeSpan, Span<char> buffer) {
-        // < 1s  → "500ms"
-        int written;
-
-        if (timeSpan.TotalSeconds < 1) {
-            if (!timeSpan.Milliseconds.TryFormat(buffer, out written, provider: CultureInfo.CurrentCulture)) {
-                return 0;
-            }
-            "ms".CopyTo(buffer.Slice(written));
-            return written + 2;
-        }
-
-        // < 60s → "SS:MMMs" (zero-padded)
-        if (timeSpan.TotalSeconds < 60) {
-            if (!buffer.TryWrite($"{timeSpan.Seconds:00}:{timeSpan.Milliseconds:000}s", out written)) {
-                return 0;
-            }
-            return written;
-        }
-
-        // < 1h  → "MM:SSm"
-        if (timeSpan.TotalSeconds < 3600) {
-            if (!buffer.TryWrite($"{timeSpan.Minutes:00}:{timeSpan.Seconds:00}m", out written)) {
-                return 0;
-            }
-            return written;
-        }
-
-        // < 1d  → "HH:MMhr"
-        if (timeSpan.TotalSeconds < 86400) {
-            if (!buffer.TryWrite($"{timeSpan.Hours:00}:{timeSpan.Minutes:00}hr", out written)) {
-                return 0;
-            }
-            return written;
-        }
-
-        // ≥ 1d  → "DD:HHd"
-        if (!buffer.TryWrite($"{timeSpan.Days:00}:{timeSpan.Hours:00}d", out written)) {
-            return 0;
-        }
-        return written;
-    }
-
     /// <summary>
     /// Constant buffer filled with whitespaces
     /// </summary>
