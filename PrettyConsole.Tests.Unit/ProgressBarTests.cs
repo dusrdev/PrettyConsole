@@ -3,6 +3,7 @@ namespace PrettyConsole.Tests.Unit;
 public class ProgressBarTests {
     [Fact]
     public void ProgressBar_Update_WritesStatusAndPercentage() {
+        Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var errorWriter);
 
         var bar = new ProgressBar {
@@ -21,6 +22,7 @@ public class ProgressBarTests {
 
     [Fact]
     public void ProgressBar_Update_SamePercentage_NoAdditionalOutput() {
+        Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var errorWriter);
 
         var bar = new ProgressBar();
@@ -35,6 +37,7 @@ public class ProgressBarTests {
 
     [Fact]
     public async Task IndeterminateProgressBar_RunAsync_CompletesAndReturnsResult() {
+        Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var errorWriter);
 
         var bar = new IndeterminateProgressBar {

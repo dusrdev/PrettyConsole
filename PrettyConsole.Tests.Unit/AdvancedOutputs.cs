@@ -3,6 +3,7 @@ namespace PrettyConsole.Tests.Unit;
 public class AdvancedOutputs {
     [Fact]
     public void OverwriteCurrentLine_WritesOutputToPipe() {
+        Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var writer);
 
         OverwriteCurrentLine(["Updating" * Color.Green], OutputPipe.Error);
@@ -12,6 +13,7 @@ public class AdvancedOutputs {
 
     [Fact]
     public void Overwrite_ExecutesActionAndWritesOutput() {
+        Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var writer);
         bool executed = false;
 
@@ -26,6 +28,7 @@ public class AdvancedOutputs {
 
     [Fact]
     public void Overwrite_WithState_ExecutesActionAndWritesOutput() {
+        Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var writer);
         bool executed = false;
 
