@@ -12,7 +12,8 @@ public class MenusTests {
 
         var output = writer.ToStringAndFlush();
 
-        // Do not remove extra whitespace
+        static string Normalize(string value) => value.Replace("\r\n", "\n");
+
         Assert.Equal(
             """
             Choose a fruit:
@@ -21,8 +22,8 @@ public class MenusTests {
              3) Cherry
 
             Enter your choice: 
-            """
-        , output);
+            """.Replace("\r\n", "\n"),
+            Normalize(output));
         Assert.Equal("Banana", result);
     }
 

@@ -80,4 +80,16 @@ public class AdvancedInputs {
         Assert.Contains("Enter no", stringWriter.ToString());
         Assert.False(res);
     }
+
+    [Fact]
+    public void Confirm_CustomTrueValues_WithInterpolatedPrompt() {
+        Out = Utilities.GetWriter(out var stringWriter);
+        var reader = Utilities.GetReader("ok");
+        In = reader;
+
+        var res = Confirm(["ok", "okay"], false, $"Proceed?");
+
+        Assert.Equal("Proceed?", stringWriter.ToStringAndFlush());
+        Assert.True(res);
+    }
 }

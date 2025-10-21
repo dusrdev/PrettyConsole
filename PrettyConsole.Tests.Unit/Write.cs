@@ -108,6 +108,36 @@ public class Write {
         Assert.Equal("Hello David!", _errorWriter.ToStringAndFlush());
     }
 
+    [Fact]
+    public void Write_Interpolated_RightAlignmentPadsWithSpaces() {
+        Write($"Value {42,5}");
+        Assert.Equal("Value    42", _writer.ToStringAndFlush());
+    }
+
+    [Fact]
+    public void Write_Interpolated_LeftAlignmentPadsWithSpaces() {
+        Write($"Value {42,-5}");
+        Assert.Equal("Value 42   ", _writer.ToStringAndFlush());
+    }
+
+    [Fact]
+    public void Write_Interpolated_TimeSpanHumanReadableFormat() {
+        Write($"Elapsed {TimeSpan.FromSeconds(75):hr}");
+        Assert.Equal("Elapsed 01:15m", _writer.ToStringAndFlush());
+    }
+
+    [Fact]
+    public void Write_Interpolated_ColoredOutputSpan_WritesValues() {
+        ReadOnlySpan<ColoredOutput> outputs = [
+            "Hi " * Color.Green,
+            "There" * Color.Yellow
+        ];
+
+        Write($"Span {outputs}");
+
+        Assert.Equal("Span Hi There", _writer.ToStringAndFlush());
+    }
+
     private readonly ref struct LongFormatStud : ISpanFormattable {
         public const int Length = 1024;
 

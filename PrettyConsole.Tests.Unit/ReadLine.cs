@@ -50,4 +50,39 @@ public class ReadLine {
         Assert.True(TryReadLine(["Enter color:"], true, out ConsoleColor color));
         Assert.Equal(ConsoleColor.Black, color);
     }
+
+    [Fact]
+    public void ReadLine_InterpolatedPrompt_WritesPromptAndReadsValue() {
+        Out = Utilities.GetWriter(out _);
+        var reader = Utilities.GetReader("123");
+        In = reader;
+
+        var result = ReadLine($"Enter number: ");
+
+        Assert.Equal("123", result);
+    }
+
+    [Fact]
+    public void TryReadLine_InterpolatedWithDefault_ReturnsDefaultOnFailure() {
+        Out = Utilities.GetWriter(out _);
+        var reader = Utilities.GetReader("not-a-number");
+        In = reader;
+
+        var parsed = TryReadLine(out int result, 42, $"Enter number: ");
+
+        Assert.False(parsed);
+        Assert.Equal(42, result);
+    }
+
+    [Fact]
+    public void TryReadLine_Enum_InterpolatedPrompt_IgnoreCase() {
+        Out = Utilities.GetWriter(out _);
+        var reader = Utilities.GetReader("yElLoW");
+        In = reader;
+
+        var parsed = TryReadLine(out ConsoleColor color, true, $"Enter enum: ");
+
+        Assert.True(parsed);
+        Assert.Equal(ConsoleColor.Yellow, color);
+    }
 }

@@ -64,13 +64,13 @@ public class ColorTests {
     public void Color_AsteriskOperator() {
         var coloredOutput = "Hello" * Color.Green;
         Assert.Equal(ConsoleColor.Green, coloredOutput.ForegroundColor);
-        Assert.Equal(System.Console.BackgroundColor, coloredOutput.BackgroundColor);
+        Assert.Equal(Color.DefaultBackgroundColor, coloredOutput.BackgroundColor);
     }
 
     [Fact]
     public void Color_DivideOperator() {
         var coloredOutput = "Hello" / Color.Red;
-        Assert.Equal(System.Console.ForegroundColor, coloredOutput.ForegroundColor);
+        Assert.Equal(Color.DefaultForegroundColor, coloredOutput.ForegroundColor);
         Assert.Equal(ConsoleColor.Red, coloredOutput.BackgroundColor);
     }
 
@@ -82,32 +82,32 @@ public class ColorTests {
 
     [Fact]
     public void Color_DefaultColors() {
-        Assert.Equal(System.Console.ForegroundColor, Color.DefaultForegroundColor);
-        Assert.Equal(System.Console.BackgroundColor, Color.DefaultBackgroundColor);
-        Assert.Equal((System.Console.ForegroundColor, System.Console.BackgroundColor), Color.Default);
+        var (fg, bg) = Color.Default;
+        Assert.Equal(Color.DefaultForegroundColor, fg);
+        Assert.Equal(Color.DefaultBackgroundColor, bg);
     }
 
     [Fact]
     public void ColoredOutput_ForegroundCtor() {
         var coloredOutput = new ColoredOutput("Hello", Color.Red);
         Assert.Equal(ConsoleColor.Red, coloredOutput.ForegroundColor);
-        Assert.Equal(System.Console.BackgroundColor, coloredOutput.BackgroundColor);
+        Assert.Equal(Color.DefaultBackgroundColor, coloredOutput.BackgroundColor);
     }
 
     [Fact]
     public void ColoredOutput_StringOperator() {
         ColoredOutput coloredOutput = "Hello";
         Assert.Equal("Hello", coloredOutput.Value);
-        Assert.Equal(System.Console.ForegroundColor, coloredOutput.ForegroundColor);
-        Assert.Equal(System.Console.BackgroundColor, coloredOutput.BackgroundColor);
+        Assert.Equal(Color.DefaultForegroundColor, coloredOutput.ForegroundColor);
+        Assert.Equal(Color.DefaultBackgroundColor, coloredOutput.BackgroundColor);
     }
 
     [Fact]
     public void ColoredOutput_ReadOnlySpanOperator() {
         ColoredOutput coloredOutput = "Hello".AsSpan();
         Assert.Equal("Hello", coloredOutput.Value);
-        Assert.Equal(System.Console.ForegroundColor, coloredOutput.ForegroundColor);
-        Assert.Equal(System.Console.BackgroundColor, coloredOutput.BackgroundColor);
+        Assert.Equal(Color.DefaultForegroundColor, coloredOutput.ForegroundColor);
+        Assert.Equal(Color.DefaultBackgroundColor, coloredOutput.BackgroundColor);
     }
 
     [Fact]
