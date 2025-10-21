@@ -2,6 +2,43 @@ namespace PrettyConsole.Tests.Unit;
 
 public class AdvancedOutputs {
     [Fact]
+    public void OverwriteCurrentLine_WritesOutputToPipe() {
+        Error = Utilities.GetWriter(out var writer);
+
+        OverwriteCurrentLine(["Updating" * Color.Green], OutputPipe.Error);
+
+        Assert.Contains("Updating", writer.ToString());
+    }
+
+    [Fact]
+    public void Overwrite_ExecutesActionAndWritesOutput() {
+        Error = Utilities.GetWriter(out var writer);
+        bool executed = false;
+
+        Overwrite(() => {
+            executed = true;
+            Write(OutputPipe.Error, $"Progress");
+        }, lines: 1, pipe: OutputPipe.Error);
+
+        Assert.True(executed);
+        Assert.Contains("Progress", writer.ToString());
+    }
+
+    [Fact]
+    public void Overwrite_WithState_ExecutesActionAndWritesOutput() {
+        Error = Utilities.GetWriter(out var writer);
+        bool executed = false;
+
+        Overwrite("Done", status => {
+            executed = true;
+            Write(OutputPipe.Error, $"{status}");
+        }, lines: 1, pipe: OutputPipe.Error);
+
+        Assert.True(executed);
+        Assert.Contains("Done", writer.ToString());
+    }
+
+    [Fact]
     public async Task TypeWrite_Regular() {
         Out = Utilities.GetWriter(out var stringWriter);
         await TypeWrite("Hello world!" * Color.Green, 10);
