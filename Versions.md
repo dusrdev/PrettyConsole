@@ -1,14 +1,26 @@
-# CHANGELOG
+# Versions
 
-## v3.2.0
+## v4.0.0
+
+### Added
+
+- `PrettyConsoleInterpolatedStringHandler` was added to allow streaming zero allocation formatted and styled outputs to console pipes. With supported overloads for:
+  - `Write` and `WriteLine`
+  - `ReadLine` and `TryReadLine`
+  - `Selection` and `MultiSelection`
+  - `Overwrite` is a wrapper around an action of displaying outputs, with or without closures using `TState`, it enables you to use a lambda and call the `PrettyConsoleInterpolatedStringHandler` methods inside, to create zero allocation reactive and refreshable components.
+- `IndeterminateProgressBar` will now allow customization of the animated sequence via the property `AnimationSequence`, and it also includes an inner class `Patterns` that contains some constant sequences that could be used with it.
+
+### Fixed
 
 - Fixed issue that could sometimes cause writing into buffers beyond their bounds - throwing an exception. Possibly effected:
   - `ProgressBar` and `IndeterminateProgressBar`
   - `ClearNextLines`
-- `IndeterminateProgressBar` will no allow customization of the animated sequence via the property `AnimationSequence`, and it also includes an inner class `Patterns` that contains some constant sequences that could be used with it.
 - `IndeterminateProgressBar.UpdateRate` is 200 ms by default.
 - `IndeterminateProgressBar` header is now positioned right of the animation. Similar to common CLIs.
 - `ProgressBar` had numeral optimizations and should perform better in all scenarios.
+
+### Also
 
 - Dropped `Sharpify` as a dependency - `PrettyConsole` is now self-sufficient.
 
