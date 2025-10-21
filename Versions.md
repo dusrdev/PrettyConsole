@@ -9,6 +9,8 @@
   - `ReadLine` and `TryReadLine`
   - `Selection` and `MultiSelection`
   - `Overwrite` is a wrapper around an action of displaying outputs, with or without closures using `TState`, it enables you to use a lambda and call the `PrettyConsoleInterpolatedStringHandler` methods inside, to create zero allocation reactive and refreshable components.
+  - To customize colors, use `Color` as an interpolation parameter at the correct place, and restore the colors with `Color.Default`. for example: `WriteLine($"This is in {Color.Green}green{Color.Default} and this is in {Color.Red}red{Color.Default}.");`, all overloads that accept the interpolation reset the color at the end, so you can omit `Color.Default` if you colored the last section of your string.
+  - The same conventions and syntax of setting `Foreground / Background` colors works here as well.
 - `IndeterminateProgressBar` will now allow customization of the animated sequence via the property `AnimationSequence`, and it also includes an inner class `Patterns` that contains some constant sequences that could be used with it.
 
 ### Fixed
