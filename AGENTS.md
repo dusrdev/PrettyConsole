@@ -4,7 +4,7 @@ Repository: PrettyConsole
 
 Summary
 
-- PrettyConsole is a high-performance, allocation-conscious wrapper over System.Console that provides structured colored output, input helpers, rendering controls, menus, and progress bars. It targets net9.0 and is AOT compatible.
+- PrettyConsole is a high-performance, allocation-conscious wrapper over System.Console that provides structured colored output, input helpers, rendering controls, menus, and progress bars. It targets net9.0, is trimming/AOT ready, and ships SourceLink metadata for debugging.
 - Solution layout:
   - PrettyConsole/ — main library
   - PrettyConsole.Tests/ — interactive/demo runner (manually selects visual feature demos)
@@ -13,12 +13,11 @@ Summary
 Commands you’ll use often
 
 - Build
-  - Build library only:
+  - Build library:
     - dotnet build PrettyConsole/PrettyConsole.csproj
-  - Build unit tests only:
+  - Build unit tests:
     - dotnet build PrettyConsole.Tests.Unit/PrettyConsole.Tests.Unit.csproj
-  - Build the whole solution:
-    - dotnet build PrettyConsole.sln
+  - The solution using .slnx format; run it as usual but prefer to build individual projects as needed.
 - Format (uses the repo’s .editorconfig conventions)
   - Check and fix code style/formatting:
     - dotnet format
@@ -30,7 +29,7 @@ Commands you’ll use often
     - dotnet run --project PrettyConsole.Tests.Unit --filter-method "*UniquePartOfMethodName*"
     - Examples:
       - dotnet run --project PrettyConsole.Tests.Unit --filter-method "*WritesColoredLine*"
-- Pack - DOT NOT DO THIS YOURSELF!
+- Pack - DO NOT DO THIS YOURSELF!
 
 Repo-specific agent rules and conventions
 
@@ -43,34 +42,34 @@ Repo-specific agent rules and conventions
 
 High-level architecture and key concepts
 
-- Console wrapper
-  - PrettyConsole.Console is a static wrapper around System.Console, exposing In, Out, Error as OutputPipe and providing helpers like NewLine, GoToLine, ClearNextLines, SetColors, ResetColors. The wrapper keeps the API surface practical for common console tasks while preserving piping behavior.
-- Coloring model
-  - ColoredOutput and Color provide a terse, equation-like syntax for color composition: "Text" * Color.Red / Color.Blue
-  - Colors and outputs are designed to be composed with minimal allocations, often using ReadOnlySpan<char> and span-based overloads to avoid string allocations.
+- Console facade
+  - `PrettyConsole.Console` is a static, partial wrapper over `System.Console`. It exposes the live `In`, `Out`, and `Error` streams, and adds helpers like `NewLine`, `Clear`, `ClearNextLines`, `GetCurrentLine`, `GoToLine`, `SetColors`, and `ResetColors` for structured rendering.
+- Output routing
+  - `OutputPipe` is a two-value enum (`Out`, `Error`). Most write APIs accept an optional pipe; internally `Console.GetWriter` resolves the correct `TextWriter` so sequences remain redirect-friendly.
 - Interpolated string handler
-  - `PrettyConsoleInterpolatedStringHandler` powers zero-allocation `$"..."` writes, reads, confirmations, and menu prompts, automatically resetting colors per call and supporting pipe selection.
-- Output pipes
-  - OutputPipe abstracts the output stream (Out, Error). All Write/WriteLine APIs take an optional pipe so output can be routed appropriately while remaining pipe-friendly for shell usage.
+  - `PrettyConsoleInterpolatedStringHandler` enables zero-allocation `$"..."` calls for `Write`, `WriteLine`, `ReadLine`, `TryReadLine`, `Confirm`, and `RequestAnyInput`. Colors automatically reset after each invocation, and handlers respect the selected pipe and optional `IFormatProvider`.
+- Coloring model
+  - `ColoredOutput` and the `Color` record provide terse composition via `"Text" * Color.Red / Color.Blue` and implicit conversions. Default foreground/background values are stored on `Color` so spans render without string allocations.
+- Write APIs
+  - `Write`/`WriteLine` cover interpolated strings, `ColoredOutput` spans, raw `ReadOnlySpan<char>`, and generic `ISpanFormattable` values (including `ref struct`s) with optional foreground/background colors and format providers. Internally they rely on `BufferPool` to avoid allocation spikes.
 - Inputs
-  - ReadLine helpers support typed parsing (IParsable<T>), TryReadLine variants with defaults, enum parsing with optional case-insensitivity, and confirmation prompts with configurable true values.
+  - `ReadLine`/`TryReadLine` support `IParsable<T>` types, optional defaults, enum parsing with `ignoreCase`, and interpolated prompts. `Confirm` exposes `DefaultConfirmValues`, overloads for custom truthy tokens, and interpolated prompts; `RequestAnyInput` blocks on `ReadKey` with colored prompts if desired.
 - Rendering controls
-  - Methods like GetCurrentLine, GoToLine, ClearNextLines enable in-place updates and structured screen management without external dependencies.
+  - `ClearNextLines`, `GoToLine`, and `GetCurrentLine` coordinate bounded screen regions; `Clear` wipes the buffer when safe. These helpers underpin progress rendering and overwrite scenarios.
 - Advanced outputs
-  - Overwrite helpers (`OverwriteCurrentLine`, `Overwrite`, `Overwrite<TState>`) enable transient sections over error/out pipes for textual progress and reactive components.
-  - TypeWrite/TypeWriteLine animate character-by-character output with a configurable delay.
+  - `OverwriteCurrentLine`, `Overwrite`, and `Overwrite<TState>` run user actions while clearing a configurable number of lines, enabling reactive text dashboards without leaving artifacts. `TypeWrite`/`TypeWriteLine` animate character-by-character output with adjustable delays.
 - Menus and tables
-  - Selection and MultiSelection render indexed lists and return chosen items; TreeMenu renders a two-level selection; Table prints header+columns from IList<string> inputs.
+  - `Selection` returns a single choice or empty string on invalid input; `MultiSelection` parses space-separated indices into string arrays; `TreeMenu` renders two-level hierarchies and validates input (throwing `ArgumentException` when selections are invalid); `Table` renders headers + columns with width calculations.
 - Progress bars
-  - IndeterminateProgressBar binds to a Task/Task<T> and renders an animated pattern until completion; its AnimationSequence is customizable and common patterns are provided.
-  - ProgressBar tracks percentage (int/double 0–100), exposes properties like ProgressChar, ForegroundColor, ProgressColor.
+  - `IndeterminateProgressBar` binds to running `Task` instances, optionally starts tasks, supports cancellable `RunAsync` overloads, exposes `AnimationSequence`, `Patterns`, `ForegroundColor`, `DisplayElapsedTime`, and `UpdateRate`. Frames render on the error pipe and auto-clear.
+  - `ProgressBar` maintains a single-line bar on the error pipe. `Update` accepts `int`/`double` percentages plus optional status spans, and exposes `ProgressChar`, `ForegroundColor`, and `ProgressColor` for customization.
 - Packaging and targets
-  - PrettyConsole.csproj multi-targets net9.0 and net8.0, is AOT compatible, and includes SourceLink. Internals are visible to PrettyConsole.Tests.Unit for deeper validation.
+  - `PrettyConsole.csproj` targets net9.0, enables trimming/AOT (`IsTrimmable`, `IsAotCompatible`), embeds SourceLink, and grants `InternalsVisibleTo` the unit-test project.
 
 Testing structure and workflows
 
 - PrettyConsole.Tests (interactive)
-  - Program.cs constructs a list of visual tests/demos (e.g., IndeterminateProgressBarTest) and awaits each Render(). Modify the tests array for the scenarios you want to render live.
+  - `Program.cs` allows to test things that need to be verified visually and can't be tested easily or at all using unit tests. It contains tests for various things like menues, tables, progress bar, etc... and at occations new overloads and other things. It's content doesn't need to be tracked, it is more like a playground.
 - PrettyConsole.Tests.Unit (xUnit v3)
   - Uses Microsoft.NET.Test.Sdk with the Microsoft Testing Platform runner; xunit.runner.json is included. Execute with dotnet run as shown above; pass filters after to narrow to a class or method.
 
