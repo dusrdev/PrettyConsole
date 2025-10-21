@@ -4,13 +4,13 @@ An abstraction over `System.Console` that adds new input and output methods, col
 
 ## Features
 
-* 🚀 High performance, Low memory usage and allocation
-* 🪶 Very lightweight (No external dependencies)
-* Easy to use (no need to learn a new syntax while still writing less boilerplate code)
-* 💾 Supports legacy ansi terminals (like Windows 7)
+* 🚀 High performance, low allocations and span-first APIs
+* 🪶 Very lightweight (no external dependencies)
+* ✨ Zero-allocation interpolated string handler for inline colors and formatting
+* 💾 Supports legacy ANSI terminals (like Windows 7)
 * 🔥 Complete NativeAOT compatibility
 * Supports all major platforms (Windows, Linux, Mac)
-* ⛓ Uses original output pipes, so that your cli's can be piped properly.
+* ⛓ Uses original output pipes, so that your CLI's can be piped properly
 
 ## Installation [![NUGET DOWNLOADS](https://img.shields.io/nuget/dt/PrettyConsole?label=Downloads)](https://www.nuget.org/packages/PrettyConsole/)
 
@@ -24,6 +24,21 @@ Everything starts off with the using statements, I recommend using the `Console`
 using static PrettyConsole.Console; // Access to all Console methods
 using PrettyConsole; // Access to the Color struct and OutputPipe enum
 ```
+
+### Interpolated Strings
+
+`PrettyConsoleInterpolatedStringHandler` lets you stream interpolated text directly to the selected pipe without allocating intermediate strings, while still using the familiar `$"..."` syntax.
+
+```csharp
+Write($"Hello {Color.Green}world{Color.Default}!");
+Write(OutputPipe.Error, $"{Color.Yellow}Warning:{Color.Default} {message}");
+
+if (!TryReadLine(out int choice, $"Pick option {Color.Cyan}1-5{Color.Default}: ")) {
+    WriteLine($"{Color.Red}Not a number.{Color.Default}");
+}
+```
+
+Colors reset automatically at the end of each call. Use `Color.Default` (or explicit background tuples) when you need to restore colors mid-string.
 
 ### ColoredOutput
 
@@ -40,18 +55,19 @@ same goes for the background.
 
 ### Basic Outputs
 
-The most basic method for outputting is `Write`, which has multiple overloads:
+The most basic method for outputting is `Write`, which has multiple overloads. All equivalents exist for `WriteLine`:
 
 ```csharp
-Write(ColoredOutput, OutputPipe pipe = OutputPipe.Out);
-Write(ReadOnlySpan<ColoredOutput>, OutputPipe pipe = OutputPipe.Out); // use collections expression for the compiler to inline the array
-Write(ReadOnlySpan<char>, OutputPipe pipe = OutputPipe.Out); // no string allocation with ReadOnlySpan<char>
-Write(ReadOnlySpan<char>, OutputPip, ConsoleColor); // no string allocation with ReadOnlySpan<char>
-Write(ReadOnlySpan<char>, OutputPipe, ConsoleColor, ConsoleColor);
-Write(T , OutputPipe pipe = OutputPipe.Out); // no string allocation with T : ISpanFormattable
-Write(T, OutputPipe, ConsoleColor);
-Write(T, OutputPipe, ConsoleColor, ConsoleColor);
-Write(T, OutputPipe, ConsoleColor, ConsoleColor, ReadOnlySpan<char>, IFormatProvider?);
+// Usage + overload highlights:
+Write($"Interpolated {Color.Blue}string{Color.Default}");
+Write(OutputPipe.Error, $"...");
+Write(ColoredOutput output, OutputPipe pipe = OutputPipe.Out);
+Write(ReadOnlySpan<ColoredOutput> outputs, OutputPipe pipe = OutputPipe.Out);
+Write(ReadOnlySpan<char> span, OutputPipe pipe, ConsoleColor foreground);
+Write(ReadOnlySpan<char> span, OutputPipe pipe, ConsoleColor foreground, ConsoleColor background);
+Write<T>(T value, OutputPipe pipe = OutputPipe.Out) where T : ISpanFormattable;
+Write<T>(T value, OutputPipe pipe, ConsoleColor foreground, ConsoleColor background,
+    ReadOnlySpan<char> format, IFormatProvider? provider);
 ```
 
 Overload for `WriteLine` are available with the same parameters
@@ -61,14 +77,22 @@ Overload for `WriteLine` are available with the same parameters
 These are the methods for reading user input:
 
 ```csharp
+// Examples:
 string? ReadLine(); // ReadLine<string>
 string? ReadLine(ReadOnlySpan<ColoredOutput>);
+string? ReadLine($"Prompt {Color.Green}text{Color.Default}: ");
 T? ReadLine<T>(ReadOnlySpan<ColoredOutput>); // T : IParsable<T>
+T? ReadLine<T>($"Prompt {Color.Cyan}text{Color.Default}: ");
 T ReadLine<T>(ReadOnlySpan<ColoredOutput>, T @default); // @default will be returned if parsing fails
+T ReadLine<T>(T @default, $"Prompt {Color.Cyan}text{Color.Default}: ");
 bool TryReadLine<T>(ReadOnlySpan<ColoredOutput>, out T?); // T : IParsable<T>
+bool TryReadLine<T>(out T?, $"Prompt {Color.Cyan}text{Color.Default}: ");
 bool TryReadLine<T>(ReadOnlySpan<ColoredOutput>, T @default, out T); // @default will be returned if parsing fails
+bool TryReadLine<T>(out T, T @default, $"Prompt {Color.Cyan}text{Color.Default}: ");
 bool TryReadLine<TEnum>(ReadOnlySpan<ColoredOutput>, bool ignoreCase, out TEnum?); // TEnum : struct, Enum
+bool TryReadLine<TEnum>(out TEnum, bool ignoreCase, $"Prompt {Color.Cyan}text{Color.Default}: "); // TEnum : struct, Enum
 bool TryReadLine<TEnum>(ReadOnlySpan<ColoredOutput>, bool ignoreCase, TEnum @default, out TEnum); // @default will be returned if parsing fails
+bool TryReadLine<TEnum>(out TEnum, bool ignoreCase, TEnum @default, $"Prompt {Color.Cyan}text{Color.Default}: ");
 ```
 
 I always recommend using `TryReadLine` instead of `ReadLine` as you need to maintain less null checks and the result,
@@ -82,10 +106,13 @@ These are some special methods for inputs:
 // These will wait for the user to press any key
 void RequestAnyInput(string message = "Press any key to continue...");
 void RequestAnyInput(ReadOnlySpan<ColoredOutput> output);
+RequestAnyInput($"Press {Color.Yellow}any key{Color.Default} to continue...");
 // These request confirmation by special input from user
 bool Confirm(ReadOnlySpan<ColoredOutput> message); // uses the default values ["y", "yes"]
 // the default values can also be used by you at Console.DefaultConfirmValues
 bool Confirm(ReadOnlySpan<ColoredOutput> message, ReadOnlySpan<string> trueValues, bool emptyIsTrue = true);
+bool Confirm($"Deploy to production? ({Color.Green}y{Color.Default}/{Color.Red}n{Color.Default}) ");
+bool Confirm(ReadOnlySpan<string> trueValues, bool emptyIsTrue, $"Overwrite existing files? ");
 ```
 
 ### Rendering Controls
@@ -108,7 +135,10 @@ Combining `ClearNextLines` with `GoToLine` will enable you to efficiently use th
 ```csharp
 // This method will essentially write a line, clear it, go back to same position
 // This allows a form of text-only progress bar
-void OverrideCurrentLine(ReadOnlySpan<ColoredOutput> output, OutputPipe pipe = OutputPipe.Error);
+void OverwriteCurrentLine(ReadOnlySpan<ColoredOutput> output, OutputPipe pipe = OutputPipe.Error);
+void Overwrite(Action action, int lines = 1, OutputPipe pipe = OutputPipe.Error);
+void Overwrite<TState>(TState state, Action<TState> action, int lines = 1, OutputPipe pipe = OutputPipe.Error)
+    where TState : allows ref struct;
 // This methods will write a character at a time, with a delay between each character
 async Task TypeWrite(ColoredOutput output, int delay = TypeWriteDefaultDelay);
 async Task TypeWriteLine(ColoredOutput output, int delay = TypeWriteDefaultDelay);
@@ -143,6 +173,7 @@ var prg = new IndeterminateProgressBar(); // this setups the internal states
 await prg.RunAsync(task, "Running...", cancellationToken); // There are also overloads without header
 // if the task is not started before being passed to the progress bar, it will be started automatically
 // It is even better this way to synchronize the runtime of the progress bar with the task
+prg.AnimationSequence = IndeterminateProgressBar.Patterns.CarriageReturn; // customize the animation
 ```
 
 #### ProgressBar

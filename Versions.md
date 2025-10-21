@@ -21,6 +21,7 @@
 - `IndeterminateProgressBar.UpdateRate` is 200 ms by default.
 - `IndeterminateProgressBar` header is now positioned right of the animation. Similar to common CLIs.
 - `ProgressBar` had numeral optimizations and should perform better in all scenarios.
+- `OverrideCurrentLine` was renamed to `OverwriteCurrentLine` to be more semantically correct.
 
 ### Also
 
