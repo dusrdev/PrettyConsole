@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="PrettyConsole.Tests.Unit/PrettyConsole.Tests.Unit.csproj" />
+  <Project Path="PrettyConsole.Tests/PrettyConsole.Tests.csproj" />
+  <Project Path="PrettyConsole/PrettyConsole.csproj" />
+</Solution>

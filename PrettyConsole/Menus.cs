@@ -1,8 +1,6 @@
 using System.Buffers;
 using System.Runtime.InteropServices;
 
-using Sharpify.Collections;
-
 namespace PrettyConsole;
 
 public static partial class Console {
@@ -19,15 +17,8 @@ public static partial class Console {
         where TList : IList<string> {
         WriteLine(title);
 
-        Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
-
         for (int i = 0; i < choices.Count; i++) {
-            var builder = StringBuffer.Create(buffer);
-            builder.Append("  ");
-            builder.Append(i + 1);
-            builder.Append(") ");
-            builder.Append(choices[i]);
-            Out.WriteLine(builder.WrittenSpan);
+            WriteLine($" {i + 1}) {choices[i]}");
         }
 
         NewLine();
@@ -58,15 +49,8 @@ public static partial class Console {
         where TList : IList<string> {
         WriteLine(title);
 
-        Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
-
         for (int i = 0; i < choices.Count; i++) {
-            var builder = StringBuffer.Create(buffer);
-            builder.Append("  ");
-            builder.Append(i + 1);
-            builder.Append(") ");
-            builder.Append(choices[i]);
-            Out.WriteLine(builder.WrittenSpan);
+            WriteLine($" {i + 1}) {choices[i]}");
         }
 
         NewLine();
@@ -117,33 +101,32 @@ public static partial class Console {
         var menuKeys = menu.Keys.ToArray();
         var maxMainOption = menuKeys.Max(static x => x.Length) + 10; // Used to make sub-tree prefix spaces uniform
 
-        Span<char> buffer = stackalloc char[baseConsole.BufferWidth];
-        Span<char> emptySpaces = stackalloc char[maxMainOption];
-        emptySpaces.Fill(' ');
+        using var bufferOwner = BufferPool.Shared.Rent(out var buffer);
+        var width = GetWidthOrDefault();
+        buffer.EnsureCapacity(width);
+        CollectionsMarshal.SetCount(buffer, width);
+        var span = CollectionsMarshal.AsSpan(buffer);
 
         //Enumerate options and sub-options
         for (int i = 0; i < menuKeys.Length; i++) {
             var mainEntry = menuKeys[i];
             var subChoices = menu[mainEntry];
-            var builder = StringBuffer.Create(buffer);
-            builder.Append("  ");
-            builder.Append(i + 1);
-            builder.Append(") ");
-            builder.Append(mainEntry);
-            var remainingLength = maxMainOption - builder.Position;
-            builder.Append(emptySpaces.Slice(0, remainingLength));
-            Out.Write(builder.WrittenSpan);
+
+            span.TryWrite($"  {i + 1}) {mainEntry}", out int written);
+            Out.Write(span.Slice(0, written));
+
+            var remainingLength = maxMainOption - written;
+            if (remainingLength > 0) {
+                Out.WriteWhiteSpaces(remainingLength);
+            }
+
             for (int j = 0; j < subChoices.Count; j++) {
                 if (j is not 0) {
-                    Out.Write(emptySpaces);
+                    Out.WriteWhiteSpaces(maxMainOption);
                 }
 
-                builder.Reset();
-                builder.Append("  ");
-                builder.Append(j + 1);
-                builder.Append(") ");
-                builder.Append(subChoices[j]);
-                Out.WriteLine(builder.WrittenSpan);
+                span.TryWrite($"  {j + 1}) {subChoices[j]}", out written);
+                Out.WriteLine(span.Slice(0, written));
             }
 
             NewLine();
@@ -201,15 +184,14 @@ public static partial class Console {
 
 
         var columnsLength = columns.Length;
-        using var memoryOwner = MemoryPool<string>.Shared.Rent(columnsLength);
+        List<string> buffer = new(columnsLength);
 
         for (int i = 0; i < columnsLength; i++) {
-            memoryOwner.Memory.Span[i] = headers[i].PadRight(lengths[i]);
+            buffer.Add(headers[i].PadRight(lengths[i]));
         }
 
-        ReadOnlyMemory<string> slice = memoryOwner.Memory.Slice(0, columnsLength);
-        var enumerable = MemoryMarshal.ToEnumerable(slice);
-        var header = string.Join(columnSeparator, enumerable);
+        var header = string.Join(columnSeparator, buffer);
+        buffer.Clear();
 
         Span<char> rowSeparation = stackalloc char[header.Length];
         rowSeparation.Fill(rowSeparator);
@@ -218,12 +200,11 @@ public static partial class Console {
         Out.WriteLine(rowSeparation);
         for (int row = 0; row < height; row++) {
             for (int i = 0; i < columnsLength; i++) {
-                memoryOwner.Memory.Span[i] = columns[i][row].PadRight(lengths[i]);
+                buffer.Add(columns[i][row].PadRight(lengths[i]));
             }
 
-            slice = memoryOwner.Memory.Slice(0, columnsLength);
-            enumerable = MemoryMarshal.ToEnumerable(slice);
-            var line = string.Join(columnSeparator, enumerable);
+            var line = string.Join(columnSeparator, buffer);
+            buffer.Clear();
             Out.WriteLine(line);
         }
 

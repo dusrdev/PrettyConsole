@@ -1,7 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
 	<PropertyGroup>
-		<TargetFrameworks>net9.0;net8.0</TargetFrameworks>
+		<TargetFramework>net9.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<Deterministic>true</Deterministic>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<AnalysisLevel>latest-recommended</AnalysisLevel>
+		<IsAotCompatible>true</IsAotCompatible>
+		<IsTrimmable>true</IsTrimmable>
+		<IncludeSymbols>true</IncludeSymbols>
+		<IncludeSource>true</IncludeSource>
+		<PublishRespositoryUrl>true</PublishRespositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+
 		<Authors>David Shnayder</Authors>
 		<Title>PrettyConsole</Title>
 		<Description>High performance, feature rich and easy to use wrap over System.Console</Description>
@@ -11,25 +24,49 @@
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>3.1.0</Version>
+		<Version>4.0.0</Version>
 		<Nullable>enable</Nullable>
-		<PublishRespositoryUrl>true</PublishRespositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<PackageReadmeFile>CHANGELOG.md</PackageReadmeFile>
-		<AotCompatible>true</AotCompatible>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="\" />
-		<None Include="CHANGELOG.md" Pack="true" PackagePath="\" />
-		<None Include="Versions.md" Pack="true" PackagePath="\" />
+		<None Include="../README.md" Pack="true" PackagePath="/" Link="README.md" />
 	</ItemGroup>
+
+	<PropertyGroup>
+		<PackageReleaseNotes>
+			- Dropped Sharpify as a dependency - PrettyConsole is now self-sufficient.
+			- Many overloads were added that support the new PrettyConsoleInterpolatedStringHandler,
+			enabling zero allocation formatted outputs.
+			- Fixed issue that could sometimes cause writing into buffers beyond their bounds -
+			throwing an exception.
+			- IndeterminateProgressBar will now allow customization of the animated sequence via
+			the property AnimationSequence, and it also includes an inner class Patterns that
+			contains some constant sequences that could be used with it.
+			- IndeterminateProgressBar.UpdateRate is 200 ms by default.
+			- IndeterminateProgressBar header is now positioned right of the animation. Similar to
+			common CLIs.
+			- ProgressBar had numeral optimizations and should perform better in all scenarios.
+			- Color received 2 new implicit operators, enabling it to convert a combination with any object
+			to ColoredOutput, which means you can write much less verbose statements with .ToString() calls.
+			- Internal buffer pooling system was upgraded to further reduce allocations and relief more pressure from the GC.
+			- Write/WriteLine overload for T, will no longer throw an exception when a capacity above 256 characters is required to format the type, and also support ref structs.
+		</PackageReleaseNotes>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-		<PackageReference Include="Sharpify" Version="2.5.0" />
 	</ItemGroup>
+
+	<PropertyGroup>
+		<DebugType>portable</DebugType>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<AllowedOutputExtensionsInPackageBuildOutputFolder>
+			$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb
+		</AllowedOutputExtensionsInPackageBuildOutputFolder>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">

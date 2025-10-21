@@ -1,5 +1,5 @@
+using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace PrettyConsole;
 
@@ -16,11 +16,16 @@ public static partial class Console {
     /// </para>
     /// </remarks>
     public class IndeterminateProgressBar {
-        // Constant pattern containing the characters needed for the indeterminate progress bar
-        private const string Twirl = "-\\|/";
+        /// <summary>
+        /// Contains the characters that will be iterated through while running
+        /// </summary>
+        /// <remarks>
+        /// You can also choose from some defaults in <see cref="Patterns"/>
+        /// </remarks>
+        public ReadOnlyCollection<string> AnimationSequence { get; set; } = Patterns.Twirl;
 
-        // A whitespace the length of 10 spaces
-        private const string ExtraBuffer = "          ";
+        // A length of whitespace padding to the end
+        private const int PaddingLength = 10;
 
         /// <summary>
         /// Gets or sets the foreground color of the progress bar.
@@ -35,15 +40,8 @@ public static partial class Console {
         /// <summary>
         /// Gets or sets the update rate (in ms) of the indeterminate progress bar.
         /// </summary>
-        public int UpdateRate { get; set; } = 50;
-        private readonly char[] _buffer;
-
-        /// <summary>
-        /// Represents an indeterminate progress bar that continuously animates without a specific progress value.
-        /// </summary>
-        public IndeterminateProgressBar() {
-            _buffer = new char[20];
-        }
+        /// <remarks>Default = 200</remarks>
+        public int UpdateRate { get; set; } = 200;
 
         /// <summary>
         /// Runs the indeterminate progress bar while the specified task is running.
@@ -95,37 +93,78 @@ public static partial class Console {
             }
 
             ResetColors();
-            var originalColor = baseConsole.ForegroundColor;
-            var startTime = Stopwatch.GetTimestamp();
-            var lineNum = GetCurrentLine();
+            ConsoleColor originalColor = baseConsole.ForegroundColor;
+            long startTime = Stopwatch.GetTimestamp();
+            long updateRateAsTicks = TimeSpan.FromMilliseconds(UpdateRate).Ticks;
+
+            // Maintain a stable cadence that accounts for render time
+            long nextTick = startTime;
+            int seqIndex = 0;
+
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+
+            // Cancel the delay token as soon as the bound task completes
+            _ = task.ContinueWith(static (t, state) => ((CancellationTokenSource)state!).Cancel(), linkedCts,
+                CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
             while (!task.IsCompleted && !token.IsCancellationRequested) {
-                // Await until the TaskAwaiter informs of completion
-                foreach (var c in Twirl) {
-                    if (header.Length > 0) {
-                        Error.Write(header);
-                        Error.Write(' ');
-                    }
-
-                    // Cycle through the characters of twirl
+                try {
                     baseConsole.ForegroundColor = ForegroundColor;
-                    Error.Write(c);
+                    Error.Write(AnimationSequence[seqIndex]);
+                } finally {
                     baseConsole.ForegroundColor = originalColor;
-                    if (DisplayElapsedTime) {
-                        var elapsed = Stopwatch.GetElapsedTime(startTime);
-                        Error.Write(" [Elapsed: ");
-                        Error.Write(Sharpify.Utils.DateAndTime.FormatTimeSpan(elapsed, _buffer));
-                        Error.Write(']');
-                    }
+                }
 
-                    Error.Write(ExtraBuffer);
-                    GoToLine(lineNum);
-                    await Task.Delay(UpdateRate, token); // The update rate
-                    Error.Write(WhiteSpace.AsSpan(0, baseConsole.BufferWidth));
-                    GoToLine(lineNum);
-                    if (token.IsCancellationRequested) {
-                        return;
+                if (header.Length > 0) {
+                    Error.Write(' ');
+                    Error.Write(header);
+                }
+
+                if (DisplayElapsedTime) {
+                    var elapsed = Stopwatch.GetElapsedTime(startTime);
+                    Write(OutputPipe.Error, $" [Elapsed: {elapsed:hr}]");
+                }
+
+                Error.WriteWhiteSpaces(PaddingLength);
+
+                // Compute sleep to maintain UpdateRate between frame starts
+                var now = Stopwatch.GetTimestamp();
+                nextTick += updateRateAsTicks;
+                var remaining = nextTick - now;
+
+                if (remaining <= 0) {
+                    // If we are late by >= one period, snap schedule to now to avoid burst catch-up
+                    if (-remaining >= updateRateAsTicks) {
+                        nextTick = now;
                     }
+                } else {
+                    try {
+                        // Coarse delay for most of the remainder
+                        var remainingMs = (int)TimeSpan.FromTicks(remaining).TotalMilliseconds;
+                        if (remainingMs > 1) {
+                            await Task.Delay(remainingMs - 1, linkedCts.Token).ConfigureAwait(false);
+                        }
+                        // Fine spin for the last ~1ms to improve smoothness
+                        var sw = new SpinWait();
+                        while (!linkedCts.IsCancellationRequested && Stopwatch.GetTimestamp() < nextTick) {
+                            sw.SpinOnce();
+                        }
+                    } catch (OperationCanceledException) {
+                        // Either external cancellation or task completed
+                    }
+                }
+
+                // Always clear once per frame
+                ClearNextLines(1, OutputPipe.Error);
+
+                if (token.IsCancellationRequested || task.IsCompleted) {
+                    break;
+                }
+
+                // Advance animation sequence index without allocations
+                seqIndex++;
+                if (seqIndex == AnimationSequence.Count) {
+                    seqIndex = 0;
                 }
             }
 
@@ -134,5 +173,55 @@ public static partial class Console {
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private Task RunAsyncNonGeneric(Task task, string header, CancellationToken token) => RunAsync(task, header, token);
+
+        /// <summary>
+        /// Provides constant animation sequences that can be used for <see cref="AnimationSequence"/>
+        /// </summary>
+        public static class Patterns {
+            /// <summary>
+            /// A twirl animation sequence
+            /// </summary>
+            public static readonly ReadOnlyCollection<string> Twirl
+                = new(["|", "/", "-", "\\"]);
+
+            /// <summary>
+            /// A braille animation sequence
+            /// </summary>
+            public static readonly ReadOnlyCollection<string> Braille
+                = new(["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]);
+
+            /// <summary>
+            /// A running person animation sequence
+            /// </summary>
+            public static readonly ReadOnlyCollection<string> RunningPerson
+                = new(["🧎‍➡️", "🧍", "🚶‍➡️", "🏃‍➡️", " "]);
+
+            /// <summary>
+            /// A sad smiley animation sequence ("what's taking so long??")
+            /// </summary>
+            public static readonly ReadOnlyCollection<string> SadSmiley
+                = new(["😞", "😣", "😖", "😫", "😩", " "]);
+
+            /// <summary>
+            /// A loading-bar animation sequence
+            /// </summary>
+            public static readonly ReadOnlyCollection<string> LoadingBar
+                = new(["[    ]", "[=   ]", "[==  ]", "[=== ]", "[====]", "[ ===]", "[  ==]", "[   =]", "[    ]"]);
+
+            /// <summary>
+            /// An ASCII ping-pong animation sequence
+            /// </summary>
+            public static readonly ReadOnlyCollection<string> PingPong
+                = new([
+                    "|•    |",
+                    "| •   |",
+                    "|  •  |",
+                    "|   • |",
+                    "|    •|",
+                    "|   • |",
+                    "|  •  |",
+                    "| •   |",
+                ]);
+        }
     }
 }
