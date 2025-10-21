@@ -15,7 +15,7 @@
 *.sln.docstates
 PrettyConsole.Tests.Integration/
 WARP.md
-AGENTS.md
+# AGENTS.md
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
