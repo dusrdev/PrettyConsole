@@ -9,7 +9,7 @@ public static partial class Console {
     /// <param name="handler">Interpolated string handler that streams the content.</param>
     public static void Write([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
         ResetColors();
-	}
+    }
 
     /// <summary>
     /// Writes interpolated content using <see cref="PrettyConsoleInterpolatedStringHandler"/>.

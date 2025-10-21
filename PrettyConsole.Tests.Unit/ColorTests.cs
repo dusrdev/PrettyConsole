@@ -58,7 +58,7 @@ public class ColorTests {
         var (fg, bg) = Color.Red / Color.Blue;
         Assert.Equal(ConsoleColor.Red, fg);
         Assert.Equal(ConsoleColor.Blue, bg);
-	}
+    }
 
     [Fact]
     public void Color_AsteriskOperator() {
