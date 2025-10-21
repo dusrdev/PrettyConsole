@@ -24,7 +24,7 @@
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>3.2.0</Version>
+		<Version>4.0.0</Version>
 		<Nullable>enable</Nullable>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -38,6 +38,8 @@
 	<PropertyGroup>
 		<PackageReleaseNotes>
 			- Dropped Sharpify as a dependency - PrettyConsole is now self-sufficient.
+			- Many overloads were added that support the new PrettyConsoleStringInterpolationHandler,
+			enabling zero allocation formatted outputs.
 			- Fixed issue that could sometimes cause writing into buffers beyond their bounds -
 			throwing an exception.
 			- IndeterminateProgressBar will no allow customization of the animated sequence via
