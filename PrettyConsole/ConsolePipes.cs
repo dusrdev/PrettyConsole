@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace PrettyConsole;
+﻿namespace PrettyConsole;
 
 public static partial class Console {
 	/// <summary>
