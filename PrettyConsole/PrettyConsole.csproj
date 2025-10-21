@@ -38,7 +38,7 @@
 	<PropertyGroup>
 		<PackageReleaseNotes>
 			- Dropped Sharpify as a dependency - PrettyConsole is now self-sufficient.
-			- Many overloads were added that support the new PrettyConsoleStringInterpolationHandler,
+			- Many overloads were added that support the new PrettyConsoleInterpolatedStringHandler,
 			enabling zero allocation formatted outputs.
 			- Fixed issue that could sometimes cause writing into buffers beyond their bounds -
 			throwing an exception.
