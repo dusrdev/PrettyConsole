@@ -42,7 +42,7 @@
 			enabling zero allocation formatted outputs.
 			- Fixed issue that could sometimes cause writing into buffers beyond their bounds -
 			throwing an exception.
-			- IndeterminateProgressBar will no allow customization of the animated sequence via
+			- IndeterminateProgressBar will now allow customization of the animated sequence via
 			the property AnimationSequence, and it also includes an inner class Patterns that
 			contains some constant sequences that could be used with it.
 			- IndeterminateProgressBar.UpdateRate is 200 ms by default.
