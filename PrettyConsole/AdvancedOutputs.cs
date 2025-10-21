@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace PrettyConsole;
 
 public static partial class Console {
@@ -9,10 +7,40 @@ public static partial class Console {
     /// <param name="output"></param>
     /// <param name="pipe">The output pipe to use</param>
     [MethodImpl(MethodImplOptions.Synchronized)]
-    public static void OverrideCurrentLine(ReadOnlySpan<ColoredOutput> output, OutputPipe pipe = OutputPipe.Error) {
+    public static void OverwriteCurrentLine(ReadOnlySpan<ColoredOutput> output, OutputPipe pipe = OutputPipe.Error) {
         var currentLine = GetCurrentLine();
         ClearNextLines(1, pipe);
         Write(output, pipe);
+        GoToLine(currentLine);
+    }
+
+    /// <summary>
+    /// Runs <paramref name="action"/> that should involve some form of outputting to the console. Set <paramref name="lines"/> according to the outputs you use in <paramref name="action"/> and configure the appropriate <paramref name="pipe"/>
+    /// </summary>
+    /// <param name="action">The output action.</param>
+    /// <param name="lines">The amount of lines to clear.</param>
+    /// <param name="pipe">The output pipe to use.</param>
+    [MethodImpl(MethodImplOptions.Synchronized)]
+    public static void Overwrite(Action action, int lines = 1, OutputPipe pipe = OutputPipe.Error) {
+        var currentLine = GetCurrentLine();
+        ClearNextLines(lines, pipe);
+        action();
+        GoToLine(currentLine);
+    }
+
+    /// <summary>
+    /// Runs <paramref name="action"/> that should involve some form of outputting to the console and use <paramref name="state"/> to prevent closure allocation. Set <paramref name="lines"/> according to the outputs you use in <paramref name="action"/> and configure the appropriate <paramref name="pipe"/>
+    /// </summary>
+    /// <typeparam name="TState"></typeparam>
+    /// <param name="state">The parameters that <paramref name="action"/> needs to use.</param>
+    /// <param name="action">The output action.</param>
+    /// <param name="lines">The amount of lines to clear.</param>
+    /// <param name="pipe">The output pipe to use.</param>
+    [MethodImpl(MethodImplOptions.Synchronized)]
+    public static void Overwrite<TState>(TState state, Action<TState> action, int lines = 1, OutputPipe pipe = OutputPipe.Error) where TState : allows ref struct {
+        var currentLine = GetCurrentLine();
+        ClearNextLines(lines, pipe);
+        action(state);
         GoToLine(currentLine);
     }
 
