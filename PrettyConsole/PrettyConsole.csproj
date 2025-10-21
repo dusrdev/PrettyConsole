@@ -12,6 +12,7 @@
 		<IsTrimmable>true</IsTrimmable>
 		<IncludeSymbols>true</IncludeSymbols>
 		<IncludeSource>true</IncludeSource>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PublishRespositoryUrl>true</PublishRespositoryUrl>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 
