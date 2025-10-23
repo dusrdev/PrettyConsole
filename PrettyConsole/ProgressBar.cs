@@ -9,7 +9,7 @@ public static partial class Console {
     /// The progress bar update isn't tied to unit of time, it's up to the user to update it as needed. By managing the when the Update method is called, the user can have a more precise control over the progress bar. More calls, means more frequent rendering but at the cost of performance (very frequent updates may cause the terminal to lose sync with the method and will produce visual bugs, such as items not rendering in the right place)
     /// </para>
     /// <para>
-    /// Updating the progress bar with decreasing percentages will cause visual bugs as it is optimized to skip rendering pre-filled characters.
+    /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
     /// </para>
     /// </remarks>
     public class ProgressBar {
@@ -39,6 +39,9 @@ public static partial class Console {
         /// Updates the progress bar with the specified percentage.
         /// </summary>
         /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
+        /// <remarks>
+        /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
+        /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update(int percentage) => Update(percentage, ReadOnlySpan<char>.Empty);
 
@@ -46,6 +49,9 @@ public static partial class Console {
         /// Updates the progress bar with the specified percentage.
         /// </summary>
         /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
+        /// <remarks>
+        /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
+        /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update(double percentage) => Update(percentage, ReadOnlySpan<char>.Empty);
 
@@ -54,7 +60,12 @@ public static partial class Console {
         /// </summary>
         /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
         /// <param name="status">The status text to be displayed after the progress bar.</param>
-        public void Update(double percentage, ReadOnlySpan<char> status)
+        /// <param name="sameLine">Whether to display the status before the progress bar on the same line. If not it will be displayed above the progress bar</param>
+        /// <remarks>
+        /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
+        /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Update(double percentage, ReadOnlySpan<char> status, bool sameLine = true)
             => Update((int)percentage, status);
 
         /// <summary>
@@ -62,14 +73,27 @@ public static partial class Console {
         /// </summary>
         /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
         /// <param name="status">The status text to be displayed after the progress bar.</param>
-        public void Update(int percentage, ReadOnlySpan<char> status) {
+        /// <param name="sameLine">Whether to display the status before the progress bar on the same line. If not it will be displayed above the progress bar</param>
+        /// <remarks>
+        /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
+        /// </remarks>
+        public void Update(int percentage, ReadOnlySpan<char> status, bool sameLine = true) {
             lock (_lock) {
                 var currentLine = GetCurrentLine();
-                ClearNextLines(1, OutputPipe.Error);
-                if (status.Length > 0) {
-                    Write(status, OutputPipe.Error, ForegroundColor);
-                    Write(' ');
+                if (sameLine) {
+                    ClearNextLines(1, OutputPipe.Error);
+                    if (status.Length > 0) {
+                        Write(status, OutputPipe.Error, ForegroundColor);
+                        Write(' ');
+                        WriteBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar);
+                    }
+                } else {
+                    bool hasStatus = status.Length > 0;
+                    int lines = hasStatus ? 2 : 1;
+                    ClearNextLines(lines, OutputPipe.Error);
+                    if (hasStatus) WriteLine(status, OutputPipe.Error, ForegroundColor);
                     WriteBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar);
+                    NewLine(OutputPipe.Error);
                 }
                 GoToLine(currentLine);
             }
