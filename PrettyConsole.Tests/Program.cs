@@ -18,7 +18,8 @@ var tests = new IPrettyConsoleTest[] {
     new TableTest(),
     new TreeMenuTest(),
     new IndeterminateProgressBarTest(),
-    new ProgressBarTest(),
+    new ProgressBarDefaultTest(),
+    new ProgressBarMultiLineTest(),
     new MultiProgressBarTest(),
 };
 
