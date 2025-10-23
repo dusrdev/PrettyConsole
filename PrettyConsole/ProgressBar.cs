@@ -16,12 +16,17 @@ public static partial class Console {
     /// </remarks>
     public class ProgressBar {
         /// <summary>
-        /// Gets or sets the character used to represent the progress.
-        /// </summary>
-        public char ProgressChar { get; set; } = '■';
+		/// The default characters used for the progress bar filled portion.
+		/// </summary>
+        public const char DefaultProgressChar = '■';
 
         /// <summary>
-        /// Gets or sets the foreground color of the progress bar.
+        /// Gets or sets the character used to represent the progress.
+        /// </summary>
+        public char ProgressChar { get; set; } = DefaultProgressChar;
+
+        /// <summary>
+        /// Gets or sets the foreground color of the header display.
         /// </summary>
         public ConsoleColor ForegroundColor { get; set; } = Color.DefaultForegroundColor;
 
@@ -110,13 +115,65 @@ public static partial class Console {
                     baseConsole.ForegroundColor = ForegroundColor;
                     Error.Write("] ");
                     // Write percentage
-                    Write(OutputPipe.Error, $"{percentage,5:##.##}");
+                    Write(OutputPipe.Error, $"{percentage,5:##.##}%");
                     GoToLine(currentLine);
                 } finally {
                     // Ensure colors and buffer are reset even if an exception occurs mid-render
                     ResetColors();
                 }
             }
+        }
+
+        /// <summary>
+        /// Writes a single progress bar segment without tracking state.
+        /// </summary>
+        /// <param name="pipe">The output pipe to write to.</param>
+        /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
+        /// <param name="progressColor">The color used for the filled segment of the bar.</param>
+        /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteBar(OutputPipe pipe, double percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar) => WriteBar(pipe, (int)percentage, progressColor, progressChar);
+
+        /// <summary>
+        /// Writes a single progress bar segment without tracking state.
+        /// </summary>
+        /// <param name="pipe">The output pipe to write to.</param>
+        /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
+        /// <param name="progressColor">The color used for the filled segment of the bar.</param>
+        /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.NoInlining)]
+        public static void WriteBar(OutputPipe pipe, int percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar) {
+            ResetColors();
+
+            int p = Math.Clamp(percentage, 0, 100);
+            int bufferWidth = GetWidthOrDefault() - baseConsole.CursorLeft;
+
+            const int bracketsAndSpacing = 3; // '[' + ']' + ' '
+            const int percentageWidth = 3; // numeric portion width
+            const int percentSymbolLength = 1; // '%' character
+            int barLength = Math.Max(0, bufferWidth - (bracketsAndSpacing + percentageWidth + percentSymbolLength));
+
+            var writer = GetWriter(pipe);
+            writer.Write('[');
+
+            if (barLength > 0) {
+                int filled = Math.Min((int)(barLength * p * 0.01), barLength);
+
+                if (filled > 0) {
+                    SetColors(progressColor, baseConsole.BackgroundColor);
+                    Span<char> s = stackalloc char[filled];
+                    s.Fill(progressChar);
+                    writer.Write(s);
+                    ResetColors();
+                }
+
+                int remaining = barLength - filled;
+                if (remaining > 0) {
+                    writer.WriteWhiteSpaces(remaining);
+                }
+            }
+
+            Write(pipe, $"] {p,3}%");
         }
     }
 }
