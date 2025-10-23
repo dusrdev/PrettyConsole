@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace PrettyConsole;
+﻿namespace PrettyConsole;
 
 public static partial class Console {
     /// <summary>
@@ -26,7 +24,7 @@ public static partial class Console {
         public char ProgressChar { get; set; } = DefaultProgressChar;
 
         /// <summary>
-        /// Gets or sets the foreground color of the header display.
+        /// Gets or sets the foreground color of the status (if rendered).
         /// </summary>
         public ConsoleColor ForegroundColor { get; set; } = Color.DefaultForegroundColor;
 
@@ -34,8 +32,6 @@ public static partial class Console {
         /// Gets or sets the color of the progress portion of the bar.
         /// </summary>
         public ConsoleColor ProgressColor { get; set; } = Color.DefaultForegroundColor;
-
-        private int _currentProgress;
 
         private readonly Lock _lock = new();
 
@@ -58,69 +54,24 @@ public static partial class Console {
         /// </summary>
         /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
         /// <param name="status">The status text to be displayed after the progress bar.</param>
-        public void Update(double percentage, ReadOnlySpan<char> status) {
-            // Non-locking fast path: compute the desired progress and early-return if unchanged.
-            percentage = Math.Clamp(percentage, 0, 100);
+        public void Update(double percentage, ReadOnlySpan<char> status)
+            => Update((int)percentage, status);
 
-            int bufferWidth = GetWidthOrDefault();
-            // Compute pLength using exact overhead: " [" (2) + "] " (2) + percentage length (5)
-            int pLength = Math.Max(0, bufferWidth - status.Length - 4 - 5);
-            int p = Math.Clamp((int)(pLength * percentage * 0.01), 0, pLength);
-
-            if (p == Volatile.Read(ref _currentProgress)) {
-                return;
-            }
-
+        /// <summary>
+        /// Updates the progress bar with the specified percentage and header text.
+        /// </summary>
+        /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
+        /// <param name="status">The status text to be displayed after the progress bar.</param>
+        public void Update(int percentage, ReadOnlySpan<char> status) {
             lock (_lock) {
-                // It's possible another thread updated while we were waiting; re-check only the progress value.
-                if (p == _currentProgress) {
-                    return;
-                }
-
-                // Prepare the buffer exactly for the characters we will write for the bar (pLength)
-                using var listOwner = BufferPool.Shared.Rent(out var list);
-                list.EnsureCapacity(pLength);
-                CollectionsMarshal.SetCount(list, pLength);
-                Span<char> buf = CollectionsMarshal.AsSpan(list);
-
-                _currentProgress = p;
-
                 var currentLine = GetCurrentLine();
-                try {
-                    ResetColors();
-                    baseConsole.ForegroundColor = ForegroundColor;
-                    ClearNextLines(1, OutputPipe.Error);
-                    if (status.Length != 0) {
-                        Error.Write(status);
-                    }
-                    Error.Write(" [");
-                    baseConsole.ForegroundColor = ProgressColor;
-
-                    // Fill the progress portion
-                    if (p > 0) {
-                        Span<char> progressSpan = buf.Slice(0, p);
-                        progressSpan.Fill(ProgressChar);
-                    }
-
-                    // Fill the remaining tail with spaces
-                    int tailLength = Math.Max(0, pLength - p);
-                    if (tailLength > 0) {
-                        Span<char> whiteSpaceSpan = buf.Slice(p, tailLength);
-                        whiteSpaceSpan.Fill(' ');
-                    }
-
-                    // Write the entire bar (progress + tail)
-                    Error.Write(buf.Slice(0, pLength));
-
-                    baseConsole.ForegroundColor = ForegroundColor;
-                    Error.Write("] ");
-                    // Write percentage
-                    Write(OutputPipe.Error, $"{percentage,5:##.##}%");
-                    GoToLine(currentLine);
-                } finally {
-                    // Ensure colors and buffer are reset even if an exception occurs mid-render
-                    ResetColors();
+                ClearNextLines(1, OutputPipe.Error);
+                if (status.Length > 0) {
+                    Write(status, OutputPipe.Error, ForegroundColor);
+                    Write(' ');
+                    WriteBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar);
                 }
+                GoToLine(currentLine);
             }
         }
 
