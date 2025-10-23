@@ -199,6 +199,25 @@ prg.Update(percentage, "Downloading", sameLine: false);
 ProgressBar.WriteProgressBar(OutputPipe.Error, percentage, Color.Green, '*');
 ```
 
+##### Multiple Progress Bars with `Overwrite`
+
+You can combine the static helper with `Overwrite` to redraw several progress bars inside the same console window—perfect for tracking multiple downloads or tasks:
+
+```csharp
+var downloads = new[] { "Video.mp4", "Archive.zip" };
+var progress = new double[downloads.Length];
+
+Overwrite(progress, state => {
+    for (int i = 0; i < downloads.Length; i++) {
+        Write(OutputPipe.Error, $"Task {i + 1} ({downloads[i]}): ");
+        ProgressBar.WriteProgressBar(OutputPipe.Error, state[i], Color.Cyan);
+        NewLine(OutputPipe.Error);
+    }
+}, lines: downloads.Length, pipe: OutputPipe.Error);
+```
+
+Update the `progress` array elsewhere and call `Overwrite` again to refresh the stacked bars without leaving artifacts.
+
 ### Pipes
 
 `Console` wraps over `System.Console` and uses its `In`, `Out`, and `Error` streams. Since the names of the classes are identical, combining them in usage is somewhat painful as the compiler doesn't know which overloads to use. To aid in most cases,
