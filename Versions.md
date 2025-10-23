@@ -11,6 +11,7 @@
 
 - `ProgressBar.ForegroundColor` docs were fixed (they previously were the same as `ProgressColor`) which is invalid.
 - `ProgressBar` in all variations now shows progress as a round number suffixed by %.
+- `ProgressBar` no longer tracks if the percentage is changed, being that the numbers are round, percentage could progress or status needs to be re-written while it stays the same when rounded.
 - Methods that overwrite lines, now have a note in the remarks to clear the used lines after the last call, to prevent artifacts.
 
 ## v4.0.0
