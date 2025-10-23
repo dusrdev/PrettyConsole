@@ -13,10 +13,10 @@ public sealed class MultiProgressBarTest : IPrettyConsoleTest {
 
             Overwrite((int)percentage, p => {
                 Write(OutputPipe.Error, $"Task {1}: ");
-                ProgressBar.WriteBar(OutputPipe.Error, p, Color.Magenta);
+                ProgressBar.WriteProgressBar(OutputPipe.Error, p, Color.Magenta);
                 NewLine(OutputPipe.Error);
                 Write(OutputPipe.Error, $"Task {2}: ");
-                ProgressBar.WriteBar(OutputPipe.Error, p, Color.Magenta);
+                ProgressBar.WriteProgressBar(OutputPipe.Error, p, Color.Magenta);
                 NewLine(OutputPipe.Error);
             }, 2);
 

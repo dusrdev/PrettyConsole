@@ -85,14 +85,14 @@ public static partial class Console {
                     if (status.Length > 0) {
                         Write(status, OutputPipe.Error, ForegroundColor);
                         Write(' ');
-                        WriteBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar);
+                        WriteProgressBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar);
                     }
                 } else {
                     bool hasStatus = status.Length > 0;
                     int lines = hasStatus ? 2 : 1;
                     ClearNextLines(lines, OutputPipe.Error);
                     if (hasStatus) WriteLine(status, OutputPipe.Error, ForegroundColor);
-                    WriteBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar);
+                    WriteProgressBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar);
                 }
                 GoToLine(currentLine);
             }
@@ -106,7 +106,7 @@ public static partial class Console {
         /// <param name="progressColor">The color used for the filled segment of the bar.</param>
         /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteBar(OutputPipe pipe, double percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar) => WriteBar(pipe, (int)percentage, progressColor, progressChar);
+        public static void WriteProgressBar(OutputPipe pipe, double percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar) => WriteProgressBar(pipe, (int)percentage, progressColor, progressChar);
 
         /// <summary>
         /// Writes a single progress bar segment without tracking state.
@@ -116,7 +116,7 @@ public static partial class Console {
         /// <param name="progressColor">The color used for the filled segment of the bar.</param>
         /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.NoInlining)]
-        public static void WriteBar(OutputPipe pipe, int percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar) {
+        public static void WriteProgressBar(OutputPipe pipe, int percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar) {
             ResetColors();
 
             int p = Math.Clamp(percentage, 0, 100);
