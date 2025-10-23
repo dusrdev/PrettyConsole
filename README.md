@@ -185,12 +185,18 @@ prg.AnimationSequence = IndeterminateProgressBar.Patterns.CarriageReturn; // cus
 var prg = new ProgressBar();
 // then on each time the progress percentage is actually changed, you call Update
 Update(percentage, ReadOnlySpan<char> status);
-// There are also overloads without header, and percentage can be either int or double (0-100)
+// There are also overloads without header, and percentage can be either int or double (0-100).
+// Update re-renders on every call, even if the percentage hasn't changed, so you can refresh the status text.
 // Also, you can change some of the visual properties of the progress bar after initialization
 // by using the properties of the ProgressBar class
 prg.ProgressChar = '■'; // Character to fill the progress bar
 prg.ForegroundColor = Color.Red; // Color of the empty part
 prg.ProgressColor = Color.Blue; // The color of the filled part
+// Pass sameLine: false to render the status on a separate line above the bar.
+prg.Update(percentage, "Downloading", sameLine: false);
+
+// Need a static, one-off render? Use the helper:
+ProgressBar.WriteProgressBar(OutputPipe.Error, percentage, Color.Green, '*');
 ```
 
 ### Pipes
