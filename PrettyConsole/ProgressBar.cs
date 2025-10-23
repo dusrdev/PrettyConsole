@@ -43,7 +43,7 @@ public static partial class Console {
         /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Update(int percentage) => Update(percentage, ReadOnlySpan<char>.Empty);
+        public void Update(int percentage) => Update(percentage, ReadOnlySpan<char>.Empty, true);
 
         /// <summary>
         /// Updates the progress bar with the specified percentage.
@@ -53,7 +53,7 @@ public static partial class Console {
         /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Update(double percentage) => Update(percentage, ReadOnlySpan<char>.Empty);
+        public void Update(double percentage) => Update((int)percentage, ReadOnlySpan<char>.Empty, true);
 
         /// <summary>
         /// Updates the progress bar with the specified percentage and header text.
@@ -66,7 +66,7 @@ public static partial class Console {
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update(double percentage, ReadOnlySpan<char> status, bool sameLine = true)
-            => Update((int)percentage, status);
+            => Update((int)percentage, status, sameLine);
 
         /// <summary>
         /// Updates the progress bar with the specified percentage and header text.
@@ -93,7 +93,6 @@ public static partial class Console {
                     ClearNextLines(lines, OutputPipe.Error);
                     if (hasStatus) WriteLine(status, OutputPipe.Error, ForegroundColor);
                     WriteBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar);
-                    NewLine(OutputPipe.Error);
                 }
                 GoToLine(currentLine);
             }
