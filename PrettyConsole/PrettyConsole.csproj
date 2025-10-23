@@ -38,22 +38,11 @@
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
-			- Dropped Sharpify as a dependency - PrettyConsole is now self-sufficient.
-			- Many overloads were added that support the new PrettyConsoleInterpolatedStringHandler,
-			enabling zero allocation formatted outputs.
-			- Fixed issue that could sometimes cause writing into buffers beyond their bounds -
-			throwing an exception.
-			- IndeterminateProgressBar will now allow customization of the animated sequence via
-			the property AnimationSequence, and it also includes an inner class Patterns that
-			contains some constant sequences that could be used with it.
-			- IndeterminateProgressBar.UpdateRate is 200 ms by default.
-			- IndeterminateProgressBar header is now positioned right of the animation. Similar to
-			common CLIs.
-			- ProgressBar had numeral optimizations and should perform better in all scenarios.
-			- Color received 2 new implicit operators, enabling it to convert a combination with any object
-			to ColoredOutput, which means you can write much less verbose statements with .ToString() calls.
-			- Internal buffer pooling system was upgraded to further reduce allocations and relief more pressure from the GC.
-			- Write/WriteLine overload for T, will no longer throw an exception when a capacity above 256 characters is required to format the type, and also support ref structs.
+			- ProgressBar.ForegroundColor docs were fixed (they previously were the same as ProgressColor) which is invalid.
+			- ProgressBar in all variations now shows progress as a round number suffixed by %.
+			- ProgressBar.Update overloads now include an optional parameter "sameLine" which configures whether to render the progress bar at the same of the status. It is set to "true" by default to keep current behavior.
+			- ProgressBar now includes a static method "WriteProgressBar" which renders a static progress bar with the set parameters, it can be used in conjunction with "Overwrite" to create multi-progress-bars UI.
+			- Methods that overwrite lines, now have a note in the remarks to clear the used lines after the last call, to prevent artifacts.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
