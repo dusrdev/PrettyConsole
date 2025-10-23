@@ -60,7 +60,7 @@ public static partial class Console {
         /// </summary>
         /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
         /// <param name="status">The status text to be displayed after the progress bar.</param>
-        /// <param name="sameLine">Whether to display the status before the progress bar on the same line. If not it will be displayed above the progress bar</param>
+        /// <param name="sameLine">Whether to display the status before the progress bar on the same line. If not it will be displayed above the progress bar, if set to false, the progress bar will use 2 lines.</param>
         /// <remarks>
         /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
         /// </remarks>
@@ -73,7 +73,7 @@ public static partial class Console {
         /// </summary>
         /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
         /// <param name="status">The status text to be displayed after the progress bar.</param>
-        /// <param name="sameLine">Whether to display the status before the progress bar on the same line. If not it will be displayed above the progress bar</param>
+        /// <param name="sameLine">Whether to display the status before the progress bar on the same line. If not it will be displayed above the progress bar, if set to false, the progress bar will use 2 lines.</param>
         /// <remarks>
         /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
         /// </remarks>
