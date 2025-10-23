@@ -14,17 +14,15 @@ public sealed class MultiProgressBarTest : IPrettyConsoleTest {
             Overwrite((int)percentage, p => {
                 Write(OutputPipe.Error, $"Task {1}: ");
                 ProgressBar.WriteBar(OutputPipe.Error, p, Color.Magenta);
-                NewLine();
+                NewLine(OutputPipe.Error);
                 Write(OutputPipe.Error, $"Task {2}: ");
                 ProgressBar.WriteBar(OutputPipe.Error, p, Color.Magenta);
-                NewLine();
+                NewLine(OutputPipe.Error);
             }, 2);
 
-            // prg.Update(percentage, "TESTING");
             await Task.Delay(15);
         }
         ClearNextLines(2, OutputPipe.Error);
-        // ClearNextLines(1, OutputPipe.Error);
-        // GoToLine(currentLine);
+        WriteLine(OutputPipe.Error, $"Done");
     }
 }
