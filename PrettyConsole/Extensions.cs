@@ -15,6 +15,6 @@ internal static class Extensions {
             int cur_length = Math.Min(length, 256);
             writer.Write(whiteSpaces.Slice(0, cur_length));
             length -= cur_length;
-		}
+        }
     }
 }
