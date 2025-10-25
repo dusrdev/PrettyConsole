@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 
 namespace PrettyConsole;
@@ -7,31 +6,19 @@ namespace PrettyConsole;
 internal sealed class BufferPool : IDisposable {
     private bool _disposed;
     private readonly Channel<List<char>> _channel;
-    private readonly Func<List<char>> _createPolicy;
-    private readonly Func<List<char>, bool> _returnPolicy;
     private readonly ThreadLocal<List<char>?> _fastItem;
 
     internal const int ListStartingSize = 256;
     internal const int ListMaxSize = 4096;
 
-    public static readonly BufferPool Shared
-        = new(() => new(ListStartingSize),
-            item => {
-                if (item.Count > ListMaxSize) {
-                    return false;
-                }
-                item.Clear();
-                return true;
-            });
+    public static readonly BufferPool Shared = new();
 
-    private BufferPool(Func<List<char>> createPolicy, Func<List<char>, bool> returnPolicy) {
+    private BufferPool() {
         _channel = Channel.CreateBounded<List<char>>(new BoundedChannelOptions(Environment.ProcessorCount * 2) {
             SingleWriter = false,
             SingleReader = false,
             FullMode = BoundedChannelFullMode.DropWrite
         });
-        _createPolicy = createPolicy ?? throw new ArgumentNullException(nameof(createPolicy));
-        _returnPolicy = returnPolicy ?? throw new ArgumentNullException(nameof(returnPolicy));
         _fastItem = new(() => null, trackAllValues: false);
     }
 
@@ -48,24 +35,34 @@ internal sealed class BufferPool : IDisposable {
             value = item;
             return new(this, value);
         }
-        value = _createPolicy();
+        value = new List<char>(ListStartingSize);
         return new(this, value);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void Return(List<char> item) {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (!_returnPolicy(item)) {
-            (item as IDisposable)?.Dispose();
+        if (!AcceptAndClear(item)) {
             return;
         }
         if (_fastItem.Value is null) {
             _fastItem.Value = item;
             return;
         }
-        if (!_channel.Writer.TryWrite(item)) {
-            (item as IDisposable)?.Dispose();
+        _channel.Writer.TryWrite(item);
+    }
+
+    /// <summary>
+	/// Checks if <paramref name="item"/> should be accepted back to the pool, and clears it if it should.
+	/// </summary>
+	/// <param name="item"></param>
+	/// <returns></returns>
+    private static bool AcceptAndClear(List<char> item) {
+        if (item.Count > ListMaxSize) {
+            return false;
         }
+        item.Clear();
+        return true;
     }
 
     public void Dispose() {
