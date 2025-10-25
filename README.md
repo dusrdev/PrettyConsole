@@ -40,6 +40,13 @@ if (!TryReadLine(out int choice, $"Pick option {Color.Cyan}1-5{Color.Default}: "
 
 Colors reset automatically at the end of each call. Use `Color.Default` (or explicit background tuples) when you need to restore colors mid-string.
 
+When interpolating `TimeSpan` values you can also apply the special `:hr` format specifier to get compact, human-readable output (`ms`, `ss`, `mm`, `hh`, or `dd` depending on the magnitude):
+
+```csharp
+var elapsed = stopwatch.Elapsed;
+WriteLine($"Completed in {elapsed:hr}");
+```
+
 ### ColoredOutput
 
 PrettyConsole uses an equation inspired syntax to colorize text. The syntax is as follows:
