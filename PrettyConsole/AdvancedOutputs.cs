@@ -6,7 +6,9 @@ public static partial class Console {
     /// </summary>
     /// <param name="output"></param>
     /// <param name="pipe">The output pipe to use</param>
-    [MethodImpl(MethodImplOptions.Synchronized)]
+    /// <remarks>
+    /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
+    /// </remarks>
     public static void OverwriteCurrentLine(ReadOnlySpan<ColoredOutput> output, OutputPipe pipe = OutputPipe.Error) {
         var currentLine = GetCurrentLine();
         ClearNextLines(1, pipe);
@@ -20,7 +22,9 @@ public static partial class Console {
     /// <param name="action">The output action.</param>
     /// <param name="lines">The amount of lines to clear.</param>
     /// <param name="pipe">The output pipe to use.</param>
-    [MethodImpl(MethodImplOptions.Synchronized)]
+    /// <remarks>
+    /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
+    /// </remarks>
     public static void Overwrite(Action action, int lines = 1, OutputPipe pipe = OutputPipe.Error) {
         var currentLine = GetCurrentLine();
         ClearNextLines(lines, pipe);
@@ -36,7 +40,9 @@ public static partial class Console {
     /// <param name="action">The output action.</param>
     /// <param name="lines">The amount of lines to clear.</param>
     /// <param name="pipe">The output pipe to use.</param>
-    [MethodImpl(MethodImplOptions.Synchronized)]
+    /// <remarks>
+    /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
+    /// </remarks>
     public static void Overwrite<TState>(TState state, Action<TState> action, int lines = 1, OutputPipe pipe = OutputPipe.Error) where TState : allows ref struct {
         var currentLine = GetCurrentLine();
         ClearNextLines(lines, pipe);

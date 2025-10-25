@@ -72,9 +72,11 @@ Testing structure and workflows
   - `Program.cs` allows to test things that need to be verified visually and can't be tested easily or at all using unit tests. It contains tests for various things like menues, tables, progress bar, etc... and at occations new overloads and other things. It's content doesn't need to be tracked, it is more like a playground.
 - PrettyConsole.Tests.Unit (xUnit v3)
   - Uses Microsoft.NET.Test.Sdk with the Microsoft Testing Platform runner; xunit.runner.json is included. Execute with dotnet run as shown above; pass filters after to narrow to a class or method.
+  - Progress bar coverage now includes multi-line rendering (`sameLine: false`), repeat renders at the same percentage, and the static `ProgressBar.WriteProgressBar` helper. Keep these behaviours in sync with docs.
 
 Notes and gotchas
 
 - The library aims to minimize allocations; prefer span-based overloads (ReadOnlySpan<char>, ReadOnlySpan<ColoredOutput>) for best performance when contributing.
 - When authoring new features, pick the appropriate OutputPipe to keep CLI piping behavior intact.
 - On macOS terminals, ANSI is supported; Windows legacy terminals are handled via ANSI-compatible rendering in the library.
+- `ProgressBar.Update` re-renders on every call (even when the percentage is unchanged) and accepts `sameLine` to place the status above the bar; the static `ProgressBar.WriteProgressBar` renders one-off bars for multi-progress scenarios.

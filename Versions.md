@@ -1,5 +1,19 @@
 # Versions
 
+## v4.1.0
+
+### Added
+
+- `ProgressBar` now includes a static method `WriteProgressBar` which renders a static progress bar with the set parameters, it can be used in conjunction with `Overwrite` to create multi-progress-bars UI.
+- `ProgressBar.Update` overloads now include an optional parameter `sameLine` which configures whether to render the progress bar at the same of the status. It is set to `true` by default to keep current behavior.
+
+### Fixed
+
+- `ProgressBar.ForegroundColor` docs were fixed (they previously were the same as `ProgressColor`) which is invalid.
+- `ProgressBar` in all variations now shows progress as a round number suffixed by %.
+- `ProgressBar` no longer tracks if the percentage is changed, being that the numbers are round, percentage could progress or status needs to be re-written while it stays the same when rounded.
+- Methods that overwrite lines, now have a note in the remarks to clear the used lines after the last call, to prevent artifacts.
+
 ## v4.0.0
 
 ### Added

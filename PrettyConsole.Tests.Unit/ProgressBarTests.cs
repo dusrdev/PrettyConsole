@@ -21,18 +21,66 @@ public class ProgressBarTests {
     }
 
     [Fact]
-    public void ProgressBar_Update_SamePercentage_NoAdditionalOutput() {
+    public void ProgressBar_Update_SamePercentage_RerendersOutput() {
         Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var errorWriter);
 
-        var bar = new ProgressBar();
+        var bar = new ProgressBar {
+            ProgressChar = '#',
+            ForegroundColor = ConsoleColor.White,
+            ProgressColor = ConsoleColor.Green
+        };
 
-        bar.Update(25);
+        bar.Update(25, "Loading");
         errorWriter.ToStringAndFlush();
 
-        bar.Update(25);
+        bar.Update(25, "Loading");
 
-        Assert.Equal(string.Empty, errorWriter.ToString());
+        var output = errorWriter.ToString();
+        Assert.NotEqual(string.Empty, output);
+        Assert.Contains("Loading", output);
+        Assert.Contains("25", output);
+    }
+
+    [Fact]
+    public void ProgressBar_Update_SameLineFalse_WritesStatusOnSeparateLine() {
+        Utilities.SkipIfNoInteractiveConsole();
+
+        var originalError = Error;
+        try {
+            Error = Utilities.GetWriter(out var errorWriter);
+
+            var bar = new ProgressBar {
+                ProgressChar = '#'
+            };
+
+            bar.Update(75, "Working", sameLine: false);
+
+            var output = errorWriter.ToString();
+            Assert.Contains("Working", output);
+            Assert.Contains(Environment.NewLine + "[", output);
+        } finally {
+            Error = originalError;
+        }
+    }
+
+    [Fact]
+    public void ProgressBar_WriteProgressBar_WritesFormattedOutput() {
+        Utilities.SkipIfNoInteractiveConsole();
+
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var outWriter);
+
+            ProgressBar.WriteProgressBar(OutputPipe.Out, 75, ConsoleColor.Cyan, '*');
+
+            var output = outWriter.ToString();
+            Assert.Contains("[", output);
+            Assert.Contains("75%", output);
+            Assert.Contains("*", output);
+        } finally {
+            Out = originalOut;
+        }
     }
 
     [Fact]

@@ -40,6 +40,13 @@ if (!TryReadLine(out int choice, $"Pick option {Color.Cyan}1-5{Color.Default}: "
 
 Colors reset automatically at the end of each call. Use `Color.Default` (or explicit background tuples) when you need to restore colors mid-string.
 
+When interpolating `TimeSpan` values you can also apply the special `:hr` format specifier to get compact, human-readable output (`ms`, `ss`, `mm`, `hh`, or `dd` depending on the magnitude):
+
+```csharp
+var elapsed = stopwatch.Elapsed;
+WriteLine($"Completed in {elapsed:hr}");
+```
+
 ### ColoredOutput
 
 PrettyConsole uses an equation inspired syntax to colorize text. The syntax is as follows:
@@ -185,13 +192,38 @@ prg.AnimationSequence = IndeterminateProgressBar.Patterns.CarriageReturn; // cus
 var prg = new ProgressBar();
 // then on each time the progress percentage is actually changed, you call Update
 Update(percentage, ReadOnlySpan<char> status);
-// There are also overloads without header, and percentage can be either int or double (0-100)
+// There are also overloads without header, and percentage can be either int or double (0-100).
+// Update re-renders on every call, even if the percentage hasn't changed, so you can refresh the status text.
 // Also, you can change some of the visual properties of the progress bar after initialization
 // by using the properties of the ProgressBar class
 prg.ProgressChar = '■'; // Character to fill the progress bar
 prg.ForegroundColor = Color.Red; // Color of the empty part
 prg.ProgressColor = Color.Blue; // The color of the filled part
+// Pass sameLine: false to render the status on a separate line above the bar.
+prg.Update(percentage, "Downloading", sameLine: false);
+
+// Need a static, one-off render? Use the helper:
+ProgressBar.WriteProgressBar(OutputPipe.Error, percentage, Color.Green, '*');
 ```
+
+##### Multiple Progress Bars with `Overwrite`
+
+You can combine the static helper with `Overwrite` to redraw several progress bars inside the same console window—perfect for tracking multiple downloads or tasks:
+
+```csharp
+var downloads = new[] { "Video.mp4", "Archive.zip" };
+var progress = new double[downloads.Length];
+
+Overwrite(progress, state => {
+    for (int i = 0; i < downloads.Length; i++) {
+        Write(OutputPipe.Error, $"Task {i + 1} ({downloads[i]}): ");
+        ProgressBar.WriteProgressBar(OutputPipe.Error, state[i], Color.Cyan);
+        NewLine(OutputPipe.Error);
+    }
+}, lines: downloads.Length, pipe: OutputPipe.Error);
+```
+
+Update the `progress` array elsewhere and call `Overwrite` again to refresh the stacked bars without leaving artifacts.
 
 ### Pipes
 
