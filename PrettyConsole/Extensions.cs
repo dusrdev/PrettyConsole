@@ -17,6 +17,5 @@ internal static class Extensions {
         }
     }
 
-
     private static readonly string WhiteSpaces = new(' ', 256);
 }
