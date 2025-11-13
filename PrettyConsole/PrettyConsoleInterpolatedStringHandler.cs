@@ -114,35 +114,25 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     /// <param name="timeSpan"></param>
     /// <param name="format"></param>
-    public readonly void AppendFormatted(TimeSpan timeSpan, string? format = null) {
+    public readonly void AppendFormatted(TimeSpan timeSpan, string? format = null)
+        => AppendFormatted(timeSpan, alignment: 0, format);
+
+    /// <summary>
+    /// Append timeSpan with optional alignment support.
+    /// </summary>
+    /// <param name="timeSpan"></param>
+    /// <param name="alignment"></param>
+    /// <param name="format"></param>
+    public readonly void AppendFormatted(TimeSpan timeSpan, int alignment, string? format = null) {
         if (format != "hr") {
-            AppendSpanFormattable(timeSpan, 0, format);
+            AppendSpanFormattable(timeSpan, alignment, format);
             return;
         }
-        if (timeSpan.TotalSeconds < 1) {
-            AppendSpanFormattable(timeSpan.Milliseconds, 0, null);
-            AppendSpan("ms", 0);
-        } else if (timeSpan.TotalSeconds < 60) {
-            AppendSpanFormattable(timeSpan.Seconds, 0, "00");
-            AppendFormatted(':');
-            AppendSpanFormattable(timeSpan.Milliseconds, 0, "00");
-            AppendFormatted('s');
-        } else if (timeSpan.TotalSeconds < 3600) {
-            AppendSpanFormattable(timeSpan.Minutes, 0, "00");
-            AppendFormatted(':');
-            AppendSpanFormattable(timeSpan.Seconds, 0, "00");
-            AppendFormatted('m');
-        } else if (timeSpan.TotalSeconds < 86400) {
-            AppendSpanFormattable(timeSpan.Hours, 0, "00");
-            AppendFormatted(':');
-            AppendSpanFormattable(timeSpan.Minutes, 0, "00");
-            AppendSpan("hr", 0);
-        } else {
-            AppendSpanFormattable(timeSpan.Days, 0, "00");
-            AppendFormatted(':');
-            AppendSpanFormattable(timeSpan.Hours, 0, "00");
-            AppendSpan("d", 0);
-        }
+        AppendSpanFormattable((int)timeSpan.TotalHours, alignment, null);
+        AppendSpanFormattable(':', alignment, null);
+        AppendSpanFormattable(timeSpan.Minutes, alignment, null);
+        AppendSpanFormattable(':', alignment, null);
+        AppendSpanFormattable(timeSpan.Seconds, alignment, null);
     }
 
     /// <summary>
