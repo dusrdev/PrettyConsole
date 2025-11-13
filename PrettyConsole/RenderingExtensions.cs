@@ -6,7 +6,7 @@ namespace PrettyConsole;
 public static partial class RenderingExtensions {
     extension(Console) {
         /// <summary>
-        /// Clears the next <paramref name="lines"/> (regular output)
+        /// Clears the next <paramref name="lines"/>.
         /// </summary>
         /// <param name="lines">Amount of lines to clear</param>
         /// <param name="pipe">The output pipe to use</param>
@@ -25,14 +25,14 @@ public static partial class RenderingExtensions {
         }
 
         /// <summary>
-        /// Used to end current line or write an empty one, depends whether the current line has any text
+        /// Used to end current line or write an empty one, depends whether the current line has any text.
         /// </summary>
         public static void NewLine(OutputPipe pipe = OutputPipe.Out) {
             PrettyConsoleExtensions.GetWriter(pipe).WriteLine();
         }
 
         /// <summary>
-        /// Sets the colors of the console output
+        /// Sets the colors of the console output.
         /// </summary>
         public static void SetColors(ConsoleColor foreground, ConsoleColor background) {
             Console.ForegroundColor = foreground;
@@ -40,7 +40,7 @@ public static partial class RenderingExtensions {
         }
 
         /// <summary>
-        /// Gets the current line number
+        /// Gets the current line number.
         /// </summary>
         /// <returns></returns>
         public static int GetCurrentLine() {
@@ -48,7 +48,7 @@ public static partial class RenderingExtensions {
         }
 
         /// <summary>
-        /// Moves the cursor to the specified line
+        /// Moves the cursor to the start of the specified line.
         /// </summary>
         /// <param name="line"></param>
         public static void GoToLine(int line) {
