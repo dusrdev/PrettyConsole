@@ -1,5 +1,32 @@
 # Versions
 
+## v5.0.0 - .NET 10+
+
+This version contains a lot of breaking changes, but they were necessary to trim legacy and sub-optimal things from the library to ensure it remains the best performing library for stylized console outputs.
+
+### Removed
+
+- `ColoredOutput` is completely gone, all APIs that used it - are gone as well.
+- `Color` struct is gone too, extension members allowed me to rework it's uses to the built-in `System.ConsoleColor`.
+
+### Changed
+
+- All of the public facing APIs can now be invoked directly from `System.Console`
+  - `Write<T>` and `Write(ReadOnlySpan<char>, OutputPipe)` remain by the same names.
+  - `Write` and `WriteLine` that use `PrettyConsoleInterpolatedStringHandler` were renamed to `WriteInterpolated` and `WriteLineInterpolated` respectively - This is slightly more verbose but required to bypass overload resolution which prefers the build-in `Write` and `WriteLine` methods of `System.Console`.
+  - `Selection`, `Menu`, `Table`, `ReadLine`, `TryReadLine` were all added to `System.Console`.
+- `ConsoleColor` now has static properties to allow the same semantics as `Color` used to.
+  - `ConsoleColor.DefaultForeground` and `ConsoleColor.DefaultBackground` bind to the defaults of the shell and can be used to work with the defaults or reset colors.
+  - `ConsoleColor.Default` returns a tuple of `(DefaultForeground, DefaultBackground)`
+  - `ConsoleColor / ConsoleColor` also returns a tuple where the first the foreground and second a background.
+  - `ConsoleColor / (ConsoleColor, ConsoleColor)` returns a tuple of the foreground, and the background from second tuple.
+  - Those can be used with the string handler `$"{ConsoleColor.Red}Hello{ConsoleColor.Default}"` to write colored zero allocation outputs.
+- `ProgressBar` and `IndeterminateProgressBar` are no longer nested classes of `Console` (since it doesn't exist anymore) - this can affect your using statements.
+
+### Added
+
+- `TextWriter` which is the object backing `Console.Out` and `Console.Error` now has a static extension `WriteWhiteSpaces(int)`, which can be used to write paddings and whatever else without any allocations. It was previously an internal method but I chose to expose it for all of you.
+
 ## v4.1.0
 
 ### Added
