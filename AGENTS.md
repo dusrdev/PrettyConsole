@@ -4,11 +4,12 @@ Repository: PrettyConsole
 
 Summary
 
-- PrettyConsole is a high-performance, allocation-conscious wrapper over System.Console that provides structured colored output, input helpers, rendering controls, menus, and progress bars. It targets net9.0, is trimming/AOT ready, and ships SourceLink metadata for debugging.
+- PrettyConsole is a high-performance, allocation-conscious extension layer over System.Console (implemented via C# extension members) that provides structured colored output, input helpers, rendering controls, menus, and progress bars. It targets net10.0, is trimming/AOT ready, and ships SourceLink metadata for debugging.
 - Solution layout:
   - PrettyConsole/ — main library
   - PrettyConsole.Tests/ — interactive/demo runner (manually selects visual feature demos)
   - PrettyConsole.Tests.Unit/ — xUnit v3 unit tests using Microsoft Testing Platform
+- v5.0.0 (November 2025) removed the legacy `ColoredOutput`/`Color` types; color composition now flows through `ConsoleColor` helpers and tuples exposed by the library.
 
 Commands you’ll use often
 
@@ -43,28 +44,30 @@ Repo-specific agent rules and conventions
 High-level architecture and key concepts
 
 - Console facade
-  - `PrettyConsole.Console` is a static, partial wrapper over `System.Console`. It exposes the live `In`, `Out`, and `Error` streams, and adds helpers like `NewLine`, `Clear`, `ClearNextLines`, `GetCurrentLine`, `GoToLine`, `SetColors`, and `ResetColors` for structured rendering.
+  - Extension members declared via `extension(Console)` attach directly to `System.Console`, so APIs such as `Console.WriteInterpolated`, `Console.TryReadLine`, `Console.Overwrite`, etc. light up once `using PrettyConsole;` (optionally with `using static System.Console;`) is in scope. `PrettyConsoleExtensions` still exposes the live `In`, `Out`, and `Error` streams plus helpers like `GetWidthOrDefault`.
 - Output routing
-  - `OutputPipe` is a two-value enum (`Out`, `Error`). Most write APIs accept an optional pipe; internally `Console.GetWriter` resolves the correct `TextWriter` so sequences remain redirect-friendly.
+  - `OutputPipe` is a two-value enum (`Out`, `Error`). Most write APIs accept an optional pipe; internally `PrettyConsoleExtensions.GetWriter` resolves the correct `TextWriter` so sequences remain redirect-friendly.
 - Interpolated string handler
-  - `PrettyConsoleInterpolatedStringHandler` enables zero-allocation `$"..."` calls for `Write`, `WriteLine`, `ReadLine`, `TryReadLine`, `Confirm`, and `RequestAnyInput`. Colors automatically reset after each invocation, and handlers respect the selected pipe and optional `IFormatProvider`.
+  - `PrettyConsoleInterpolatedStringHandler` enables zero-allocation `$"..."` calls for `WriteInterpolated`, `WriteLineInterpolated`, `ReadLine`, `TryReadLine`, `Confirm`, and `RequestAnyInput`. Colors automatically reset after each invocation, and handlers respect the selected pipe and optional `IFormatProvider`. Recent changes ensure any `object` argument that implements `ISpanFormattable` is emitted through the span-based path before falling back to `IFormattable`/string allocations.
 - Coloring model
-  - `ColoredOutput` and the `Color` record provide terse composition via `"Text" * Color.Red / Color.Blue` and implicit conversions. Default foreground/background values are stored on `Color` so spans render without string allocations.
+  - `ConsoleColor` now exposes `DefaultForeground`, `DefaultBackground`, and `Default` tuple properties plus `/` operator overloads so you can inline foreground/background tuples (`$"{ConsoleColor.Red / ConsoleColor.White}Error"`). These tuples play nicely with the interpolated string handler and keep color resets allocation-free.
 - Write APIs
-  - `Write`/`WriteLine` cover interpolated strings, `ColoredOutput` spans, raw `ReadOnlySpan<char>`, and generic `ISpanFormattable` values (including `ref struct`s) with optional foreground/background colors and format providers. Internally they rely on `BufferPool` to avoid allocation spikes.
+  - `WriteInterpolated`/`WriteLineInterpolated` host the interpolated-string handler; `Write`/`WriteLine` overloads target `ISpanFormattable` values (including `ref struct`s) and raw `ReadOnlySpan<char>` spans with optional foreground/background overrides. Implementations rent buffers via `BufferPool` to avoid allocation spikes and always reset colors.
+- TextWriter helpers
+  - `PrettyConsoleExtensions` surfaces a `TextWriter.WriteWhiteSpaces(int)` extension (available via `PrettyConsoleExtensions.Out/Error`) for allocation-free padding. Use it instead of creating temporary `string`s when building menus, tables, or progress output.
 - Inputs
   - `ReadLine`/`TryReadLine` support `IParsable<T>` types, optional defaults, enum parsing with `ignoreCase`, and interpolated prompts. `Confirm` exposes `DefaultConfirmValues`, overloads for custom truthy tokens, and interpolated prompts; `RequestAnyInput` blocks on `ReadKey` with colored prompts if desired.
 - Rendering controls
   - `ClearNextLines`, `GoToLine`, and `GetCurrentLine` coordinate bounded screen regions; `Clear` wipes the buffer when safe. These helpers underpin progress rendering and overwrite scenarios.
 - Advanced outputs
-  - `OverwriteCurrentLine`, `Overwrite`, and `Overwrite<TState>` run user actions while clearing a configurable number of lines, enabling reactive text dashboards without leaving artifacts. `TypeWrite`/`TypeWriteLine` animate character-by-character output with adjustable delays.
+  - `OverwriteCurrentLine`, `Overwrite`, and `Overwrite<TState>` run user actions while clearing a configurable number of lines. Set the `lines` argument to however many rows you emit during the action (e.g., the multi-progress sample uses `lines: 2`) and call `Console.ClearNextLines` once after the last overwrite to remove residual UI. `TypeWrite`/`TypeWriteLine` animate character-by-character output with adjustable delays.
 - Menus and tables
   - `Selection` returns a single choice or empty string on invalid input; `MultiSelection` parses space-separated indices into string arrays; `TreeMenu` renders two-level hierarchies and validates input (throwing `ArgumentException` when selections are invalid); `Table` renders headers + columns with width calculations.
 - Progress bars
   - `IndeterminateProgressBar` binds to running `Task` instances, optionally starts tasks, supports cancellable `RunAsync` overloads, exposes `AnimationSequence`, `Patterns`, `ForegroundColor`, `DisplayElapsedTime`, and `UpdateRate`. Frames render on the error pipe and auto-clear.
-  - `ProgressBar` maintains a single-line bar on the error pipe. `Update` accepts `int`/`double` percentages plus optional status spans, and exposes `ProgressChar`, `ForegroundColor`, and `ProgressColor` for customization.
+  - `ProgressBar` maintains a single-line bar on the error pipe. `Update` accepts `int`/`double` percentages plus optional status spans, and exposes `ProgressChar`, `ForegroundColor`, and `ProgressColor` for customization. The static `ProgressBar.WriteProgressBar` helper renders one-off segments without moving the cursor (so you can stack multiple bars within an `Overwrite` block).
 - Packaging and targets
-  - `PrettyConsole.csproj` targets net9.0, enables trimming/AOT (`IsTrimmable`, `IsAotCompatible`), embeds SourceLink, and grants `InternalsVisibleTo` the unit-test project.
+  - `PrettyConsole.csproj` targets net10.0, enables trimming/AOT (`IsTrimmable`, `IsAotCompatible`), embeds SourceLink, and grants `InternalsVisibleTo` the unit-test project.
 
 Testing structure and workflows
 
@@ -76,7 +79,8 @@ Testing structure and workflows
 
 Notes and gotchas
 
-- The library aims to minimize allocations; prefer span-based overloads (ReadOnlySpan<char>, ReadOnlySpan<ColoredOutput>) for best performance when contributing.
+- The library aims to minimize allocations; prefer span-based overloads (`ReadOnlySpan<char>`, `ISpanFormattable`) plus the inline `ConsoleColor` tuples instead of recreating strings or structs.
 - When authoring new features, pick the appropriate OutputPipe to keep CLI piping behavior intact.
 - On macOS terminals, ANSI is supported; Windows legacy terminals are handled via ANSI-compatible rendering in the library.
-- `ProgressBar.Update` re-renders on every call (even when the percentage is unchanged) and accepts `sameLine` to place the status above the bar; the static `ProgressBar.WriteProgressBar` renders one-off bars for multi-progress scenarios.
+- `ProgressBar.Update` re-renders on every call (even when the percentage is unchanged) and accepts `sameLine` to place the status above the bar; the static `ProgressBar.WriteProgressBar` renders one-off bars without writing a trailing newline, so rely on `Console.Overwrite`/`lines` to stack multiple bars cleanly.
+- After the final `Overwrite`/`Overwrite<TState>` call in a rendering loop, call `Console.ClearNextLines(totalLines, pipe)` once more to clear the region and prevent ghost text.
