@@ -136,7 +136,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
             buffer.EnsureCapacity(upperBound);
             CollectionsMarshal.SetCount(buffer, upperBound);
             var span = CollectionsMarshal.AsSpan(buffer);
-            if (span.TryWrite($"{(int)timeSpan.TotalHours}:{timeSpan.Minutes}:{timeSpan.Seconds}", out int written)) {
+            if (span.TryWrite($"{(int)timeSpan.TotalHours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}", out int written)) {
                 AppendSpan(span.Slice(0, written), alignment);
                 break;
             }
