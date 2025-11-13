@@ -2,21 +2,6 @@ namespace PrettyConsole;
 
 public static partial class Console {
     /// <summary>
-    /// Clears the current line and overrides it with <paramref name="output"/>
-    /// </summary>
-    /// <param name="output"></param>
-    /// <param name="pipe">The output pipe to use</param>
-    /// <remarks>
-    /// Please remember to clear the used lines after the last call to this method, you can use <see cref="ClearNextLines"/>
-    /// </remarks>
-    public static void OverwriteCurrentLine(ReadOnlySpan<ColoredOutput> output, OutputPipe pipe = OutputPipe.Error) {
-        var currentLine = GetCurrentLine();
-        ClearNextLines(1, pipe);
-        Write(output, pipe);
-        GoToLine(currentLine);
-    }
-
-    /// <summary>
     /// Runs <paramref name="action"/> that should involve some form of outputting to the console. Set <paramref name="lines"/> according to the outputs you use in <paramref name="action"/> and configure the appropriate <paramref name="pipe"/>
     /// </summary>
     /// <param name="action">The output action.</param>
@@ -53,28 +38,26 @@ public static partial class Console {
     private const int TypeWriteDefaultDelay = 200;
 
     /// <summary>
-    /// Types out the <see cref="ColoredOutput"/> character by character with a delay of <paramref name="delay"/> milliseconds between each character.
+    /// Types out <paramref name="output"/> character by character with a delay of <paramref name="delay"/> milliseconds between each character, styled using <paramref name="colorTuple"/>.
     /// </summary>
     /// <param name="output"></param>
+    /// <param name="colorTuple"></param>
     /// <param name="delay">Delay in milliseconds between each character.</param>
-    public static async Task TypeWrite(ColoredOutput output, int delay = TypeWriteDefaultDelay) {
-        SetColors(output.ForegroundColor, output.BackgroundColor);
-        for (int i = 0; i < output.Value.Length - 1; i++) {
-            Out.Write(output.Value[i]);
+    public static async Task TypeWrite(string output, (ConsoleColor foregroundColor, ConsoleColor backgroundColor) colorTuple, int delay = TypeWriteDefaultDelay) {
+        foreach (char c in output) {
+            Write(c, OutputPipe.Out, colorTuple.foregroundColor, colorTuple.backgroundColor);
             await Task.Delay(delay);
         }
-
-        Out.Write(output.Value[output.Value.Length - 1]);
-        ResetColors();
     }
 
     /// <summary>
-    /// Types out the <see cref="ColoredOutput"/> character by character with a delay of <paramref name="delay"/> milliseconds between each character.
+    /// Types out <paramref name="output"/> character by character with a delay of <paramref name="delay"/> milliseconds between each character, styled using <paramref name="colorTuple"/> followed by a line terminator.
     /// </summary>
     /// <param name="output"></param>
+    /// <param name="colorTuple"></param>
     /// <param name="delay">Delay in milliseconds between each character.</param>
-    public static async Task TypeWriteLine(ColoredOutput output, int delay = TypeWriteDefaultDelay) {
-        await TypeWrite(output, delay);
+    public static async Task TypeWriteLine(string output, (ConsoleColor foregroundColor, ConsoleColor backgroundColor) colorTuple, int delay = TypeWriteDefaultDelay) {
+        await TypeWrite(output, colorTuple, delay);
         NewLine();
     }
 }

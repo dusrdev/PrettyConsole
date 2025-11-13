@@ -1,12 +1,15 @@
 namespace PrettyConsole;
 
-internal static class Extensions {
+/// <summary>
+/// Provides a set of convenient extensions
+/// </summary>
+public static class PrettyConsoleExtensions {
     extension(TextWriter @this) {
         /// <summary>
         /// Writes whitespace to this <see cref="TextWriter"/> up to length by chucks
         /// </summary>
         /// <param name="length"></param>
-        internal void WriteWhiteSpaces(int length) {
+        public void WriteWhiteSpaces(int length) {
             ReadOnlySpan<char> whiteSpaces = WhiteSpaces;
 
             while (length > 0) {

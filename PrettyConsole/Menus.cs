@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace PrettyConsole;
 
+/* Upgrade to interpolated
 public static partial class Console {
     /// <summary>
     /// Enumerates a list of strings and allows the user to select one by number
@@ -132,7 +133,7 @@ public static partial class Console {
             NewLine();
         }
 
-        var input = ReadLine(["Enter your main choice and sub choice separated with space: "]) ?? "";
+        string input = ReadLine(string.Empty, $"Enter your main choice and sub choice separated with space: ");
 
         var selected = input.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
@@ -211,3 +212,4 @@ public static partial class Console {
         Out.WriteLine(rowSeparation);
     }
 }
+*/

@@ -21,36 +21,6 @@ public static partial class Console {
     }
 
     /// <summary>
-    /// Write a <see cref="ColoredOutput"/> to the error console
-    /// </summary>
-    /// <param name="output"/>
-    /// <param name="pipe">The output pipe to use</param>
-    /// <remarks>
-    /// To not end line, use <see cref="Write(ColoredOutput, OutputPipe)"/>
-    /// </remarks>
-    public static void WriteLine(ColoredOutput output, OutputPipe pipe = OutputPipe.Out) {
-        Write(output, pipe);
-        NewLine(pipe);
-    }
-
-    /// <summary>
-    /// WriteLine a number of <see cref="ColoredOutput"/> to the console
-    /// </summary>
-    /// <param name="outputs"></param>
-    ///  <param name="pipe">The output pipe to use</param>
-    /// <remarks>
-    /// In overloads of WriteLine with multiple <see cref="ColoredOutput"/> parameters, only the last <see cref="ColoredOutput"/> will end the line.
-    /// </remarks>
-    public static void WriteLine(ReadOnlySpan<ColoredOutput> outputs, OutputPipe pipe = OutputPipe.Out) {
-        if (outputs.Length is 0) {
-            return;
-        }
-
-        Write(outputs, pipe);
-        NewLine(pipe);
-    }
-
-    /// <summary>
     /// WriteLine an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer
     /// </summary>
     /// <param name="item"></param>

@@ -31,48 +31,6 @@ public readonly partial record struct Color(ConsoleColor ConsoleColor) {
     }
 
     /// <summary>
-    /// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
-    /// </summary>
-    /// <param name="value">The string value to combine with the color.</param>
-    /// <param name="color">The color to apply to the string value.</param>
-    /// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
-    public static ColoredOutput operator *(string value, Color color) {
-        return new(value, color, DefaultBackgroundColor);
-    }
-
-    /// <summary>
-    /// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
-    /// </summary>
-    /// <param name="value">The string value to combine with the color.</param>
-    /// <param name="color">The color to apply to the string value.</param>
-    /// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
-    public static ColoredOutput operator *(object? value, Color color) {
-        var s = value?.ToString() ?? string.Empty;
-        return new(s, color, DefaultBackgroundColor);
-    }
-
-    /// <summary>
-    /// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
-    /// </summary>
-    /// <param name="value">The string value to combine with the color.</param>
-    /// <param name="color">The color to apply to the string value.</param>
-    /// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
-    public static ColoredOutput operator /(string value, Color color) {
-        return new(value, DefaultForegroundColor, color);
-    }
-
-    /// <summary>
-    /// Creates a <see cref="ColoredOutput"/> object by combining a string value with a color.
-    /// </summary>
-    /// <param name="value">The string value to combine with the color.</param>
-    /// <param name="color">The color to apply to the string value.</param>
-    /// <returns>A <see cref="ColoredOutput"/> object representing the combination of the string value and color.</returns>
-    public static ColoredOutput operator /(object? value, Color color) {
-        var s = value?.ToString() ?? string.Empty;
-        return new(s, DefaultForegroundColor, color);
-    }
-
-    /// <summary>
     /// Gets a <see cref="Color"/> object representing the color black.
     /// </summary>
     public static readonly Color Black = new(ConsoleColor.Black);

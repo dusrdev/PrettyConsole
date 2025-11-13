@@ -116,29 +116,6 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
-    /// Writes a <see cref="ColoredOutput"/> segment and applies its colors for the duration of the write.
-    /// </summary>
-    /// <param name="output">Segment to write.</param>
-    /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
-    public readonly void AppendFormatted(ColoredOutput output, int alignment = 0) {
-        Console.WriteCore(output, _writer);
-        if (alignment != 0) {
-            AppendSpan(ReadOnlySpan<char>.Empty, alignment);
-        }
-    }
-
-    /// <summary>
-    /// Writes a buffer of <see cref="ColoredOutput"/> items.
-    /// </summary>
-    /// <param name="outputs">Segments to write.</param>
-    public readonly void AppendFormatted(ReadOnlySpan<ColoredOutput> outputs) {
-        if (outputs.Length is 0) {
-            return;
-        }
-        Console.WriteCore(outputs, _writer);
-    }
-
-    /// <summary>
     /// Append timeSpan with or without elapsed time formatting (human readable)
     /// </summary>
     /// <param name="timeSpan"></param>
@@ -221,11 +198,6 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
 
         if (value is Color color) {
             AppendFormatted(color);
-            return;
-        }
-
-        if (value is ColoredOutput coloredOutput) {
-            AppendFormatted(coloredOutput, alignment);
             return;
         }
 
