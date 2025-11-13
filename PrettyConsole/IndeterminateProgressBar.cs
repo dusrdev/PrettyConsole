@@ -23,9 +23,6 @@ public class IndeterminateProgressBar {
     /// </remarks>
     public ReadOnlyCollection<string> AnimationSequence { get; set; } = Patterns.Twirl;
 
-    // A length of whitespace padding to the end
-    private const int PaddingLength = 10;
-
     /// <summary>
     /// Gets or sets the foreground color of the progress bar.
     /// </summary>
@@ -115,16 +112,13 @@ public class IndeterminateProgressBar {
             }
 
             if (header.Length > 0) {
-                PrettyConsoleExtensions.Error.WriteWhiteSpaces(1);
-                PrettyConsoleExtensions.Error.Write(header.AsSpan());
+                Console.WriteInterpolated(OutputPipe.Error, $" {header}");
             }
 
             if (DisplayElapsedTime) {
                 var elapsed = Stopwatch.GetElapsedTime(startTime);
                 Console.WriteInterpolated(OutputPipe.Error, $" [Elapsed: {elapsed:hr}]");
             }
-
-            PrettyConsoleExtensions.Error.WriteWhiteSpaces(PaddingLength);
 
             // Compute sleep to maintain UpdateRate between frame starts
             var now = Stopwatch.GetTimestamp();
