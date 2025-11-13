@@ -195,6 +195,11 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
             return;
         }
 
+        if (value is ISpanFormattable spanFormattable) {
+            AppendSpanFormattable(spanFormattable, alignment, null);
+            return;
+        }
+
         if (value is IFormattable formattable) {
             AppendString(formattable.ToString(format, _provider), alignment);
             return;
