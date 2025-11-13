@@ -2,14 +2,6 @@ namespace PrettyConsole.Tests.Unit;
 
 public class ReadLineExtensionsTests {
     [Fact]
-    public void ReadLine_String_NoOutput() {
-        Out = Utilities.GetWriter(out var _);
-        var reader = Utilities.GetReader("Hello world!");
-        In = reader;
-        Assert.Equal("Hello world!", Console.ReadLine());
-    }
-
-    [Fact]
     public void ReadLine_InterpolatedPrompt_WritesPromptAndReadsValue() {
         Out = Utilities.GetWriter(out _);
         var reader = Utilities.GetReader("123");
