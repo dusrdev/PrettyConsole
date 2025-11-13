@@ -128,11 +128,21 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
             AppendSpanFormattable(timeSpan, alignment, format);
             return;
         }
-        AppendSpanFormattable((int)timeSpan.TotalHours, alignment, null);
-        AppendSpanFormattable(':', alignment, null);
-        AppendSpanFormattable(timeSpan.Minutes, alignment, null);
-        AppendSpanFormattable(':', alignment, null);
-        AppendSpanFormattable(timeSpan.Seconds, alignment, null);
+
+        using var owner = BufferPool.Shared.Rent(out var buffer);
+        int upperBound = BufferPool.ListStartingSize;
+
+        while (true) {
+            buffer.EnsureCapacity(upperBound);
+            CollectionsMarshal.SetCount(buffer, upperBound);
+            var span = CollectionsMarshal.AsSpan(buffer);
+            if (span.TryWrite($"{(int)timeSpan.TotalHours}:{timeSpan.Minutes}:{timeSpan.Seconds}", out int written)) {
+                AppendSpan(span.Slice(0, written), alignment);
+                break;
+            }
+
+            upperBound *= 2;
+        }
     }
 
     /// <summary>
