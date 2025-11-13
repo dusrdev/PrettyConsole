@@ -25,7 +25,7 @@ public static class WriteExtensions {
         }
 
         /// <summary>
-        /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer
+        /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the selected <see cref="OutputPipe"/>.
         /// </summary>
         /// <param name="item"></param>
         /// <param name="pipe">The output pipe to use</param>
@@ -39,8 +39,7 @@ public static class WriteExtensions {
         }
 
         /// <summary>
-        /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer,
-        /// in the same color convention as ColoredOutput
+        /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the selected <see cref="OutputPipe"/>.
         /// </summary>
         /// <param name="item"></param>
         /// <param name="pipe">The output pipe to use</param>
@@ -55,8 +54,7 @@ public static class WriteExtensions {
         }
 
         /// <summary>
-        /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer,
-        /// in the same color convention as ColoredOutput
+        /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the selected <see cref="OutputPipe"/>.
         /// </summary>
         /// <param name="item"></param>
         /// <param name="pipe">The output pipe to use</param>
@@ -72,8 +70,7 @@ public static class WriteExtensions {
         }
 
         /// <summary>
-        /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the output writer,
-        /// in the same color convention as ColoredOutput
+        /// Writes an item that implements <see cref="ISpanFormattable"/> without boxing directly to the selected <see cref="OutputPipe"/>.
         /// </summary>
         /// <param name="item"></param>
         /// <param name="pipe">The output pipe to use</param>
@@ -104,8 +101,16 @@ public static class WriteExtensions {
         }
 
         /// <summary>
-        /// Writes a <see cref="ReadOnlySpan{Char}"/> without boxing directly to the output writer,
-        /// in the same color convention as ColoredOutput
+        /// Writes a <see cref="ReadOnlySpan{Char}"/> without boxing directly to the selected <see cref="OutputPipe"/>.
+        /// </summary>
+        /// <param name="span"></param>
+        /// <param name="pipe">The output pipe to use</param>
+        public static void Write(ReadOnlySpan<char> span, OutputPipe pipe) {
+            Write(span, pipe, ConsoleColor.DefaultForeground, ConsoleColor.DefaultBackground);
+        }
+
+        /// <summary>
+        /// Writes a <see cref="ReadOnlySpan{Char}"/> without boxing directly to the selected <see cref="OutputPipe"/>.
         /// </summary>
         /// <param name="span"></param>
         /// <param name="pipe">The output pipe to use</param>
@@ -115,8 +120,7 @@ public static class WriteExtensions {
         }
 
         /// <summary>
-        /// Writes a <see cref="ReadOnlySpan{Char}"/> without boxing directly to the output writer,
-        /// in the same color convention as ColoredOutput
+        /// Writes a <see cref="ReadOnlySpan{Char}"/> without boxing directly to the selected <see cref="OutputPipe"/>.
         /// </summary>
         /// <param name="span"></param>
         /// <param name="pipe">The output pipe to use</param>
