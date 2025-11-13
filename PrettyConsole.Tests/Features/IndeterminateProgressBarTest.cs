@@ -1,5 +1,3 @@
-using static PrettyConsole.Console;
-
 namespace PrettyConsole.Tests.Features;
 
 public sealed class IndeterminateProgressBarTest : IPrettyConsoleTest {
@@ -8,7 +6,7 @@ public sealed class IndeterminateProgressBarTest : IPrettyConsoleTest {
     public async ValueTask Implementation() {
         var prg = new IndeterminateProgressBar {
             AnimationSequence = IndeterminateProgressBar.Patterns.Braille,
-            ForegroundColor = Color.Magenta,
+            ForegroundColor = ConsoleColor.Magenta,
             // UpdateRate = 120,
             DisplayElapsedTime = true
         };

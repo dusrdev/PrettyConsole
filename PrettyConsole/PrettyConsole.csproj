@@ -31,7 +31,7 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
-	
+
 	<ItemGroup>
 		<Using Include="System.Runtime.CompilerServices"/>
 	</ItemGroup>

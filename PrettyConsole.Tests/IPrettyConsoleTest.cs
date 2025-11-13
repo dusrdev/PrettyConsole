@@ -1,4 +1,4 @@
-using static PrettyConsole.Console;
+using static System.ConsoleColor;
 
 namespace PrettyConsole.Tests;
 
@@ -8,11 +8,11 @@ public interface IPrettyConsoleTest {
     ValueTask Implementation();
 
     public async ValueTask Render() {
-        WriteLine(["Test: ", FeatureName * Color.Black / Color.White]);
-        NewLine();
+        Console.WriteLineInterpolated($"Test: {Black / White}{FeatureName}");
+        Console.NewLine();
         await Implementation();
-        NewLine();
-        RequestAnyInput(["Press any key to continue to next feature..." * Color.Green]);
-        NewLine();
+        Console.NewLine();
+        Console.RequestAnyInput($"{Green}Press any key to continue to next feature...");
+        Console.NewLine();
     }
 }

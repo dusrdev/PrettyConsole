@@ -1,8 +1,5 @@
-using System;
 using System.Globalization;
 using System.Text;
-
-using Xunit;
 
 namespace PrettyConsole.Tests.Unit;
 
@@ -25,12 +22,12 @@ public static class Utilities {
     public static void SkipIfNoInteractiveConsole() {
         const string reason = "Interactive console APIs are not available in this environment.";
 
-        if (System.Console.IsOutputRedirected) {
+        if (Console.IsOutputRedirected) {
             Assert.Skip(reason);
         }
 
         try {
-            _ = System.Console.CursorTop;
+            _ = Console.CursorTop;
         } catch (System.IO.IOException) {
             Assert.Skip(reason);
         } catch (PlatformNotSupportedException) {

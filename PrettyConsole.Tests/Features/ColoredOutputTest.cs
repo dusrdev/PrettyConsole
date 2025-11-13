@@ -1,4 +1,4 @@
-using static PrettyConsole.Console;
+using static System.ConsoleColor;
 
 namespace PrettyConsole.Tests.Features;
 
@@ -6,32 +6,27 @@ public sealed class ColoredOutputTest : IPrettyConsoleTest {
     public string FeatureName => "ColoredOutput";
 
     public ValueTask Implementation() {
-        WriteLine(["foreground = Red, background = White\t", "Test" * Color.Red / Color.White]);
-        WriteLine(["foreground = Green, background = Black\t", "Test" * Color.Green / Color.Black]);
-        WriteLine(["foreground = Blue, background = Yellow\t", "Test" * Color.Blue / Color.Yellow]);
-        WriteLine(["foreground = Yellow, background = Blue\t", "Test" * Color.Yellow / Color.Blue]);
-        WriteLine(["foreground = White, background = Red\t", "Test" * Color.White / Color.Red]);
-        WriteLine(["foreground = Black, background = Green\t", "Test" * Color.Black / Color.Green]);
-        WriteLine(["foreground = Cyan, background = Magenta\t", "Test" * Color.Cyan / Color.Magenta]);
-        WriteLine(["foreground = Magenta, background = Cyan\t", "Test" * Color.Magenta / Color.Cyan]);
-        WriteLine(["foreground = Gray, background = DarkGray\t", "Test" * Color.Gray / Color.DarkGray]);
-        WriteLine(["foreground = DarkGray, background = Gray\t", "Test" * Color.DarkGray / Color.Gray]);
-        WriteLine(["foreground = DarkRed, background = DarkGreen\t", "Test" * Color.DarkRed / Color.DarkGreen]);
-        WriteLine(["foreground = DarkGreen, background = DarkRed\t", "Test" * Color.DarkGreen / Color.DarkRed]);
-        WriteLine(["foreground = DarkBlue, background = DarkYellow\t", "Test" * Color.DarkBlue / Color.DarkYellow]);
-        WriteLine(["foreground = DarkYellow, background = DarkBlue\t", "Test" * Color.DarkYellow / Color.DarkBlue]);
-        WriteLine(["foreground = DarkMagenta, background = DarkCyan\t", "Test" * Color.DarkMagenta / Color.DarkCyan]);
-        WriteLine(["foreground = DarkCyan, background = DarkMagenta\t", "Test" * Color.DarkCyan / Color.DarkMagenta]);
-        WriteLine(["foreground = Black, background = White\t", "Test" * Color.Black / Color.White]);
-        WriteLine(["foreground = White, background = Black\t", "Test" * Color.White / Color.Black]);
-        WriteLine(["foreground = Red, background = Green\t", "Test" * Color.Red / Color.Green]);
-        WriteLine(["foreground = Green, background = Red\t", "Test" * Color.Green / Color.Red]);
-        WriteLine(["foreground = Blue, background = Yellow\t", "Test" * Color.Blue / Color.Yellow]);
-        WriteLine(["foreground = Yellow, background = Blue\t", "Test" * Color.Yellow / Color.Blue]);
-        WriteLine(["foreground = White, background = Red\t", "Test" * Color.White / Color.Red]);
-        WriteLine(["foreground = Black, background = Green\t", "Test" * Color.Black / Color.Green]);
-        WriteLine(["foreground = Cyan, background = Magenta\t", "Test" * Color.Cyan / Color.Magenta]);
-        WriteLine(["foreground = Magenta, background = Cyan\t", "Test" * Color.Magenta / Color.Cyan]);
+        Console.WriteLineInterpolated($"foreground = Red, background = White\t{Red / White}Test");
+        Console.WriteLineInterpolated($"foreground = Green, background = Black\t{Green / Black}Test");
+        Console.WriteLineInterpolated($"foreground = Yellow, background = Blue\t{Yellow / Blue}Test");
+        Console.WriteLineInterpolated($"foreground = Cyan, background = Magenta\t{Cyan / Magenta}Test");
+        Console.WriteLineInterpolated($"foreground = Magenta, background = Cyan\t{Magenta / Cyan}Test");
+        Console.WriteLineInterpolated($"foreground = Gray, background = DarkGray\t{Gray / DarkGray}Test");
+        Console.WriteLineInterpolated($"foreground = DarkGray, background = Gray\t{DarkGray / Gray}Test");
+        Console.WriteLineInterpolated($"foreground = DarkRed, background = DarkGreen\t{DarkRed / DarkGreen}Test");
+        Console.WriteLineInterpolated($"foreground = DarkGreen, background = DarkRed\t{DarkGreen / DarkRed}Test");
+        Console.WriteLineInterpolated($"foreground = DarkBlue, background = DarkYellow\t{DarkBlue / DarkYellow}Test");
+        Console.WriteLineInterpolated($"foreground = DarkYellow, background = DarkBlue\t{DarkYellow / DarkBlue}Test");
+        Console.WriteLineInterpolated($"foreground = DarkMagenta, background = DarkCyan\t{DarkMagenta / DarkCyan}Test");
+        Console.WriteLineInterpolated($"foreground = DarkCyan, background = DarkMagenta\t{DarkCyan / DarkMagenta}Test");
+        Console.WriteLineInterpolated($"foreground = Black, background = White\t{Black / White}Test");
+        Console.WriteLineInterpolated($"foreground = White, background = Black\t{White / Black}Test");
+        Console.WriteLineInterpolated($"foreground = Red, background = Green\t{Red / Green}Test");
+        Console.WriteLineInterpolated($"foreground = Green, background = Red\t{Green / Red}Test");
+        Console.WriteLineInterpolated($"foreground = Blue, background = Yellow\t{Blue / Yellow}Test");
+        Console.WriteLineInterpolated($"foreground = Yellow, background = Blue\t{Yellow / Blue}Test");
+        Console.WriteLineInterpolated($"foreground = White, background = Red\t{White / Red}Test");
+        Console.WriteLineInterpolated($"foreground = Black, background = Green\t{Black / Green}Test");
         return ValueTask.CompletedTask;
     }
 }

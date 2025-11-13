@@ -8,8 +8,8 @@ public class ProgressBarTests {
 
         var bar = new ProgressBar {
             ProgressChar = '#',
-            ForegroundColor = ConsoleColor.White,
-            ProgressColor = ConsoleColor.Green
+            ForegroundColor = White,
+            ProgressColor = Green
         };
 
         bar.Update(50, "Loading");
@@ -27,8 +27,8 @@ public class ProgressBarTests {
 
         var bar = new ProgressBar {
             ProgressChar = '#',
-            ForegroundColor = ConsoleColor.White,
-            ProgressColor = ConsoleColor.Green
+            ForegroundColor = White,
+            ProgressColor = Green
         };
 
         bar.Update(25, "Loading");
@@ -72,7 +72,7 @@ public class ProgressBarTests {
         try {
             Out = Utilities.GetWriter(out var outWriter);
 
-            ProgressBar.WriteProgressBar(OutputPipe.Out, 75, ConsoleColor.Cyan, '*');
+            ProgressBar.WriteProgressBar(OutputPipe.Out, 75, Cyan, '*');
 
             var output = outWriter.ToString();
             Assert.Contains("[", output);

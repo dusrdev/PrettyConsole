@@ -1,10 +1,16 @@
+﻿using System.Runtime.Versioning;
+
 namespace PrettyConsole;
 
 /// <summary>
-/// Provides a set of convenient extensions
+/// The static class the provides the abstraction over <see cref="Console"/> and other extensions.
 /// </summary>
-public static class PrettyConsoleExtensions {
-    extension(TextWriter @this) {
+[UnsupportedOSPlatform("android")]
+[UnsupportedOSPlatform("browser")]
+[UnsupportedOSPlatform("ios")]
+[UnsupportedOSPlatform("tvos")]
+public static partial class PrettyConsoleExtensions {
+	extension(TextWriter @this) {
         /// <summary>
         /// Writes whitespace to this <see cref="TextWriter"/> up to length by chucks
         /// </summary>

@@ -2,51 +2,11 @@ namespace PrettyConsole.Tests.Unit;
 
 public class AdvancedInputs {
     [Fact]
-    public void Confirm_Case_Y() {
-        Out = Utilities.GetWriter(out var stringWriter);
-        var reader = Utilities.GetReader("y");
-        In = reader;
-        var res = Confirm(["Enter y" * Color.White]);
-        Assert.Contains("Enter y", stringWriter.ToString());
-        Assert.True(res);
-    }
-
-    [Fact]
-    public void Confirm_Case_Yes() {
-        Out = Utilities.GetWriter(out var stringWriter);
-        var reader = Utilities.GetReader("yes");
-        In = reader;
-        var res = Confirm(["Enter yes" * Color.White]);
-        Assert.Contains("Enter yes", stringWriter.ToString());
-        Assert.True(res);
-    }
-
-    [Fact]
-    public void Confirm_Case_Empty() {
-        Out = Utilities.GetWriter(out var stringWriter);
-        var reader = Utilities.GetReader("");
-        In = reader;
-        var res = Confirm(["Enter yes" * Color.White]);
-        Assert.Contains("Enter yes", stringWriter.ToString());
-        Assert.True(res);
-    }
-
-    [Fact]
-    public void Confirm_Case_No() {
-        Out = Utilities.GetWriter(out var stringWriter);
-        var reader = Utilities.GetReader("no");
-        In = reader;
-        var res = Confirm(["Enter no" * Color.White]);
-        Assert.Contains("Enter no", stringWriter.ToString());
-        Assert.False(res);
-    }
-
-    [Fact]
     public void Confirm_Case_Y_Interpolated() {
         Out = Utilities.GetWriter(out var stringWriter);
         var reader = Utilities.GetReader("y");
         In = reader;
-        var res = Confirm($"Enter y:");
+        var res = Console.Confirm($"Enter y:");
         Assert.Contains("Enter y:", stringWriter.ToString());
         Assert.True(res);
     }
@@ -56,7 +16,7 @@ public class AdvancedInputs {
         Out = Utilities.GetWriter(out var stringWriter);
         var reader = Utilities.GetReader("yes");
         In = reader;
-        var res = Confirm($"Enter yes:");
+        var res = Console.Confirm($"Enter yes:");
         Assert.Contains("Enter yes", stringWriter.ToString());
         Assert.True(res);
     }
@@ -66,7 +26,7 @@ public class AdvancedInputs {
         Out = Utilities.GetWriter(out var stringWriter);
         var reader = Utilities.GetReader("");
         In = reader;
-        var res = Confirm($"Enter yes:");
+        var res = Console.Confirm($"Enter yes:");
         Assert.Contains("Enter yes", stringWriter.ToString());
         Assert.True(res);
     }
@@ -76,7 +36,7 @@ public class AdvancedInputs {
         Out = Utilities.GetWriter(out var stringWriter);
         var reader = Utilities.GetReader("no");
         In = reader;
-        var res = Confirm($"Enter no:");
+        var res = Console.Confirm($"Enter no:");
         Assert.Contains("Enter no", stringWriter.ToString());
         Assert.False(res);
     }
@@ -87,7 +47,7 @@ public class AdvancedInputs {
         var reader = Utilities.GetReader("ok");
         In = reader;
 
-        var res = Confirm(["ok", "okay"], false, $"Proceed?");
+        var res = Console.Confirm(["ok", "okay"], false, $"Proceed?");
 
         Assert.Equal("Proceed?", stringWriter.ToStringAndFlush());
         Assert.True(res);

@@ -1,5 +1,3 @@
-using static PrettyConsole.Console;
-
 namespace PrettyConsole.Tests.Features;
 
 public sealed class SelectionTest : IPrettyConsoleTest {
@@ -12,8 +10,8 @@ public sealed class SelectionTest : IPrettyConsoleTest {
             "Option 3"
         ];
 
-        var selected = Selection(["Select an option"], options);
-        WriteLine($"Selected: {selected}");
+        var selected = Console.Selection(options, $"Select an option: ");
+        Console.WriteLineInterpolated($"Selected: {selected}");
         return ValueTask.CompletedTask;
     }
 }

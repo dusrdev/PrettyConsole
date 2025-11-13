@@ -1,3 +1,4 @@
+using static System.Console;
 using System.Runtime.InteropServices;
 
 namespace PrettyConsole;
@@ -41,7 +42,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="provider">Optional format provider used when formatting values.</param>
     /// <param name="shouldAppend">Always <see langword="true"/>; reserved for future short-circuiting.</param>
     public PrettyConsoleInterpolatedStringHandler(int literalLength, int formattedCount, OutputPipe pipe, IFormatProvider? provider, out bool shouldAppend) {
-        _writer = Console.GetWriter(pipe);
+        _writer = PrettyConsoleExtensions.GetWriter(pipe);
         _provider = provider;
         shouldAppend = true;
     }
@@ -93,14 +94,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// Sets the console foreground color to <paramref name="color"/>.
     /// </summary>
     public readonly void AppendFormatted(ConsoleColor color) {
-        Console.SetColors(color, baseConsole.BackgroundColor);
-    }
-
-    /// <summary>
-    /// Sets the console foreground color to <paramref name="color"/>.
-    /// </summary>
-    public readonly void AppendFormatted(Color color) {
-        Console.SetColors(color, baseConsole.BackgroundColor);
+        Console.SetColors(color, BackgroundColor);
     }
 
     /// <summary>
@@ -193,11 +187,6 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
 
         if (value is ConsoleColor consoleColor) {
             AppendFormatted(consoleColor);
-            return;
-        }
-
-        if (value is Color color) {
-            AppendFormatted(color);
             return;
         }
 

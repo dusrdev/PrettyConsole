@@ -1,5 +1,3 @@
-using static PrettyConsole.Console;
-
 namespace PrettyConsole.Tests.Features;
 
 public sealed class TableTest : IPrettyConsoleTest {
@@ -9,7 +7,7 @@ public sealed class TableTest : IPrettyConsoleTest {
         var attributes = Enum.GetNames<FileAttributes>();
         var lowered = attributes.Select(x => x.ToLower()).ToArray();
 
-        Table(["attributes", "lowered"], [attributes, lowered]);
+        Console.Table(["attributes", "lowered"], [attributes, lowered]);
         return ValueTask.CompletedTask;
     }
 }

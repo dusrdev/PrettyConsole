@@ -2,24 +2,14 @@ namespace PrettyConsole.Tests.Unit;
 
 public class AdvancedOutputs {
     [Fact]
-    public void OverwriteCurrentLine_WritesOutputToPipe() {
-        Utilities.SkipIfNoInteractiveConsole();
-        Error = Utilities.GetWriter(out var writer);
-
-        OverwriteCurrentLine(["Updating" * Color.Green], OutputPipe.Error);
-
-        Assert.Contains("Updating", writer.ToString());
-    }
-
-    [Fact]
     public void Overwrite_ExecutesActionAndWritesOutput() {
         Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var writer);
         bool executed = false;
 
-        Overwrite(() => {
+        Console.Overwrite(() => {
             executed = true;
-            Write(OutputPipe.Error, $"Progress");
+            Console.WriteInterpolated(OutputPipe.Error, $"Progress");
         }, lines: 1, pipe: OutputPipe.Error);
 
         Assert.True(executed);
@@ -32,9 +22,9 @@ public class AdvancedOutputs {
         Error = Utilities.GetWriter(out var writer);
         bool executed = false;
 
-        Overwrite("Done", status => {
+        Console.Overwrite("Done", status => {
             executed = true;
-            Write(OutputPipe.Error, $"{status}");
+            Console.WriteInterpolated(OutputPipe.Error, $"{status}");
         }, lines: 1, pipe: OutputPipe.Error);
 
         Assert.True(executed);
@@ -44,14 +34,14 @@ public class AdvancedOutputs {
     [Fact]
     public async Task TypeWrite_Regular() {
         Out = Utilities.GetWriter(out var stringWriter);
-        await TypeWrite("Hello world!" * Color.Green, 10);
+        await Console.TypeWrite("Hello world!", Green / Black, 10);
         Assert.Contains("Hello world!", stringWriter.ToString());
     }
 
     [Fact]
     public async Task TypeWriteLine_Regular() {
         Out = Utilities.GetWriter(out var stringWriter);
-        await TypeWriteLine("Hello world!" * Color.Green, 10);
+        await Console.TypeWriteLine("Hello world!", Green / ConsoleColor.Default, 10);
         Assert.Contains("Hello world!" + Environment.NewLine, stringWriter.ToString());
     }
 }
