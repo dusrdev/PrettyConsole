@@ -45,7 +45,7 @@ if (!Console.TryReadLine(out int choice, $"Pick option {ConsoleColor.Cyan / Cons
 
 #### Formatting & alignment helpers
 
-- **`TimeSpan :hr` format** — the interpolated string handler understands the custom `:hr` specifier. It renders the span using the most appropriate unit (e.g., `950ms`, `12s`, `03m`, `02h`, `1d`) without allocating temporaries:
+- **`TimeSpan :hr` format** — the interpolated string handler understands the custom `:hr` specifier. It renders elapsed time as `totalHours:minutes:seconds` (e.g., `00:05:32`, `27:12:03`, `123:00:00`) without allocating, and the hour component keeps growing past 24 so long-running tasks stay accurate:
 
   ```csharp
   var elapsed = stopwatch.Elapsed;
