@@ -104,8 +104,10 @@ public class ProgressBar {
     /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
     /// <param name="progressColor">The color used for the filled segment of the bar.</param>
     /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
+    /// <param name="maxLineWidth">Optional total line length (including brackets and percentage). When provided, the rendered output will not exceed this width unless the decorations already require more characters.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void WriteProgressBar(OutputPipe pipe, double percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar) => WriteProgressBar(pipe, (int)percentage, progressColor, progressChar);
+    public static void WriteProgressBar(OutputPipe pipe, double percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null)
+        => WriteProgressBar(pipe, (int)percentage, progressColor, progressChar, maxLineWidth);
 
     /// <summary>
     /// Writes a single progress bar segment without tracking state.
@@ -114,17 +116,25 @@ public class ProgressBar {
     /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
     /// <param name="progressColor">The color used for the filled segment of the bar.</param>
     /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
+    /// <param name="maxLineWidth">Optional total line length (including brackets and percentage). When provided, the rendered output will not exceed this width unless the decorations already require more characters.</param>
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.NoInlining)]
-    public static void WriteProgressBar(OutputPipe pipe, int percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar) {
+    public static void WriteProgressBar(OutputPipe pipe, int percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null) {
         Console.ResetColor();
 
         int p = Math.Clamp(percentage, 0, 100);
-        int bufferWidth = PrettyConsoleExtensions.GetWidthOrDefault() - Console.CursorLeft;
+        int bufferWidth = Math.Max(0, PrettyConsoleExtensions.GetWidthOrDefault() - Console.CursorLeft);
 
         const int bracketsAndSpacing = 3; // '[' + ']' + ' '
         const int percentageWidth = 3; // numeric portion width
         const int percentSymbolLength = 1; // '%' character
-        int barLength = Math.Max(0, bufferWidth - (bracketsAndSpacing + percentageWidth + percentSymbolLength));
+        const int decorationWidth = bracketsAndSpacing + percentageWidth + percentSymbolLength;
+
+        int constrainedWidth = bufferWidth;
+        if (maxLineWidth.HasValue && maxLineWidth.Value > 0) {
+            constrainedWidth = Math.Min(bufferWidth, Math.Max(maxLineWidth.Value, decorationWidth));
+        }
+
+        int barLength = Math.Max(0, constrainedWidth - decorationWidth);
 
         var writer = PrettyConsoleExtensions.GetWriter(pipe);
         Console.Write<char>('[', pipe);

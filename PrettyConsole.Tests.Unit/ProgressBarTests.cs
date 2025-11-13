@@ -84,6 +84,25 @@ public class ProgressBarTests {
     }
 
     [Fact]
+    public void ProgressBar_WriteProgressBar_RespectsMaxLineWidth() {
+        Utilities.SkipIfNoInteractiveConsole();
+
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var outWriter);
+
+            ProgressBar.WriteProgressBar(OutputPipe.Out, 50, Cyan, '*', maxLineWidth: 24);
+
+            var output = outWriter.ToString();
+            Assert.Equal(24, output.Length);
+            Assert.Equal('[', output[0]);
+            Assert.Equal('%', output[^1]);
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Fact]
     public async Task IndeterminateProgressBar_RunAsync_CompletesAndReturnsResult() {
         Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var errorWriter);

@@ -19,6 +19,7 @@ var tests = new IPrettyConsoleTest[] {
     new ProgressBarDefaultTest(),
     new ProgressBarMultiLineTest(),
     new MultiProgressBarTest(),
+    new MultiProgressBarLeftAlignedTest(),
 };
 
 foreach (var test in tests) {
