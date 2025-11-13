@@ -1,245 +1,254 @@
 # PrettyConsole
 
-An abstraction over `System.Console` that adds new input and output methods, colors and advanced outputs like progress bars and menus. And everything is ansi supported so it works on legacy systems and terminals.
+PrettyConsole is a high-performance, allocation-conscious extension layer over `System.Console`. The library uses C# extension members (`extension(Console)`) so every API lights up directly on `System.Console` once `using PrettyConsole;` (and optionally `using static System.Console;`) is in scope. It targets **.NET 10.0**, is trimming/AOT ready, preserves SourceLink metadata, and keeps the familiar console experience while adding structured rendering, menus, progress bars, and advanced input helpers.
 
 ## Features
 
-* 🚀 High performance, low allocations and span-first APIs
-* 🪶 Very lightweight (no external dependencies)
-* ✨ Zero-allocation interpolated string handler for inline colors and formatting
-* 💾 Supports legacy ANSI terminals (like Windows 7)
-* 🔥 Complete NativeAOT compatibility
-* Supports all major platforms (Windows, Linux, Mac)
-* ⛓ Uses original output pipes, so that your CLI's can be piped properly
+* 🚀 Zero-allocation interpolated string handler (`PrettyConsoleInterpolatedStringHandler`) for inline colors and formatting
+* 🎨 Inline color composition with `ConsoleColor` tuples and helpers (`DefaultForeground`, `DefaultBackground`, `Default`)
+* 🔁 Advanced rendering primitives (`Overwrite`, `ClearNextLines`, `GoToLine`, progress bars) that respect console pipes
+* 🧰 Rich input helpers (`TryReadLine`, `Confirm`, `RequestAnyInput`) with `IParsable<T>` and enum support
+* ⚙️ Allocation-conscious span-first APIs (`ISpanFormattable`, `ReadOnlySpan<char>`, `TextWriter.WriteWhiteSpaces`)
+* ⛓ Output routing through `OutputPipe.Out` and `OutputPipe.Error` so piping/redirects continue to work
 
-## Installation [![NUGET DOWNLOADS](https://img.shields.io/nuget/dt/PrettyConsole?label=Downloads)](https://www.nuget.org/packages/PrettyConsole/)
+## Installation
 
-> dotnet add package PrettyConsole
+```bash
+dotnet add package PrettyConsole
+```
 
 ## Usage
 
-Everything starts off with the using statements, I recommend using the `Console` statically
+### Bring PrettyConsole APIs into scope
 
 ```csharp
-using static PrettyConsole.Console; // Access to all Console methods
-using PrettyConsole; // Access to the Color struct and OutputPipe enum
+using PrettyConsole;          // Extension members + OutputPipe
+using static System.Console;  // Optional for terser call sites
 ```
 
-### Interpolated Strings
+This setup lets you call `Console.WriteInterpolated`, `Console.Overwrite`, `Console.TryReadLine`, etc. The original `System.Console` APIs remain available—call `System.Console.ReadKey()` or `System.Console.SetCursorPosition()` directly whenever you need something the extensions do not provide.
 
-`PrettyConsoleInterpolatedStringHandler` lets you stream interpolated text directly to the selected pipe without allocating intermediate strings, while still using the familiar `$"..."` syntax.
+### Interpolated strings & inline colors
+
+`PrettyConsoleInterpolatedStringHandler` streams interpolated content directly to the selected pipe without allocating. Colors auto-reset at the end of each call.
 
 ```csharp
-Write($"Hello {Color.Green}world{Color.Default}!");
-Write(OutputPipe.Error, $"{Color.Yellow}Warning:{Color.Default} {message}");
+Console.WriteInterpolated($"Hello {ConsoleColor.Green / ConsoleColor.DefaultBackground}world{ConsoleColor.Default}!");
+Console.WriteInterpolated(OutputPipe.Error, $"{ConsoleColor.Yellow / ConsoleColor.DefaultBackground}warning{ConsoleColor.Default}: {message}");
 
-if (!TryReadLine(out int choice, $"Pick option {Color.Cyan}1-5{Color.Default}: ")) {
-    WriteLine($"{Color.Red}Not a number.{Color.Default}");
+if (!Console.TryReadLine(out int choice, $"Pick option {ConsoleColor.Cyan / ConsoleColor.DefaultBackground}1-5{ConsoleColor.Default}: ")) {
+    Console.WriteLineInterpolated($"{ConsoleColor.Red / ConsoleColor.DefaultBackground}Not a number.{ConsoleColor.Default}");
 }
 ```
 
-Colors reset automatically at the end of each call. Use `Color.Default` (or explicit background tuples) when you need to restore colors mid-string.
+`ConsoleColor.DefaultForeground`, `ConsoleColor.DefaultBackground`, and the `/` operator overload make it easy to compose foreground/background tuples inline (`ConsoleColor.Red / ConsoleColor.White`).
 
-When interpolating `TimeSpan` values you can also apply the special `:hr` format specifier to get compact, human-readable output (`ms`, `ss`, `mm`, `hh`, or `dd` depending on the magnitude):
+#### Formatting & alignment helpers
+
+- **`TimeSpan :hr` format** — the interpolated string handler understands the custom `:hr` specifier. It renders the span using the most appropriate unit (e.g., `950ms`, `12s`, `03m`, `02h`, `1d`) without allocating temporaries:
+
+  ```csharp
+  var elapsed = stopwatch.Elapsed;
+  Console.WriteInterpolated($"Completed in {elapsed:hr}");
+  ```
+
+- **Alignment** — standard alignment syntax works the same way it does with regular interpolated strings, but the handler writes directly into the console buffer. This keeps columnar output zero-allocation friendly:
+
+  ```csharp
+  Console.WriteInterpolated($"|{"Label",-10}|{value,10:0.00}|");
+  ```
+
+You can combine both, e.g., `$"{elapsed,8:hr}"`, to keep progress/status displays tidy.
+
+### Basic outputs
 
 ```csharp
-var elapsed = stopwatch.Elapsed;
-WriteLine($"Completed in {elapsed:hr}");
+// Interpolated text
+Console.WriteInterpolated($"Processed {items} items in {elapsed:hr}");
+Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Magenta}debug{ConsoleColor.Default}");
+
+// Span + color overloads (no boxing)
+ReadOnlySpan<char> header = "Title";
+Console.Write(header, OutputPipe.Out, ConsoleColor.White, ConsoleColor.DarkBlue);
+Console.NewLine(); // writes newline to the default output pipe
+
+// ISpanFormattable (works with ref structs)
+Console.Write(percentage, OutputPipe.Out, ConsoleColor.Cyan, ConsoleColor.DefaultBackground, format: "F2", formatProvider: null);
 ```
 
-### ColoredOutput
+Behind the scenes these overloads rent buffers via `BufferPool` and route output to the correct pipe through `PrettyConsoleExtensions.GetWriter`.
 
-PrettyConsole uses an equation inspired syntax to colorize text. The syntax is as follows:
+### Basic inputs
 
 ```csharp
-WriteLine("Test" * Color.Red / Color.Blue);
+if (!Console.TryReadLine(out int port, $"Port ({ConsoleColor.Green}5000{ConsoleColor.Default}): ")) {
+    port = 5000;
+}
+
+// `TryReadLine<TEnum>` and `TryReadLine` with defaults
+if (!Console.TryReadLine(out DayOfWeek day, ignoreCase: true, $"Day? ")) {
+    day = DayOfWeek.Monday;
+}
+
+var apiKey = Console.ReadLine($"Enter API key ({ConsoleColor.DarkGray}optional{ConsoleColor.Default}): ");
 ```
 
-i.e `TEXT * FOREGROUND / BACKGROUND`
+All input helpers work with `IParsable<T>` and enums, respect the active culture, and honor `OutputPipe` when prompts are colored.
 
-Any the 2 colors can be played with just like a real equation, omit the foreground and the default will be used,
-same goes for the background.
-
-### Basic Outputs
-
-The most basic method for outputting is `Write`, which has multiple overloads. All equivalents exist for `WriteLine`:
+### Advanced inputs
 
 ```csharp
-// Usage + overload highlights:
-Write($"Interpolated {Color.Blue}string{Color.Default}");
-Write(OutputPipe.Error, $"...");
-Write(ColoredOutput output, OutputPipe pipe = OutputPipe.Out);
-Write(ReadOnlySpan<ColoredOutput> outputs, OutputPipe pipe = OutputPipe.Out);
-Write(ReadOnlySpan<char> span, OutputPipe pipe, ConsoleColor foreground);
-Write(ReadOnlySpan<char> span, OutputPipe pipe, ConsoleColor foreground, ConsoleColor background);
-Write<T>(T value, OutputPipe pipe = OutputPipe.Out) where T : ISpanFormattable;
-Write<T>(T value, OutputPipe pipe, ConsoleColor foreground, ConsoleColor background,
-    ReadOnlySpan<char> format, IFormatProvider? provider);
+Console.RequestAnyInput($"Press {ConsoleColor.Yellow}any key{ConsoleColor.Default} to continue…");
+
+if (!Console.Confirm($"Deploy to production? ({ConsoleColor.Green}y{ConsoleColor.Default}/{ConsoleColor.Red}n{ConsoleColor.Default}) ")) {
+    return;
+}
+
+var customTruths = new[] { "sure", "do it" };
+bool overwrite = Console.Confirm(customTruths, emptyIsTrue: false, $"Overwrite existing files? ");
 ```
 
-Overload for `WriteLine` are available with the same parameters
-
-### Basic Inputs
-
-These are the methods for reading user input:
+### Rendering helpers
 
 ```csharp
-// Examples:
-string? ReadLine(); // ReadLine<string>
-string? ReadLine(ReadOnlySpan<ColoredOutput>);
-string? ReadLine($"Prompt {Color.Green}text{Color.Default}: ");
-T? ReadLine<T>(ReadOnlySpan<ColoredOutput>); // T : IParsable<T>
-T? ReadLine<T>($"Prompt {Color.Cyan}text{Color.Default}: ");
-T ReadLine<T>(ReadOnlySpan<ColoredOutput>, T @default); // @default will be returned if parsing fails
-T ReadLine<T>(T @default, $"Prompt {Color.Cyan}text{Color.Default}: ");
-bool TryReadLine<T>(ReadOnlySpan<ColoredOutput>, out T?); // T : IParsable<T>
-bool TryReadLine<T>(out T?, $"Prompt {Color.Cyan}text{Color.Default}: ");
-bool TryReadLine<T>(ReadOnlySpan<ColoredOutput>, T @default, out T); // @default will be returned if parsing fails
-bool TryReadLine<T>(out T, T @default, $"Prompt {Color.Cyan}text{Color.Default}: ");
-bool TryReadLine<TEnum>(ReadOnlySpan<ColoredOutput>, bool ignoreCase, out TEnum?); // TEnum : struct, Enum
-bool TryReadLine<TEnum>(out TEnum, bool ignoreCase, $"Prompt {Color.Cyan}text{Color.Default}: "); // TEnum : struct, Enum
-bool TryReadLine<TEnum>(ReadOnlySpan<ColoredOutput>, bool ignoreCase, TEnum @default, out TEnum); // @default will be returned if parsing fails
-bool TryReadLine<TEnum>(out TEnum, bool ignoreCase, TEnum @default, $"Prompt {Color.Cyan}text{Color.Default}: ");
+Console.ClearNextLines(3, OutputPipe.Error);
+int line = Console.GetCurrentLine();
+// … draw something …
+Console.GoToLine(line);
+Console.SetColors(ConsoleColor.White, ConsoleColor.DarkBlue);
+Console.ResetColors();
 ```
 
-I always recommend using `TryReadLine` instead of `ReadLine` as you need to maintain less null checks and the result,
-especially with `@default` is much more concise.
-
-### Advanced Inputs
-
-These are some special methods for inputs:
+`PrettyConsoleExtensions.Out`/`Error` expose the live writers. Each writer now has `WriteWhiteSpaces(int)` for zero-allocation padding:
 
 ```csharp
-// These will wait for the user to press any key
-void RequestAnyInput(string message = "Press any key to continue...");
-void RequestAnyInput(ReadOnlySpan<ColoredOutput> output);
-RequestAnyInput($"Press {Color.Yellow}any key{Color.Default} to continue...");
-// These request confirmation by special input from user
-bool Confirm(ReadOnlySpan<ColoredOutput> message); // uses the default values ["y", "yes"]
-// the default values can also be used by you at Console.DefaultConfirmValues
-bool Confirm(ReadOnlySpan<ColoredOutput> message, ReadOnlySpan<string> trueValues, bool emptyIsTrue = true);
-bool Confirm($"Deploy to production? ({Color.Green}y{Color.Default}/{Color.Red}n{Color.Default}) ");
-bool Confirm(ReadOnlySpan<string> trueValues, bool emptyIsTrue, $"Overwrite existing files? ");
+PrettyConsoleExtensions.Error.WriteWhiteSpaces(8); // pad status blocks
 ```
 
-### Rendering Controls
-
-To aid in rendering and building your own complex outputs, there are many methods that simplify some processes.
+### Advanced outputs
 
 ```csharp
-ClearNextLines(int lines, OutputPipe pipe = OutputPipe.Error); // clears the next lines
-NewLine(OutputPipe pipe = OutputPipe.Out); // outputs a new line
-SetColors(ConsoleColor foreground, ConsoleColor background); // sets the colors of the console output
-ResetColors(); // resets the colors of the console output
-int GetCurrentLine(); // returns the current line number
-GoToLine(int line); // moves the cursor to the specified line
+Console.Overwrite(() => {
+    Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Cyan}Working…{ConsoleColor.Default}");
+    Console.WriteInterpolated(OutputPipe.Error, $"{ConsoleColor.DarkGray}Elapsed:{ConsoleColor.Default} {stopwatch.Elapsed:hr}");
+}, lines: 2);
+
+// Prevent closure allocations with state + generic overload
+Console.Overwrite((left, right), tuple => {
+    Console.WriteInterpolated($"{tuple.left} ←→ {tuple.right}");
+}, lines: 1);
+
+await Console.TypeWrite("Booting systems…", (ConsoleColor.Green, ConsoleColor.Black));
+await Console.TypeWriteLine("Ready.", ConsoleColor.Default);
 ```
 
-Combining `ClearNextLines` with `GoToLine` will enable you to efficiently use the same space in the console for continuous output, such as progress outputting, for some cases there are also built-in methods for this, more on that later.
+Always call `Console.ClearNextLines(totalLines, pipe)` once after the last `Overwrite` to erase the region when you are done.
 
-### Advanced Outputs
-
-```csharp
-// This method will essentially write a line, clear it, go back to same position
-// This allows a form of text-only progress bar
-void OverwriteCurrentLine(ReadOnlySpan<ColoredOutput> output, OutputPipe pipe = OutputPipe.Error);
-void Overwrite(Action action, int lines = 1, OutputPipe pipe = OutputPipe.Error);
-void Overwrite<TState>(TState state, Action<TState> action, int lines = 1, OutputPipe pipe = OutputPipe.Error)
-    where TState : allows ref struct;
-// This methods will write a character at a time, with a delay between each character
-async Task TypeWrite(ColoredOutput output, int delay = TypeWriteDefaultDelay);
-async Task TypeWriteLine(ColoredOutput output, int delay = TypeWriteDefaultDelay);
-```
-
-### Menus
+### Menus and tables
 
 ```csharp
-// This prints an index view of the list, allows the user to select by index
-// returns the actual choice that corresponds to the index
-string Selection<TList>(ReadOnlySpan<ColoredOutput> title, TList choices) where TList : IList<string> {}
-// Same as selection but allows the user to select multiple indexes
-// Separated by spaces, and returns an array of the actual choices that correspond to the indexes
-string[] MultiSelection<TList>(ReadOnlySpan<ColoredOutput> title, TList choices) where TList : IList<string> {}
-// This prints a tree menu of 2 levels, allows the user to select the index
-// Of the first and second level and returns the corresponding choices
-(string option, string subOption) TreeMenu<TList>(ReadOnlySpan<ColoredOutput> title,
-        Dictionary<string, TList> menu) where TList : IList<string> {}
-// This prints a table with headers, and columns for each list
-void Table<TList>(TList headers, ReadOnlySpan<TList> columns) where TList : IList<string> {}
-```
+var choice = Console.Selection("Pick an environment:", new[] { "Dev", "QA", "Prod" });
+var multi = Console.MultiSelection("Services to restart:", new[] { "API", "Worker", "Scheduler" });
+var (area, action) = Console.TreeMenu("Actions", new Dictionary<string, IList<string>> {
+    ["Users"] = new[] { "List", "Create", "Disable" },
+    ["Jobs"] = new[] { "Queue", "Retry" }
+});
 
-### Progress Bars
-
-There are two types of progress bars here, they both are implemented using a class to maintain states.
-
-#### IndeterminateProgressBar
-
-```csharp
-var prg = new IndeterminateProgressBar(); // this setups the internal states
-// Then you need to provide either a Task or Task</T>, the progress bar binds to it and runs until the task completes
-await prg.RunAsync(task, "Running...", cancellationToken); // There are also overloads without header
-// if the task is not started before being passed to the progress bar, it will be started automatically
-// It is even better this way to synchronize the runtime of the progress bar with the task
-prg.AnimationSequence = IndeterminateProgressBar.Patterns.CarriageReturn; // customize the animation
-```
-
-#### ProgressBar
-
-`ProgressBar` is a more powerful version, but requires a percentage of progress.
-
-```csharp
-// ProgressBar implements IDisposable
-var prg = new ProgressBar();
-// then on each time the progress percentage is actually changed, you call Update
-Update(percentage, ReadOnlySpan<char> status);
-// There are also overloads without header, and percentage can be either int or double (0-100).
-// Update re-renders on every call, even if the percentage hasn't changed, so you can refresh the status text.
-// Also, you can change some of the visual properties of the progress bar after initialization
-// by using the properties of the ProgressBar class
-prg.ProgressChar = '■'; // Character to fill the progress bar
-prg.ForegroundColor = Color.Red; // Color of the empty part
-prg.ProgressColor = Color.Blue; // The color of the filled part
-// Pass sameLine: false to render the status on a separate line above the bar.
-prg.Update(percentage, "Downloading", sameLine: false);
-
-// Need a static, one-off render? Use the helper:
-ProgressBar.WriteProgressBar(OutputPipe.Error, percentage, Color.Green, '*');
-```
-
-##### Multiple Progress Bars with `Overwrite`
-
-You can combine the static helper with `Overwrite` to redraw several progress bars inside the same console window—perfect for tracking multiple downloads or tasks:
-
-```csharp
-var downloads = new[] { "Video.mp4", "Archive.zip" };
-var progress = new double[downloads.Length];
-
-Overwrite(progress, state => {
-    for (int i = 0; i < downloads.Length; i++) {
-        Write(OutputPipe.Error, $"Task {i + 1} ({downloads[i]}): ");
-        ProgressBar.WriteProgressBar(OutputPipe.Error, state[i], Color.Cyan);
-        NewLine(OutputPipe.Error);
+Console.Table(
+    headers: new[] { "Name", "Status" },
+    columns: new[] {
+        new[] { "API", "Worker" },
+        new[] { "Running", "Stopped" }
     }
-}, lines: downloads.Length, pipe: OutputPipe.Error);
+);
 ```
 
-Update the `progress` array elsewhere and call `Overwrite` again to refresh the stacked bars without leaving artifacts.
+Menus validate user input (throwing `ArgumentException` on invalid selections) and use the padding helpers internally to keep columns aligned.
 
-### Pipes
+### Progress bars
 
-`Console` wraps over `System.Console` and uses its `In`, `Out`, and `Error` streams. Since the names of the classes are identical, combining them in usage is somewhat painful as the compiler doesn't know which overloads to use. To aid in most cases,
-`Console` exposes those streams as static properties, and you can use them directly.
+```csharp
+using var progress = new ProgressBar {
+    ProgressChar = '■',
+    ForegroundColor = ConsoleColor.DarkGray,
+    ProgressColor = ConsoleColor.Green,
+};
 
-In rare cases, you will need something that there is in `System.Console` but not in `Console`, such as `ReadKey`, or `SetCursorPosition`, some events or otherwise, then you can simply call `System.Console`, this added verbosity is a worthy trade-off.
+for (int i = 0; i <= 100; i += 5) {
+    progress.Update(i, $"Downloading chunk {i / 5}");
+    await Task.Delay(50);
+}
+
+// Need separate status + bar lines? sameLine: false
+progress.Update(42.5, "Syncing", sameLine: false);
+
+// One-off render without state
+ProgressBar.WriteProgressBar(OutputPipe.Error, 75, ConsoleColor.Magenta, '*');
+```
+
+`ProgressBar.Update` always re-renders (even if the percentage didn't change) so you can refresh status text. The helper `ProgressBar.WriteProgressBar` keeps the cursor on the same line, which is ideal inside `Console.Overwrite`.
+
+#### Multiple progress bars with tasks + channels
+
+```csharp
+using System.Linq;
+using System.Threading.Channels;
+
+var downloads = new[] { "Video.mp4", "Archive.zip", "Assets.pak" };
+var progress = new double[downloads.Length];
+var updates = Channel.CreateUnbounded<(int index, double percent)>();
+
+// Producers push progress updates
+var producers = downloads
+    .Select((name, index) => Task.Run(async () => {
+        for (int p = 0; p <= 100; p += Random.Shared.Next(5, 15)) {
+            await updates.Writer.WriteAsync((index, p));
+            await Task.Delay(Random.Shared.Next(40, 120));
+        }
+    }))
+    .ToArray();
+
+// Consumer renders stacked bars each time an update arrives
+var consumer = Task.Run(async () => {
+    await foreach (var (index, percent) in updates.Reader.ReadAllAsync()) {
+        progress[index] = percent;
+
+        Console.Overwrite(progress, state => {
+            for (int i = 0; i < state.Length; i++) {
+                Console.WriteInterpolated(OutputPipe.Error, $"Task {i + 1} ({downloads[i]}): ");
+                ProgressBar.WriteProgressBar(OutputPipe.Error, state[i], ConsoleColor.Cyan);
+            }
+        }, lines: downloads.Length, pipe: OutputPipe.Error);
+    }
+});
+
+await Task.WhenAll(producers);
+updates.Writer.Complete();
+await consumer;
+
+Console.ClearNextLines(downloads.Length, OutputPipe.Error); // ensure no artifacts remain
+```
+
+Each producer reports progress over the channel, the consumer loops with `ReadAllAsync`, and `Console.Overwrite` redraws the stacked bars on every update. After the consumer completes, clear the region once to remove the progress UI.
+
+### Pipes & writers
+
+PrettyConsole keeps the original console streams accessible:
+
+```csharp
+TextWriter @out = PrettyConsoleExtensions.Out;
+TextWriter @err = PrettyConsoleExtensions.Error;
+TextReader @in = PrettyConsoleExtensions.In;
+```
+
+Use these when you need direct writer access (custom buffering, `WriteWhiteSpaces`, etc.). In cases where you must call raw `System.Console` APIs (e.g., `Console.ReadKey(true)`), do so explicitly—PrettyConsole never hides the built-in console.
 
 ## Contributing
 
-This project uses an MIT license, if you want to contribute, you can do so by forking the repository and creating a pull request.
-
-If you have feature requests or bug reports, please create an issue.
+Contributions are welcome! Fork the repo, create a branch, and open a pull request. Bug reports and feature requests are tracked through GitHub issues.
 
 ## Contact
 
-For bug reports, feature requests or offers of support/sponsorship contact <dusrdev@gmail.com>
+For bug reports, feature requests, or sponsorship inquiries reach out at <dusrdev@gmail.com>.
 
 > This project is proudly made in Israel 🇮🇱 for the benefit of mankind.
