@@ -28,7 +28,6 @@ foreach (var test in tests) {
 }
 
 #pragma warning disable CS8321 // Local function is declared but never used
-
 static void Measure(string label, Action action) {
     long before = GC.GetAllocatedBytesForCurrentThread();
     action();
