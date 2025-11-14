@@ -42,6 +42,7 @@ public static class ConsoleColorExtensions {
 		/// <param name="foreground"></param>
 		/// <param name="background"></param>
 		/// <returns></returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static (ConsoleColor, ConsoleColor) operator /(ConsoleColor foreground, ConsoleColor background) {
 			return (foreground, background);
 		}
@@ -52,6 +53,7 @@ public static class ConsoleColorExtensions {
 		/// <param name="foreground"></param>
 		/// <param name="colorTuple"></param>
 		/// <returns></returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static (ConsoleColor, ConsoleColor) operator /(ConsoleColor foreground, (ConsoleColor tupleForeground, ConsoleColor tupleBackground) colorTuple) {
 			return (foreground, colorTuple.tupleBackground);
 		}

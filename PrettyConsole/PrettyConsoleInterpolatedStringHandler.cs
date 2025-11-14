@@ -1,7 +1,5 @@
 using System.Buffers;
 
-using static System.Console;
-
 namespace PrettyConsole;
 
 #pragma warning disable CA1822 // Mark members as static
@@ -88,15 +86,16 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// Sets the console foreground color to <paramref name="color"/>.
     /// </summary>
     public readonly void AppendFormatted(ConsoleColor color) {
-        Console.SetColors(color, BackgroundColor);
+        Console.ForegroundColor = color;
     }
 
     /// <summary>
     /// Sets the foreground and background colors of the console
     /// </summary>
     /// <param name="colors"></param>
-    public readonly void AppendFormatted((ConsoleColor foreground, ConsoleColor background) colors) {
-        Console.SetColors(colors.foreground, colors.background);
+    public readonly void AppendFormatted((ConsoleColor Foreground, ConsoleColor Background) colors) {
+        Console.ForegroundColor = colors.Foreground;
+        Console.BackgroundColor = colors.Background;
     }
 
     /// <summary>
@@ -104,8 +103,9 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     /// <param name="colors"></param>
     /// <param name="alignment"></param>
-    public readonly void AppendFormatted((ConsoleColor foreground, ConsoleColor background) colors, int alignment) {
-        Console.SetColors(colors.foreground, colors.background);
+    public readonly void AppendFormatted((ConsoleColor Foreground, ConsoleColor Background) colors, int alignment) {
+        Console.ForegroundColor = colors.Foreground;
+        Console.BackgroundColor = colors.Background;
         AppendSpan(ReadOnlySpan<char>.Empty, alignment);
     }
 
