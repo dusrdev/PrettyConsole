@@ -1,16 +1,20 @@
 namespace PrettyConsole.Tests.Unit;
 
-public class AdvancedOutputs {
+public class AdvancedOutputsTests {
     [Fact]
     public void Overwrite_ExecutesActionAndWritesOutput() {
-        Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var writer);
         bool executed = false;
-
-        Console.Overwrite(() => {
-            executed = true;
-            Console.WriteInterpolated(OutputPipe.Error, $"Progress");
-        }, lines: 1, pipe: OutputPipe.Error);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            Console.Overwrite(() => {
+                executed = true;
+                Console.WriteInterpolated(OutputPipe.Error, $"Progress");
+            }, lines: 1, pipe: OutputPipe.Error);
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
 
         Assert.True(executed);
         Assert.Contains("Progress", writer.ToString());
@@ -18,14 +22,18 @@ public class AdvancedOutputs {
 
     [Fact]
     public void Overwrite_WithState_ExecutesActionAndWritesOutput() {
-        Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var writer);
         bool executed = false;
-
-        Console.Overwrite("Done", status => {
-            executed = true;
-            Console.WriteInterpolated(OutputPipe.Error, $"{status}");
-        }, lines: 1, pipe: OutputPipe.Error);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            Console.Overwrite("Done", status => {
+                executed = true;
+                Console.WriteInterpolated(OutputPipe.Error, $"{status}");
+            }, lines: 1, pipe: OutputPipe.Error);
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
 
         Assert.True(executed);
         Assert.Contains("Done", writer.ToString());

@@ -1,6 +1,6 @@
 namespace PrettyConsole.Tests.Unit;
 
-public class AdvancedInputs {
+public class AdvancedInputsTests {
     [Fact]
     public void Confirm_Case_Y_Interpolated() {
         Out = Utilities.GetWriter(out var stringWriter);

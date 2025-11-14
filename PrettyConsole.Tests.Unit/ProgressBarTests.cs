@@ -3,16 +3,20 @@ namespace PrettyConsole.Tests.Unit;
 public class ProgressBarTests {
     [Fact]
     public void ProgressBar_Update_WritesStatusAndPercentage() {
-        Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new ProgressBar {
+                ProgressChar = '#',
+                ForegroundColor = White,
+                ProgressColor = Green
+            };
 
-        var bar = new ProgressBar {
-            ProgressChar = '#',
-            ForegroundColor = White,
-            ProgressColor = Green
-        };
-
-        bar.Update(50, "Loading");
+            bar.Update(50, "Loading");
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
 
         var output = errorWriter.ToString();
         Assert.Contains("Loading", output);
@@ -22,19 +26,23 @@ public class ProgressBarTests {
 
     [Fact]
     public void ProgressBar_Update_SamePercentage_RerendersOutput() {
-        Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new ProgressBar {
+                ProgressChar = '#',
+                ForegroundColor = White,
+                ProgressColor = Green
+            };
 
-        var bar = new ProgressBar {
-            ProgressChar = '#',
-            ForegroundColor = White,
-            ProgressColor = Green
-        };
+            bar.Update(25, "Loading");
+            errorWriter.ToStringAndFlush();
 
-        bar.Update(25, "Loading");
-        errorWriter.ToStringAndFlush();
-
-        bar.Update(25, "Loading");
+            bar.Update(25, "Loading");
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
 
         var output = errorWriter.ToString();
         Assert.NotEqual(string.Empty, output);
@@ -44,9 +52,9 @@ public class ProgressBarTests {
 
     [Fact]
     public void ProgressBar_Update_SameLineFalse_WritesStatusOnSeparateLine() {
-        Utilities.SkipIfNoInteractiveConsole();
-
         var originalError = Error;
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
             Error = Utilities.GetWriter(out var errorWriter);
 
@@ -61,13 +69,12 @@ public class ProgressBarTests {
             Assert.Contains(Environment.NewLine + "[", output);
         } finally {
             Error = originalError;
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
         }
     }
 
     [Fact]
     public void ProgressBar_WriteProgressBar_WritesFormattedOutput() {
-        Utilities.SkipIfNoInteractiveConsole();
-
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var outWriter);
@@ -85,8 +92,6 @@ public class ProgressBarTests {
 
     [Fact]
     public void ProgressBar_WriteProgressBar_RespectsMaxLineWidth() {
-        Utilities.SkipIfNoInteractiveConsole();
-
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var outWriter);
@@ -104,22 +109,26 @@ public class ProgressBarTests {
 
     [Fact]
     public async Task IndeterminateProgressBar_RunAsync_CompletesAndReturnsResult() {
-        Utilities.SkipIfNoInteractiveConsole();
         Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new IndeterminateProgressBar {
+                AnimationSequence = new(["|", "/"]),
+                DisplayElapsedTime = false,
+                UpdateRate = 5
+            };
 
-        var bar = new IndeterminateProgressBar {
-            AnimationSequence = new(["|", "/"]),
-            DisplayElapsedTime = false,
-            UpdateRate = 5
-        };
+            var cancellation = TestContext.Current.CancellationToken;
+            var result = await bar.RunAsync(Task.Run(async () => {
+                await Task.Delay(20, cancellation);
+                return 42;
+            }, cancellation), "Working", cancellation);
 
-        var cancellation = TestContext.Current.CancellationToken;
-        var result = await bar.RunAsync(Task.Run(async () => {
-            await Task.Delay(20, cancellation);
-            return 42;
-        }, cancellation), "Working", cancellation);
-
-        Assert.Equal(42, result);
-        Assert.NotEqual(string.Empty, errorWriter.ToString());
+            Assert.Equal(42, result);
+            Assert.NotEqual(string.Empty, errorWriter.ToString());
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
     }
 }
