@@ -34,6 +34,26 @@ public static class Markup {
     /// </summary>
     public static readonly string ResetBold = string.Empty;
 
+    /// <summary>
+    /// Enables italic text.
+    /// </summary>
+    public static readonly string Italic = string.Empty;
+
+    /// <summary>
+    /// Disables italic text.
+    /// </summary>
+    public static readonly string ResetItalic = string.Empty;
+
+    /// <summary>
+    /// Enables strikethrough text.
+    /// </summary>
+    public static readonly string Strikethrough = string.Empty;
+
+    /// <summary>
+    /// Disables strikethrough text.
+    /// </summary>
+    public static readonly string ResetStrikethrough = string.Empty;
+
     static Markup() {
         Enabled = !Console.IsOutputRedirected && !Console.IsErrorRedirected;
         if (Enabled) {
@@ -42,6 +62,10 @@ public static class Markup {
             ResetUnderline = "\u001b[24m";
             Bold = "\u001b[1m";
             ResetBold = "\u001b[22m";
+            Italic = "\u001b[3m";
+            ResetItalic = "\u001b[23m";
+            Strikethrough = "\u001b[9m";
+            ResetStrikethrough = "\u001b[29m";
         }
     }
 }
