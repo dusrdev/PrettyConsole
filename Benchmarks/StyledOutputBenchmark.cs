@@ -18,8 +18,22 @@ public class StyledOutputBenchmarks {
 	private const double Percentage = 57.91;
 
 	[Benchmark(Baseline = true)]
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	public void SystemConsole() {
+	// [MethodImpl(MethodImplOptions.NoInlining)]
+	public int PrettyConsole() {
+		Console.WriteLineInterpolated($"Hello {Green}John{ConsoleColor.DefaultForeground}, status = {Cyan}{Percentage}{ConsoleColor.DefaultForeground}%, elapsed = {Yellow}{Elapsed:c}");
+		return int.MaxValue;
+	}
+
+	[Benchmark]
+	// [MethodImpl(MethodImplOptions.NoInlining)]
+	public int SpectreConsole() {
+		AnsiConsole.MarkupLineInterpolated($"Hello [green]John[/], status = [cyan]{Percentage}[/]%, elapsed = [yellow]{Elapsed:c}[/]");
+		return int.MaxValue;
+	}
+
+	[Benchmark]
+	// [MethodImpl(MethodImplOptions.NoInlining)]
+	public int SystemConsole() {
 		Console.Write("Hello ");
 		Console.ForegroundColor = Green;
 		Console.Write("John");
@@ -32,17 +46,6 @@ public class StyledOutputBenchmarks {
 		Console.ForegroundColor = Yellow;
 		Console.WriteLine("{0:c}", Elapsed);
 		Console.ResetColor();
-	}
-
-	[Benchmark]
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	public void SpectreConsole() {
-		AnsiConsole.MarkupLineInterpolated($"Hello [green]John[/], status = [cyan]{Percentage}[/]%, elapsed = [yellow]{Elapsed:c}[/]");
-	}
-
-	[Benchmark]
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	public void PrettyConsole() {
-		Console.WriteLineInterpolated($"Hello {Green}John{ConsoleColor.Default}, status = {Cyan}{Percentage}{ConsoleColor.Default}%, elapsed = {Yellow}{Elapsed:hr}");
+		return int.MaxValue;
 	}
 }

@@ -3,11 +3,13 @@ using System.Collections.Immutable;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Jobs;
-using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
+
+using Perfolizer.Horology;
 
 using Perfolizer.Mathematics.OutlierDetection;
 
@@ -15,17 +17,21 @@ namespace Benchmarks;
 
 public class Config : ManualConfig {
     public Config() {
-        SummaryStyle = SummaryStyle.Default.WithRatioStyle(RatioStyle.Trend);
         AddDiagnoser(MemoryDiagnoser.Default);
-        AddJob(Job.MediumRun.WithOutlierMode(OutlierMode.RemoveAll));
+        AddJob(Job.MediumRun
+            .WithOutlierMode(OutlierMode.RemoveAll)
+            .WithLaunchCount(1)
+            .WithWarmupCount(10)
+            .WithIterationCount(50)
+            .WithIterationTime(TimeInterval.FromMilliseconds(100)));
         AddColumnProvider(DefaultColumnProviders.Instance);
-        AddColumn(RankColumn.Arabic);
-        HideColumns(Column.Error, Column.StdDev, Column.Median, Column.RatioSD);
+        // AddColumn(RankColumn.Arabic);
+		HideColumns(Column.Error, Column.StdDev, Column.Median, Column.RatioSD);
         WithOrderer(new GroupByTypeOrderer());
         WithOptions(ConfigOptions.JoinSummary);
         WithOptions(ConfigOptions.StopOnFirstError);
         WithOptions(ConfigOptions.DisableLogFile);
-        AddLogger(ConsoleLogger.Default);
+		AddExporter(MarkdownExporter.GitHub);
     }
 }
 
