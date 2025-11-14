@@ -18,7 +18,7 @@ namespace Benchmarks;
 public class Config : ManualConfig {
     public Config() {
         AddDiagnoser(MemoryDiagnoser.Default);
-        AddJob(Job.MediumRun
+        AddJob(Job.Default
             .WithOutlierMode(OutlierMode.RemoveAll)
             .WithLaunchCount(1)
             .WithWarmupCount(10)

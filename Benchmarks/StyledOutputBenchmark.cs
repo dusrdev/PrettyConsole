@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 using BenchmarkDotNet.Attributes;
 
 using Spectre.Console;
@@ -18,21 +16,18 @@ public class StyledOutputBenchmarks {
 	private const double Percentage = 57.91;
 
 	[Benchmark(Baseline = true)]
-	// [MethodImpl(MethodImplOptions.NoInlining)]
 	public int PrettyConsole() {
 		Console.WriteLineInterpolated($"Hello {Green}John{ConsoleColor.DefaultForeground}, status = {Cyan}{Percentage}{ConsoleColor.DefaultForeground}%, elapsed = {Yellow}{Elapsed:c}");
 		return int.MaxValue;
 	}
 
 	[Benchmark]
-	// [MethodImpl(MethodImplOptions.NoInlining)]
 	public int SpectreConsole() {
 		AnsiConsole.MarkupLineInterpolated($"Hello [green]John[/], status = [cyan]{Percentage}[/]%, elapsed = [yellow]{Elapsed:c}[/]");
 		return int.MaxValue;
 	}
 
 	[Benchmark]
-	// [MethodImpl(MethodImplOptions.NoInlining)]
 	public int SystemConsole() {
 		Console.Write("Hello ");
 		Console.ForegroundColor = Green;
