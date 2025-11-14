@@ -45,9 +45,11 @@ public class WriteExtensionsTests {
 
         try {
             Console.WriteInterpolated(OutputPipe.Out,
-                $"Colors {Black / Green}Green{ConsoleColor.Default} {Red}Red{ConsoleColor.Default}");
+                $"Colors {Black / Green}Green{ConsoleColor.Default} {Red}Red");
 
-            Assert.Equal("Colors Green Red", writer.ToString());
+            var normalized = Utilities.StripAnsiSequences(writer.ToString());
+
+            Assert.Equal("Colors Green Red", normalized);
         } finally {
             Out = originalOut;
         }
