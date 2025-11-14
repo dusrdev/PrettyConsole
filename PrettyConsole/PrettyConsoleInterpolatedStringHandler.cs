@@ -1,5 +1,6 @@
+using System.Buffers;
+
 using static System.Console;
-using System.Runtime.InteropServices;
 
 namespace PrettyConsole;
 
@@ -51,9 +52,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// Appends a literal segment supplied by the compiler.
     /// </summary>
     public readonly void AppendLiteral(string value) {
-        if (!string.IsNullOrEmpty(value)) {
-            _writer.Write(value);
-        }
+        _writer.Write(value);
     }
 
     /// <summary>
@@ -81,11 +80,6 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="value">Character to write.</param>
     /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
     public readonly void AppendFormatted(char value, int alignment = 0) {
-        if (alignment == 0) {
-            _writer.Write(value);
-            return;
-        }
-
         Span<char> buffer = [value];
         AppendSpan(buffer, alignment);
     }
@@ -129,19 +123,25 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
             return;
         }
 
-        using var owner = BufferPool.Shared.Rent(out var buffer);
-        int upperBound = BufferPool.ListStartingSize;
+        Span<char> buffer = stackalloc char[128];
+        if (buffer.TryWrite($"{(int)timeSpan.TotalHours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}", out int written)) {
+            AppendSpan(buffer.Slice(0, written), alignment);
+            return;
+        }
+
+        int lowerBound = 4096;
+        var pool = ArrayPool<char>.Shared;
 
         while (true) {
-            buffer.EnsureCapacity(upperBound);
-            CollectionsMarshal.SetCount(buffer, upperBound);
-            var span = CollectionsMarshal.AsSpan(buffer);
-            if (span.TryWrite($"{(int)timeSpan.TotalHours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}", out int written)) {
-                AppendSpan(span.Slice(0, written), alignment);
+            var array = pool.Rent(lowerBound);
+            buffer = new Span<char>(array);
+            if (buffer.TryWrite($"{(int)timeSpan.TotalHours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}", out written)) {
+                AppendSpan(buffer.Slice(0, written), alignment);
+                pool.Return(array);
                 break;
             }
-
-            upperBound *= 2;
+            pool.Return(array);
+            lowerBound *= 2;
         }
     }
 
@@ -180,64 +180,69 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
     /// <param name="format">Optional format specifier.</param>
     public readonly void AppendFormatted(object? value, int alignment = 0, string? format = null) {
-        if (value is null) {
-            AppendSpan(ReadOnlySpan<char>.Empty, alignment);
-            return;
+        switch (value) {
+            case null: {
+                    AppendSpan(ReadOnlySpan<char>.Empty, alignment);
+                    break;
+                }
+            case ConsoleColor consoleColor: {
+                    AppendFormatted(consoleColor);
+                    break;
+                }
+            case ISpanFormattable spanFormattable: {
+                    AppendSpanFormattable(spanFormattable, alignment, format);
+                    break;
+                }
+            case IFormattable formattable: {
+                    AppendString(formattable.ToString(format, _provider), alignment);
+                    break;
+                }
+            case string str: {
+                    AppendString(str, alignment);
+                    break;
+                }
+            default: {
+                    AppendString(value.ToString(), alignment);
+                    break;
+                }
         }
-
-        if (value is ConsoleColor consoleColor) {
-            AppendFormatted(consoleColor);
-            return;
-        }
-
-        if (value is string str) {
-            AppendString(str, alignment);
-            return;
-        }
-
-        if (value is ISpanFormattable spanFormattable) {
-            AppendSpanFormattable(spanFormattable, alignment, format);
-            return;
-        }
-
-        if (value is IFormattable formattable) {
-            AppendString(formattable.ToString(format, _provider), alignment);
-            return;
-        }
-
-        AppendString(value.ToString(), alignment);
     }
 
     private readonly void AppendSpanFormattable<T>(T value, int alignment, string? format)
     where T : ISpanFormattable {
-        using var owner = BufferPool.Shared.Rent(out var buffer);
-        int upperBound = BufferPool.ListStartingSize;
-        var formatSpan = format is null ? ReadOnlySpan<char>.Empty : format.AsSpan();
+        ReadOnlySpan<char> formatSpan = format.AsSpan();
+        Span<char> buffer = stackalloc char[128];
+        if (value.TryFormat(buffer, out int charsWritten, formatSpan, _provider)) {
+            AppendSpan(buffer.Slice(0, charsWritten), alignment);
+            return;
+        }
+
+        int lowerBound = 4096;
+        var pool = ArrayPool<char>.Shared;
 
         while (true) {
-            buffer.EnsureCapacity(upperBound);
-            CollectionsMarshal.SetCount(buffer, upperBound);
-            var span = CollectionsMarshal.AsSpan(buffer);
-            if (value.TryFormat(span, out int charsWritten, formatSpan, _provider)) {
-                AppendSpan(span.Slice(0, charsWritten), alignment);
+            var array = pool.Rent(lowerBound);
+            buffer = new Span<char>(array);
+            if (value.TryFormat(buffer, out charsWritten, formatSpan, _provider)) {
+                AppendSpan(buffer.Slice(0, charsWritten), alignment);
+                pool.Return(array);
                 break;
             }
-
-            upperBound *= 2;
+            pool.Return(array);
+            lowerBound *= 2;
         }
     }
 
     private readonly void AppendString(string? value, int alignment) {
-        if (string.IsNullOrEmpty(value)) {
-            AppendSpan(ReadOnlySpan<char>.Empty, alignment);
-            return;
-        }
-
+        // AppendSpan handles null and empty spans
         AppendSpan(value.AsSpan(), alignment);
     }
 
     private readonly void AppendSpan(scoped ReadOnlySpan<char> span, int alignment) {
-        if (alignment != 0) {
+        if (span.IsEmpty) return;
+        else if (alignment == 0) {
+            _writer.Write(span);
+        } else {
             bool leftAlign = alignment < 0;
             int width = Math.Abs(alignment);
             int padding = width - span.Length;
@@ -252,19 +257,10 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
             if (padding > 0 && leftAlign) {
                 WritePadding(padding);
             }
-            return;
-        }
-
-        if (!span.IsEmpty) {
-            _writer.Write(span);
         }
     }
 
     private readonly void WritePadding(int count) {
-        if (count <= 0) {
-            return;
-        }
-
         _writer.WriteWhiteSpaces(count);
     }
 }
