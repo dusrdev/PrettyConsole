@@ -1,6 +1,9 @@
 namespace PrettyConsole;
 
 internal static class AnsiColors {
+    private const string ForegroundResetSequence = "\u001b[39m";
+    private const string BackgroundResetSequence = "\u001b[49m";
+
     private static readonly string[] ForegroundCodes = new string[16];
     private static readonly string[] BackgroundCodes = new string[16];
 
@@ -30,12 +33,22 @@ internal static class AnsiColors {
     /// <summary>
     /// Gets the ANSI sequence for the specified foreground color or an empty string when disabled.
     /// </summary>
-    public static string Foreground(ConsoleColor color) => ForegroundCodes[(int)color];
+    public static string Foreground(ConsoleColor color) {
+        int index = (int)color;
+        if (index == -1) return ForegroundResetSequence;
+        return ForegroundCodes[index];
+    }
+
 
     /// <summary>
     /// Gets the ANSI sequence for the specified background color or an empty string when disabled.
     /// </summary>
-    public static string Background(ConsoleColor color) => BackgroundCodes[(int)color];
+    public static string Background(ConsoleColor color) {
+        int index = (int)color;
+        if (index == -1) return BackgroundResetSequence;
+        return BackgroundCodes[index];
+    }
+
 
     private static string BuildForegroundSequence(ConsoleColor color) {
         return color switch {
@@ -55,7 +68,7 @@ internal static class AnsiColors {
             ConsoleColor.Magenta => "\u001b[95m",
             ConsoleColor.Yellow => "\u001b[93m",
             ConsoleColor.White => "\u001b[97m",
-            _ => "\u001b[39m"
+            _ => ForegroundResetSequence
         };
     }
 
@@ -77,7 +90,7 @@ internal static class AnsiColors {
             ConsoleColor.Magenta => "\u001b[105m",
             ConsoleColor.Yellow => "\u001b[103m",
             ConsoleColor.White => "\u001b[107m",
-            _ => "\u001b[49m"
+            _ => BackgroundResetSequence
         };
     }
 }
