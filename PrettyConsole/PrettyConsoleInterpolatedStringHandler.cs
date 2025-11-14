@@ -2,14 +2,27 @@ using System.Buffers;
 
 namespace PrettyConsole;
 
-#pragma warning disable CA1822 // Mark members as static
 /// <summary>
 /// Interpolated string handler that streams segments directly to an <see cref="OutputPipe"/> while allowing inline color changes.
 /// </summary>
 [InterpolatedStringHandler]
-public readonly ref struct PrettyConsoleInterpolatedStringHandler {
+public ref struct PrettyConsoleInterpolatedStringHandler {
     private readonly TextWriter _writer;
     private readonly IFormatProvider? _provider;
+    private static readonly Action<TextWriter, ConsoleColor> ChangeFg;
+    private static readonly Action<TextWriter, ConsoleColor> ChangeBg;
+    private ConsoleColor _currentForeground;
+    private ConsoleColor _currentBackground;
+
+    static PrettyConsoleInterpolatedStringHandler() {
+        if (Color.Enabled) {
+            ChangeFg = static (writer, color) => writer.Write(Color.Foreground(color));
+            ChangeBg = static (writer, color) => writer.Write(Color.Background(color));
+		} else {
+            ChangeFg = static (_, color) => Console.ForegroundColor = color;
+            ChangeBg = static (_, color) => Console.BackgroundColor = color;
+		}
+	}
 
     /// <summary>
     /// Creates a new handler that writes to <see cref="OutputPipe.Out"/> .
@@ -41,6 +54,8 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="provider">Optional format provider used when formatting values.</param>
     /// <param name="shouldAppend">Always <see langword="true"/>; reserved for future short-circuiting.</param>
     public PrettyConsoleInterpolatedStringHandler(int literalLength, int formattedCount, OutputPipe pipe, IFormatProvider? provider, out bool shouldAppend) {
+        _currentForeground = ConsoleColor.DefaultForeground;
+        _currentBackground = ConsoleColor.DefaultBackground;
         _writer = PrettyConsoleExtensions.GetWriter(pipe);
         _provider = provider;
         shouldAppend = true;
@@ -85,17 +100,26 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <summary>
     /// Sets the console foreground color to <paramref name="color"/>.
     /// </summary>
-    public readonly void AppendFormatted(ConsoleColor color) {
-        Console.ForegroundColor = color;
+    public void AppendFormatted(ConsoleColor color) {
+        if (_currentForeground != color) {
+            _currentForeground = color;
+            ChangeFg(_writer, _currentForeground);
+		}
     }
 
     /// <summary>
     /// Sets the foreground and background colors of the console
     /// </summary>
     /// <param name="colors"></param>
-    public readonly void AppendFormatted((ConsoleColor Foreground, ConsoleColor Background) colors) {
-        Console.ForegroundColor = colors.Foreground;
-        Console.BackgroundColor = colors.Background;
+    public void AppendFormatted((ConsoleColor Foreground, ConsoleColor Background) colors) {
+        if (_currentForeground != colors.Foreground) {
+            _currentForeground = colors.Foreground;
+            ChangeFg(_writer, _currentForeground);
+		}
+        if (_currentBackground != colors.Background) {
+            _currentBackground = colors.Background;
+            ChangeFg(_writer, _currentBackground);
+		}
     }
 
     /// <summary>
@@ -103,9 +127,8 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     /// <param name="colors"></param>
     /// <param name="alignment"></param>
-    public readonly void AppendFormatted((ConsoleColor Foreground, ConsoleColor Background) colors, int alignment) {
-        Console.ForegroundColor = colors.Foreground;
-        Console.BackgroundColor = colors.Background;
+    public void AppendFormatted((ConsoleColor Foreground, ConsoleColor Background) colors, int alignment) {
+        AppendFormatted(colors);
         AppendSpan(ReadOnlySpan<char>.Empty, alignment);
     }
 
@@ -191,10 +214,6 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
                     AppendSpan(ReadOnlySpan<char>.Empty, alignment);
                     break;
                 }
-            case ConsoleColor consoleColor: {
-                    AppendFormatted(consoleColor);
-                    break;
-                }
             case ISpanFormattable spanFormattable: {
                     AppendSpanFormattable(spanFormattable, alignment, format);
                     break;
@@ -273,5 +292,12 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     private readonly void WritePadding(int count) {
         _writer.WriteWhiteSpaces(count);
     }
+
+    /// <summary>
+	/// Resets the console colors if they changed.
+	/// </summary>
+    public readonly void ResetColors() {
+        if (_currentForeground != ConsoleColor.DefaultForeground) ChangeFg(_writer, ConsoleColor.DefaultForeground);
+        if (_currentBackground != ConsoleColor.DefaultBackground) ChangeFg(_writer, ConsoleColor.DefaultBackground);
+    }
 }
-#pragma warning restore CA1822 // Mark members as static

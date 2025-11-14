@@ -18,7 +18,7 @@ public static class MenuExtensions {
         /// </remarks>
         public static string Selection<TList>(TList choices, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default)
             where TList : IList<string> {
-            Console.ResetColor();
+            handler.ResetColors();
             Console.NewLine();
 
             for (int i = 0; i < choices.Count; i++) {
@@ -51,7 +51,7 @@ public static class MenuExtensions {
         /// </remarks>
         public static string[] MultiSelection<TList>(TList choices, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default)
             where TList : IList<string> {
-            Console.ResetColor();
+            handler.ResetColors();
             Console.NewLine();
 
             for (int i = 0; i < choices.Count; i++) {
@@ -99,7 +99,7 @@ public static class MenuExtensions {
         /// This validates the input for you.
         /// </remarks>
         public static (string option, string subOption) TreeMenu<TList>(Dictionary<string, TList> menu, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where TList : IList<string> {
-            Console.ResetColor();
+            handler.ResetColors();
             Console.NewLine();
 
             var menuKeys = menu.Keys.ToArray();

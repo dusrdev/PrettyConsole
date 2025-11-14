@@ -11,7 +11,7 @@ public static class WriteLineExtensions {
         /// <param name="handler">Interpolated string handler that streams the content.</param>
         [OverloadResolutionPriority(int.MaxValue)]
         public static void WriteLineInterpolated([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
-            Console.ResetColor();
+            handler.ResetColors();
             Console.NewLine(OutputPipe.Out);
         }
 
@@ -21,7 +21,7 @@ public static class WriteLineExtensions {
         /// <param name="pipe">Destination pipe. Defaults to <see cref="OutputPipe.Out"/>.</param>
         /// <param name="handler">Interpolated string handler that streams the content.</param>
         public static void WriteLineInterpolated(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] PrettyConsoleInterpolatedStringHandler handler = default) {
-            Console.ResetColor();
+            handler.ResetColors();
             Console.NewLine(pipe);
         }
 
