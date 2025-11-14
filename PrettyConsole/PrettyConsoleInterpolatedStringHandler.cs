@@ -118,7 +118,7 @@ public ref struct PrettyConsoleInterpolatedStringHandler {
 		}
         if (_currentBackground != colors.Background) {
             _currentBackground = colors.Background;
-            ChangeFg(_writer, _currentBackground);
+            ChangeBg(_writer, _currentBackground);
 		}
     }
 
@@ -296,8 +296,14 @@ public ref struct PrettyConsoleInterpolatedStringHandler {
     /// <summary>
 	/// Resets the console colors if they changed.
 	/// </summary>
-    public readonly void ResetColors() {
-        if (_currentForeground != ConsoleColor.DefaultForeground) ChangeFg(_writer, ConsoleColor.DefaultForeground);
-        if (_currentBackground != ConsoleColor.DefaultBackground) ChangeFg(_writer, ConsoleColor.DefaultBackground);
+    public void ResetColors() {
+        if (_currentForeground != ConsoleColor.DefaultForeground) {
+            _currentForeground = ConsoleColor.DefaultForeground;
+            ChangeFg(_writer, _currentForeground);
+        }
+        if (_currentBackground != ConsoleColor.DefaultBackground) {
+            _currentBackground = ConsoleColor.DefaultBackground;
+            ChangeBg(_writer, _currentBackground);
+        }
     }
 }
