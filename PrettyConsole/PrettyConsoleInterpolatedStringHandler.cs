@@ -239,24 +239,26 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     }
 
     private readonly void AppendSpan(scoped ReadOnlySpan<char> span, int alignment) {
-        if (span.IsEmpty) return;
-        else if (alignment == 0) {
-            _writer.Write(span);
-        } else {
-            bool leftAlign = alignment < 0;
-            int width = Math.Abs(alignment);
-            int padding = width - span.Length;
-            if (padding > 0 && !leftAlign) {
-                WritePadding(padding);
-            }
-
+        if (alignment == 0) {
             if (!span.IsEmpty) {
                 _writer.Write(span);
             }
+            return;
+        }
 
-            if (padding > 0 && leftAlign) {
-                WritePadding(padding);
-            }
+        bool leftAlign = alignment < 0;
+        int width = Math.Abs(alignment);
+        int padding = width - span.Length;
+        if (padding > 0 && !leftAlign) {
+            WritePadding(padding);
+        }
+
+        if (!span.IsEmpty) {
+            _writer.Write(span);
+        }
+
+        if (padding > 0 && leftAlign) {
+            WritePadding(padding);
         }
     }
 
