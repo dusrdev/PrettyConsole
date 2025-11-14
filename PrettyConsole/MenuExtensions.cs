@@ -1,5 +1,4 @@
 using System.Buffers;
-using System.Runtime.InteropServices;
 
 namespace PrettyConsole;
 
@@ -106,36 +105,39 @@ public static class MenuExtensions {
             var menuKeys = menu.Keys.ToArray();
             var maxMainOption = menuKeys.Max(static x => x.Length) + 10; // Used to make sub-tree prefix spaces uniform
 
-            using var bufferOwner = BufferPool.Shared.Rent(out var buffer);
+            var pool = ArrayPool<char>.Shared;
             var width = PrettyConsoleExtensions.GetWidthOrDefault();
-            buffer.EnsureCapacity(width);
-            CollectionsMarshal.SetCount(buffer, width);
-            var span = CollectionsMarshal.AsSpan(buffer);
+            var array = pool.Rent(width);
+            try {
+                var span = new Span<char>(array);
 
-            //Enumerate options and sub-options
-            for (int i = 0; i < menuKeys.Length; i++) {
-                var mainEntry = menuKeys[i];
-                var subChoices = menu[mainEntry];
+                //Enumerate options and sub-options
+                for (int i = 0; i < menuKeys.Length; i++) {
+                    var mainEntry = menuKeys[i];
+                    var subChoices = menu[mainEntry];
 
-                span.TryWrite($"  {i + 1}) {mainEntry}", out int written);
-                PrettyConsoleExtensions.Out.Write(span.Slice(0, written));
+                    span.TryWrite($"  {i + 1}) {mainEntry}", out int written);
+                    PrettyConsoleExtensions.Out.Write(span.Slice(0, written));
 
-                var remainingLength = maxMainOption - written;
-                if (remainingLength > 0) {
-                    PrettyConsoleExtensions.Out.WriteWhiteSpaces(remainingLength);
-                }
-
-                for (int j = 0; j < subChoices.Count; j++) {
-                    if (j is not 0) {
-                        PrettyConsoleExtensions.Out.WriteWhiteSpaces(maxMainOption);
+                    var remainingLength = maxMainOption - written;
+                    if (remainingLength > 0) {
+                        PrettyConsoleExtensions.Out.WriteWhiteSpaces(remainingLength);
                     }
 
-                    span.TryWrite($"  {j + 1}) {subChoices[j]}", out written);
-                    PrettyConsoleExtensions.Out.WriteLine(span.Slice(0, written));
-                }
+                    for (int j = 0; j < subChoices.Count; j++) {
+                        if (j is not 0) {
+                            PrettyConsoleExtensions.Out.WriteWhiteSpaces(maxMainOption);
+                        }
 
-                Console.NewLine();
-            }
+                        span.TryWrite($"  {j + 1}) {subChoices[j]}", out written);
+                        PrettyConsoleExtensions.Out.WriteLine(span.Slice(0, written));
+                    }
+
+                    Console.NewLine();
+                }
+            } finally {
+                pool.Return(array);
+			}
 
             string input = Console.ReadLine(string.Empty, $"Enter your main choice and sub choice separated with space: ");
 

@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+using System.Buffers;
 
 namespace PrettyConsole;
 
@@ -85,18 +85,21 @@ public static class WriteExtensions {
         public static void Write<T>(T item, OutputPipe pipe, ConsoleColor foreground,
             ConsoleColor background, ReadOnlySpan<char> format, IFormatProvider? formatProvider)
         where T : ISpanFormattable, allows ref struct {
-            using var listOwner = BufferPool.Shared.Rent(out var lst);
-            int upperBound = BufferPool.ListStartingSize;
+            int lowerBound = 4096;
+            var pool = ArrayPool<char>.Shared;
+
             while (true) {
-                lst.EnsureCapacity(upperBound);
-                CollectionsMarshal.SetCount(lst, upperBound);
-                var span = CollectionsMarshal.AsSpan(lst);
-                if (item.TryFormat(span, out int charsWritten, format, formatProvider)) {
-                    Write(span.Slice(0, charsWritten), pipe, foreground, background);
-                    break;
-                } else {
-                    upperBound *= 2;
+                var array = pool.Rent(lowerBound);
+                try {
+                    var buffer = new Span<char>(array);
+                    if (item.TryFormat(array, out int charsWritten, format, formatProvider)) {
+                        Write(buffer.Slice(0, charsWritten), pipe, foreground, background);
+                        return;
+                    }
+                } finally {
+                    pool.Return(array);
                 }
+                lowerBound *= 2;
             }
         }
 

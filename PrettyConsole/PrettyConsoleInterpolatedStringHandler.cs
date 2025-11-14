@@ -95,12 +95,18 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// Sets the foreground and background colors of the console
     /// </summary>
     /// <param name="colors"></param>
-    /// <param name="alignment"></param>
-    public readonly void AppendFormatted((ConsoleColor foreground, ConsoleColor background) colors, int alignment = 0) {
+    public readonly void AppendFormatted((ConsoleColor foreground, ConsoleColor background) colors) {
         Console.SetColors(colors.foreground, colors.background);
-        if (alignment != 0) {
-            AppendSpan(ReadOnlySpan<char>.Empty, alignment);
-        }
+    }
+
+    /// <summary>
+    /// Sets the foreground and background colors of the console
+    /// </summary>
+    /// <param name="colors"></param>
+    /// <param name="alignment"></param>
+    public readonly void AppendFormatted((ConsoleColor foreground, ConsoleColor background) colors, int alignment) {
+        Console.SetColors(colors.foreground, colors.background);
+        AppendSpan(ReadOnlySpan<char>.Empty, alignment);
     }
 
     /// <summary>
@@ -222,13 +228,15 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
 
         while (true) {
             var array = pool.Rent(lowerBound);
-            buffer = new Span<char>(array);
-            if (value.TryFormat(buffer, out charsWritten, formatSpan, _provider)) {
-                AppendSpan(buffer.Slice(0, charsWritten), alignment);
+            try {
+                buffer = new Span<char>(array);
+                if (value.TryFormat(array, out charsWritten, formatSpan, _provider)) {
+                    AppendSpan(buffer.Slice(0, charsWritten), alignment);
+                    return;
+                }
+            } finally {
                 pool.Return(array);
-                break;
             }
-            pool.Return(array);
             lowerBound *= 2;
         }
     }
