@@ -196,7 +196,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
         }
 
         if (value is ISpanFormattable spanFormattable) {
-            AppendSpanFormattable(spanFormattable, alignment, null);
+            AppendSpanFormattable(spanFormattable, alignment, format);
             return;
         }
 
