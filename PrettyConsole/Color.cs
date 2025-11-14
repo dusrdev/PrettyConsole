@@ -4,8 +4,8 @@ internal static class AnsiColors {
     private const string ForegroundResetSequence = "\u001b[39m";
     private const string BackgroundResetSequence = "\u001b[49m";
 
-    private static readonly string[] ForegroundCodes = new string[16];
-    private static readonly string[] BackgroundCodes = new string[16];
+    private static readonly string[] ForegroundCodes = default!;
+    private static readonly string[] BackgroundCodes = default!;
 
     /// <summary>
     /// Gets a value indicating whether ANSI color sequences are emitted.
@@ -14,15 +14,10 @@ internal static class AnsiColors {
 
     static AnsiColors() {
         Enabled = !Console.IsOutputRedirected && !Console.IsErrorRedirected;
-        for (int i = 0; i < ForegroundCodes.Length; i++) {
-            ForegroundCodes[i] = string.Empty;
-            BackgroundCodes[i] = string.Empty;
-        }
+        if (!Enabled) return;
 
-        if (!Enabled) {
-            return;
-        }
-
+        ForegroundCodes = new string[16];
+        BackgroundCodes = new string[16];
         foreach (var color in Enum.GetValues<ConsoleColor>()) {
             int index = (int)color;
             ForegroundCodes[index] = BuildForegroundSequence(color);
