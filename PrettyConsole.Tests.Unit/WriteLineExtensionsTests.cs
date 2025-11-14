@@ -22,4 +22,10 @@ public class WriteLineExtensionsTests {
             Out = originalOut;
         }
     }
+
+    [Fact]
+    public void WriteLine_ReadOnlySpan_WithColors_AppendsNewLine() {
+        Console.WriteLine("SpanLine".AsSpan(), OutputPipe.Out, ConsoleColor.Yellow, ConsoleColor.Black);
+        Assert.Equal($"SpanLine{_writer.NewLine}", _writer.ToStringAndFlush());
+    }
 }

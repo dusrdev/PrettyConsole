@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace PrettyConsole.Tests.Unit;
 
 public class WriteExtensionsTests {
@@ -78,6 +80,18 @@ public class WriteExtensionsTests {
         var obj = new LongFormatStud();
         Console.Write<LongFormatStud>(obj);
         Assert.Equal(new string('X', LongFormatStud.Length), _writer.ToStringAndFlush());
+    }
+
+    [Fact]
+    public void Write_SpanFormattable_WithFormatAndProvider() {
+        Console.Write(12.345, OutputPipe.Out, White, Black, "F2", CultureInfo.InvariantCulture);
+        Assert.Equal("12.35", _writer.ToStringAndFlush());
+    }
+
+    [Fact]
+    public void Write_ReadOnlySpan_WithColors_WritesToSelectedPipe() {
+        Console.Write("Data".AsSpan(), OutputPipe.Error, ConsoleColor.Green, ConsoleColor.Black);
+        Assert.Equal("Data", _errorWriter.ToStringAndFlush());
     }
 
     private readonly ref struct LongFormatStud : ISpanFormattable {
