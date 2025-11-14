@@ -4,6 +4,16 @@ namespace PrettyConsole;
 /// Provides methods extending <see cref="Console"/> with input request extensions.
 /// </summary>
 public static class InputRequestExtensions {
+    private static Func<ConsoleKeyInfo> s_readKey = Console.ReadKey;
+
+    /// <summary>
+    /// Allows tests to override how Console.ReadKey is performed.
+    /// </summary>
+    /// <param name="readKey">Delegate that returns a <see cref="ConsoleKeyInfo"/>.</param>
+    internal static void ConfigureReadKey(Func<ConsoleKeyInfo>? readKey) {
+        s_readKey = readKey ?? Console.ReadKey;
+    }
+
     /// <summary>
     /// Used to get user confirmation with the default values ["y", "yes"]
     /// </summary>
@@ -16,7 +26,7 @@ public static class InputRequestExtensions {
         /// <param name="handler">Interpolated string handler that streams the content.</param>
         public static void RequestAnyInput([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
             handler.ResetColors();
-            _ = Console.ReadKey();
+            _ = s_readKey();
         }
 
         /// <summary>

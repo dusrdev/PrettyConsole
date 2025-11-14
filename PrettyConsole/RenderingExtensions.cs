@@ -4,6 +4,22 @@ namespace PrettyConsole;
 /// Provides methods extending <see cref="Console"/> with more rendering methods.
 /// </summary>
 public static partial class RenderingExtensions {
+    private static readonly Func<int> DefaultCursorTopAccessor = static () => Console.CursorTop;
+    private static readonly Action<int, int> DefaultSetCursorPosition = Console.SetCursorPosition;
+
+    private static Func<int> s_cursorTopAccessor = DefaultCursorTopAccessor;
+    private static Action<int, int> s_setCursorPosition = DefaultSetCursorPosition;
+
+    /// <summary>
+    /// Allows tests to override how cursor information is retrieved.
+    /// </summary>
+    /// <param name="cursorTopAccessor">Delegate that returns the current cursor row.</param>
+    /// <param name="setCursorPosition">Delegate that positions the cursor.</param>
+    internal static void ConfigureCursorAccessors(Func<int>? cursorTopAccessor, Action<int, int>? setCursorPosition) {
+        s_cursorTopAccessor = cursorTopAccessor ?? DefaultCursorTopAccessor;
+        s_setCursorPosition = setCursorPosition ?? DefaultSetCursorPosition;
+    }
+
     extension(Console) {
         /// <summary>
         /// Clears the next <paramref name="lines"/>.
@@ -44,7 +60,7 @@ public static partial class RenderingExtensions {
         /// </summary>
         /// <returns></returns>
         public static int GetCurrentLine() {
-            return Console.CursorTop;
+            return s_cursorTopAccessor();
         }
 
         /// <summary>
@@ -52,7 +68,7 @@ public static partial class RenderingExtensions {
         /// </summary>
         /// <param name="line"></param>
         public static void GoToLine(int line) {
-            Console.SetCursorPosition(0, line);
+            s_setCursorPosition(0, line);
         }
     }
 }
