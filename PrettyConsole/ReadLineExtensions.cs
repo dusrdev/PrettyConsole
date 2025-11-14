@@ -70,12 +70,14 @@ public static class ReadLineExtensions {
         }
 
         /// <summary>
-        /// Used to request user input
+        /// Used to request user input.
         /// </summary>
         /// <param name="handler">Interpolated string handler that streams the content.</param>
-        public static string? ReadLine([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
-            handler.ResetColors();
-            return ReadLine();
+        /// <returns>A string if the user entered any, empty string otherwise - never null.</returns>
+        [OverloadResolutionPriority(3)]
+        public static string ReadLine([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
+            _ = TryReadLine(out string result, string.Empty, handler);
+            return result;
         }
 
         /// <summary>
@@ -84,6 +86,7 @@ public static class ReadLineExtensions {
         /// <typeparam name="T"></typeparam>
         /// <param name="handler">Interpolated string handler that streams the content.</param>
         /// <returns>The result of the parsing</returns>
+        [OverloadResolutionPriority(2)]
         public static T? ReadLine<T>([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where T : IParsable<T> {
             _ = TryReadLine(out T? result, handler);
             return result;
@@ -96,6 +99,7 @@ public static class ReadLineExtensions {
         /// <param name="default">The default value to return if parsing fails</param>
         /// <param name="handler">Interpolated string handler that streams the content.</param>
         /// <returns>The result of the parsing</returns>
+        [OverloadResolutionPriority(1)]
         public static T ReadLine<T>(T @default, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where T : IParsable<T> {
             _ = TryReadLine(out T result, @default, handler);
             return result;
