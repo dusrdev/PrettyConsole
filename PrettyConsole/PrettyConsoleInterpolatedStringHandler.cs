@@ -15,9 +15,9 @@ public ref struct PrettyConsoleInterpolatedStringHandler {
     private ConsoleColor _currentBackground;
 
     static PrettyConsoleInterpolatedStringHandler() {
-        if (Color.Enabled) {
-            ChangeFg = static (writer, color) => writer.Write(Color.Foreground(color));
-            ChangeBg = static (writer, color) => writer.Write(Color.Background(color));
+        if (AnsiColors.Enabled) {
+            ChangeFg = static (writer, color) => writer.Write(AnsiColors.Foreground(color));
+            ChangeBg = static (writer, color) => writer.Write(AnsiColors.Background(color));
 		} else {
             ChangeFg = static (_, color) => Console.ForegroundColor = color;
             ChangeBg = static (_, color) => Console.BackgroundColor = color;
