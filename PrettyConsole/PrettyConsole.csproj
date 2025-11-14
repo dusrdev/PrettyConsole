@@ -2,6 +2,7 @@
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<Deterministic>true</Deterministic>
