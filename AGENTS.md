@@ -51,6 +51,8 @@ High-level architecture and key concepts
   - `PrettyConsoleInterpolatedStringHandler` enables zero-allocation `$"..."` calls for `WriteInterpolated`, `WriteLineInterpolated`, `ReadLine`, `TryReadLine`, `Confirm`, and `RequestAnyInput`. Colors automatically reset after each invocation, and handlers respect the selected pipe and optional `IFormatProvider`. Recent changes ensure any `object` argument that implements `ISpanFormattable` is emitted through the span-based path before falling back to `IFormattable`/string allocations.
 - Coloring model
   - `ConsoleColor` now exposes `DefaultForeground`, `DefaultBackground`, and `Default` tuple properties plus `/` operator overloads so you can inline foreground/background tuples (`$"{ConsoleColor.Red / ConsoleColor.White}Error"`). These tuples play nicely with the interpolated string handler and keep color resets allocation-free.
+- Markup decorations
+  - The `Markup` static class exposes ANSI sequences for underline, bold, italic, and strikethrough. Fields expand to escape codes only when output/error aren’t redirected; otherwise they collapse to empty strings so callers can safely interpolate them without extra checks.
 - Write APIs
   - `WriteInterpolated`/`WriteLineInterpolated` host the interpolated-string handler; `Write`/`WriteLine` overloads target `ISpanFormattable` values (including `ref struct`s) and raw `ReadOnlySpan<char>` spans with optional foreground/background overrides. Implementations rent buffers via `BufferPool` to avoid allocation spikes and always reset colors.
 - TextWriter helpers

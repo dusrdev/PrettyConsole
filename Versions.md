@@ -26,6 +26,7 @@ This version contains a lot of breaking changes, but they were necessary to trim
 ### Added
 
 - `TextWriter` which is the object backing `Console.Out` and `Console.Error` now has a static extension `WriteWhiteSpaces(int)`, which can be used to write paddings and whatever else without any allocations. It was previously an internal method but I chose to expose it for all of you.
+- `Markup` static class provides ANSI escape-sequence toggles (underline, bold, italic, strikethrough) that automatically collapse to empty strings when output/error are redirected, so callers can opt into inline decorations without additional checks.
 
 ## v4.1.0
 

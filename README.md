@@ -43,6 +43,16 @@ if (!Console.TryReadLine(out int choice, $"Pick option {ConsoleColor.Cyan / Cons
 
 `ConsoleColor.DefaultForeground`, `ConsoleColor.DefaultBackground`, and the `/` operator overload make it easy to compose foreground/background tuples inline (`ConsoleColor.Red / ConsoleColor.White`).
 
+#### Inline decorations via `Markup`
+
+When ANSI escape sequences are safe to emit (`Console.IsOutputRedirected`/`IsErrorRedirected` are both `false`), the `Markup` helper exposes ready-to-use toggles for underline, bold, italic, and strikethrough:
+
+```csharp
+Console.WriteLineInterpolated($"{Markup.Bold}Build{Markup.ResetBold} {Markup.Underline}completed{Markup.ResetUnderline} in {elapsed:hr}");
+```
+
+All fields collapse to `string.Empty` when markup is disabled, so the same call sites continue to work when output is redirected or the terminal ignores decorations. Use `Markup.Reset` if you want to reset every decoration at once.
+
 #### Formatting & alignment helpers
 
 - **`TimeSpan :hr` format** — the interpolated string handler understands the custom `:hr` specifier. It renders elapsed time as `totalHours:minutes:seconds` (e.g., `00:05:32`, `27:12:03`, `123:00:00`) without allocating, and the hour component keeps growing past 24 so long-running tasks stay accurate:
