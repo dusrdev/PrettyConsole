@@ -21,4 +21,20 @@ public class ConsoleColorTests {
         Assert.Equal(ConsoleColor.DefaultForeground, fg);
         Assert.Equal(ConsoleColor.DefaultBackground, bg);
     }
+
+    [Fact]
+    public void AnsiColors_DefaultForeground_UsesResetSequence() {
+        if (AnsiColors.Enabled) {
+            var sequence = AnsiColors.Foreground((ConsoleColor)(-1));
+            Assert.Equal("\u001b[39m", sequence);
+        }
+    }
+
+    [Fact]
+    public void AnsiColors_DefaultBackground_UsesResetSequence() {
+        if (AnsiColors.Enabled) {
+            var sequence = AnsiColors.Background((ConsoleColor)(-1));
+            Assert.Equal("\u001b[49m", sequence);
+        }
+    }
 }
