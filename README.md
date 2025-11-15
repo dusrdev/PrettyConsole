@@ -48,18 +48,18 @@ if (!Console.TryReadLine(out int choice, $"Pick option {ConsoleColor.Cyan / Cons
 When ANSI escape sequences are safe to emit (`Console.IsOutputRedirected`/`IsErrorRedirected` are both `false`), the `Markup` helper exposes ready-to-use toggles for underline, bold, italic, and strikethrough:
 
 ```csharp
-Console.WriteLineInterpolated($"{Markup.Bold}Build{Markup.ResetBold} {Markup.Underline}completed{Markup.ResetUnderline} in {elapsed:hr}");
+Console.WriteLineInterpolated($"{Markup.Bold}Build{Markup.ResetBold} {Markup.Underline}completed{Markup.ResetUnderline} in {elapsed:duration}"); // e.g. "completed in 2h 3m 17s"
 ```
 
 All fields collapse to `string.Empty` when markup is disabled, so the same call sites continue to work when output is redirected or the terminal ignores decorations. Use `Markup.Reset` if you want to reset every decoration at once.
 
 #### Formatting & alignment helpers
 
-- **`TimeSpan :hr` format** — the interpolated string handler understands the custom `:hr` specifier. It renders elapsed time as `totalHours:minutes:seconds` (e.g., `00:05:32`, `27:12:03`, `123:00:00`) without allocating, and the hour component keeps growing past 24 so long-running tasks stay accurate:
+- **`TimeSpan :duration` format** — the interpolated string handler understands the custom `:duration` specifier. It emits integer `hours`/`minutes`/`seconds` tokens (e.g., `5h 32m 12s`, `27h 12m 3s`, `123h 0m 0s`) without allocations, and the hour component keeps growing past 24 so long-running tasks stay accurate. Minutes/seconds are not zero-padded so the output stays compact:
 
   ```csharp
   var elapsed = stopwatch.Elapsed;
-  Console.WriteInterpolated($"Completed in {elapsed:hr}");
+  Console.WriteInterpolated($"Completed in {elapsed:duration}"); // Completed in 12h 5m 33s
   ```
 
 - **Alignment** — standard alignment syntax works the same way it does with regular interpolated strings, but the handler writes directly into the console buffer. This keeps columnar output zero-allocation friendly:
@@ -68,13 +68,13 @@ All fields collapse to `string.Empty` when markup is disabled, so the same call 
   Console.WriteInterpolated($"|{"Label",-10}|{value,10:0.00}|");
   ```
 
-You can combine both, e.g., `$"{elapsed,8:hr}"`, to keep progress/status displays tidy.
+You can combine both, e.g., `$"{elapsed,8:duration}"`, to keep progress/status displays tidy.
 
 ### Basic outputs
 
 ```csharp
 // Interpolated text
-Console.WriteInterpolated($"Processed {items} items in {elapsed:hr}");
+Console.WriteInterpolated($"Processed {items} items in {elapsed:duration}"); // Processed 42 items in 3h 44m 9s
 Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Magenta}debug{ConsoleColor.Default}");
 
 // Span + color overloads (no boxing)
@@ -140,7 +140,7 @@ PrettyConsoleExtensions.Error.WriteWhiteSpaces(8); // pad status blocks
 ```csharp
 Console.Overwrite(() => {
     Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Cyan}Working…{ConsoleColor.Default}");
-    Console.WriteInterpolated(OutputPipe.Error, $"{ConsoleColor.DarkGray}Elapsed:{ConsoleColor.Default} {stopwatch.Elapsed:hr}");
+    Console.WriteInterpolated(OutputPipe.Error, $"{ConsoleColor.DarkGray}Elapsed:{ConsoleColor.Default} {stopwatch.Elapsed:duration}"); // Elapsed: 0h 1m 12s
 }, lines: 2);
 
 // Prevent closure allocations with state + generic overload
