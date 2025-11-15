@@ -6,7 +6,7 @@ namespace PrettyConsole;
 /// Interpolated string handler that streams segments directly to an <see cref="OutputPipe"/> while allowing inline color changes.
 /// </summary>
 [InterpolatedStringHandler]
-public ref struct PrettyConsoleInterpolatedStringHandler {
+public struct PrettyConsoleInterpolatedStringHandler {
     private readonly TextWriter _writer;
     private readonly IFormatProvider? _provider;
     private static readonly Action<TextWriter, ConsoleColor> ChangeFg;
