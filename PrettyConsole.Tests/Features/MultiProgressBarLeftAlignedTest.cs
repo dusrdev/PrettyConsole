@@ -1,6 +1,6 @@
 namespace PrettyConsole.Tests.Features;
 
-public sealed class MultiProgressBarTest : IPrettyConsoleTest {
+public sealed class MultiProgressBarLeftAlignedTest : IPrettyConsoleTest {
     public string FeatureName => "MultiProgressBar";
 
     public async ValueTask Implementation() {
@@ -10,10 +10,10 @@ public sealed class MultiProgressBarTest : IPrettyConsoleTest {
             double percentage = 100 * (double)i / count;
 
             Console.Overwrite((int)percentage, p => {
-                Console.WriteInterpolated(OutputPipe.Error, $"Task {1}: ");
-                ProgressBar.WriteProgressBar(OutputPipe.Error, p, ConsoleColor.Magenta);
-                Console.WriteInterpolated(OutputPipe.Error, $"Task {2}: ");
-                ProgressBar.WriteProgressBar(OutputPipe.Error, p, ConsoleColor.Magenta);
+                ProgressBar.WriteProgressBar(OutputPipe.Error, p, ConsoleColor.Magenta, maxLineWidth: 50);
+                Console.WriteLineInterpolated(OutputPipe.Error, $" - Task {1}");
+                ProgressBar.WriteProgressBar(OutputPipe.Error, p, ConsoleColor.Magenta, maxLineWidth: 50);
+                Console.WriteInterpolated(OutputPipe.Error, $" - Task {2}");
             }, 2);
 
             await Task.Delay(15);

@@ -1,10 +1,12 @@
+using System.Globalization;
+
 namespace PrettyConsole.Tests.Unit;
 
-public class Write {
+public class WriteExtensionsTests {
     private readonly StringWriter _writer;
     private readonly StringWriter _errorWriter;
 
-    public Write() {
+    public WriteExtensionsTests() {
         Out = Utilities.GetWriter(out _writer);
         Error = Utilities.GetWriter(out _errorWriter);
     }
@@ -16,7 +18,7 @@ public class Write {
         Out = writer;
 
         try {
-            Write(OutputPipe.Out, $"Hello {42}");
+            Console.WriteInterpolated(OutputPipe.Out, $"Hello {42}");
             Assert.Equal("Hello 42", writer.ToString());
         } finally {
             Out = originalOut;
@@ -30,7 +32,7 @@ public class Write {
         Error = writer;
 
         try {
-            Write(OutputPipe.Error, $"Error {123}");
+            Console.WriteInterpolated(OutputPipe.Error, $"Error {123}");
             Assert.Equal("Error 123", writer.ToString());
         } finally {
             Error = originalError;
@@ -44,10 +46,12 @@ public class Write {
         Out = writer;
 
         try {
-            Write(OutputPipe.Out,
-                $"Colors {Color.Black / Color.Green}Green{Color.Default} {Color.Red}Red{Color.Default}");
+            Console.WriteInterpolated(OutputPipe.Out,
+                $"Colors {Black / Green}Green{ConsoleColor.Default} {Red}Red");
 
-            Assert.Equal("Colors Green Red", writer.ToString());
+            var normalized = Utilities.StripAnsiSequences(writer.ToString());
+
+            Assert.Equal("Colors Green Red", normalized);
         } finally {
             Out = originalOut;
         }
@@ -55,87 +59,39 @@ public class Write {
 
     [Fact]
     public void Write_SpanFormattable_NoColors() {
-        Write(3.14);
+        Console.Write<double>(3.14);
         Assert.Equal("3.14", _writer.ToStringAndFlush());
     }
 
     [Fact]
     public void Write_SpanFormattable_ForegroundColor() {
-        Write(3.14, OutputPipe.Out, Color.White);
+        Console.Write(3.14, OutputPipe.Out, White);
         Assert.Equal("3.14", _writer.ToStringAndFlush());
     }
 
     [Fact]
     public void Write_SpanFormattable_ForegroundAndBackgroundColor() {
-        Write(3.14, OutputPipe.Out, Color.White, Color.Black);
+        Console.Write(3.14, OutputPipe.Out, White, Black);
         Assert.Equal("3.14", _writer.ToStringAndFlush());
     }
 
     [Fact]
     public void Write_SpanFormattable_VeryLongObjectFormat() {
         var obj = new LongFormatStud();
-        Write(obj);
+        Console.Write<LongFormatStud>(obj);
         Assert.Equal(new string('X', LongFormatStud.Length), _writer.ToStringAndFlush());
     }
 
     [Fact]
-    public void Write_ColoredOutput_Single() {
-        Write("Hello world!" * Color.Green);
-        Assert.Equal("Hello world!", _writer.ToStringAndFlush());
+    public void Write_SpanFormattable_WithFormatAndProvider() {
+        Console.Write(12.345, OutputPipe.Out, White, Black, "F2", CultureInfo.InvariantCulture);
+        Assert.Equal("12.35", _writer.ToStringAndFlush());
     }
 
     [Fact]
-    public void Write_ColoredOutput_Multiple() {
-        Write(["Hello " * Color.Green, "David" * Color.Yellow, "!"]);
-        Assert.Equal("Hello David!", _writer.ToStringAndFlush());
-    }
-
-    [Fact]
-    public void WriteError_ColoredOutput_Single() {
-        Write("Hello world!" * Color.Yellow, OutputPipe.Error);
-        Assert.Equal("Hello world!", _errorWriter.ToStringAndFlush());
-    }
-
-    [Fact]
-    public void WriteError_ColoredOutput_Single2() {
-        Write(["Hello world!" * Color.Green], OutputPipe.Error);
-        Assert.Equal("Hello world!", _errorWriter.ToStringAndFlush());
-    }
-
-    [Fact]
-    public void WriteError_ColoredOutput_Multiple() {
-        Write(["Hello " * Color.Green, "David" * Color.Yellow, "!"], OutputPipe.Error);
-        Assert.Equal("Hello David!", _errorWriter.ToStringAndFlush());
-    }
-
-    [Fact]
-    public void Write_Interpolated_RightAlignmentPadsWithSpaces() {
-        Write($"Value {42,5}");
-        Assert.Equal("Value    42", _writer.ToStringAndFlush());
-    }
-
-    [Fact]
-    public void Write_Interpolated_LeftAlignmentPadsWithSpaces() {
-        Write($"Value {42,-5}");
-        Assert.Equal("Value 42   ", _writer.ToStringAndFlush());
-    }
-
-    [Fact]
-    public void Write_Interpolated_TimeSpanHumanReadableFormat() {
-        Write($"Elapsed {TimeSpan.FromSeconds(75):hr}");
-        Assert.Equal("Elapsed 01:15m", _writer.ToStringAndFlush());
-    }
-
-    [Fact]
-    public void Write_Interpolated_ColoredOutputSpan_WritesValues() {
-        ReadOnlySpan<ColoredOutput> outputs = [
-            "Hi " * Color.Green,
-            "There" * Color.Yellow
-        ];
-
-        Write($"Span {outputs}");
-
-        Assert.Equal("Span Hi There", _writer.ToStringAndFlush());
+    public void Write_ReadOnlySpan_WithColors_WritesToSelectedPipe() {
+        Console.Write("Data".AsSpan(), OutputPipe.Error, ConsoleColor.Green, ConsoleColor.Black);
+        Assert.Equal("Data", _errorWriter.ToStringAndFlush());
     }
 
     private readonly ref struct LongFormatStud : ISpanFormattable {

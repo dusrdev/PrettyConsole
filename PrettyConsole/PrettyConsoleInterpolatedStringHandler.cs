@@ -1,15 +1,28 @@
-using System.Runtime.InteropServices;
+using System.Buffers;
 
 namespace PrettyConsole;
 
-#pragma warning disable CA1822 // Mark members as static
 /// <summary>
 /// Interpolated string handler that streams segments directly to an <see cref="OutputPipe"/> while allowing inline color changes.
 /// </summary>
 [InterpolatedStringHandler]
-public readonly ref struct PrettyConsoleInterpolatedStringHandler {
+public struct PrettyConsoleInterpolatedStringHandler {
     private readonly TextWriter _writer;
     private readonly IFormatProvider? _provider;
+    private static readonly Action<TextWriter, ConsoleColor> ChangeFg;
+    private static readonly Action<TextWriter, ConsoleColor> ChangeBg;
+    private ConsoleColor _currentForeground;
+    private ConsoleColor _currentBackground;
+
+    static PrettyConsoleInterpolatedStringHandler() {
+        if (AnsiColors.Enabled) {
+            ChangeFg = static (writer, color) => writer.Write(AnsiColors.Foreground(color));
+            ChangeBg = static (writer, color) => writer.Write(AnsiColors.Background(color));
+        } else {
+            ChangeFg = static (_, color) => Console.ForegroundColor = color;
+            ChangeBg = static (_, color) => Console.BackgroundColor = color;
+        }
+    }
 
     /// <summary>
     /// Creates a new handler that writes to <see cref="OutputPipe.Out"/> .
@@ -41,7 +54,9 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="provider">Optional format provider used when formatting values.</param>
     /// <param name="shouldAppend">Always <see langword="true"/>; reserved for future short-circuiting.</param>
     public PrettyConsoleInterpolatedStringHandler(int literalLength, int formattedCount, OutputPipe pipe, IFormatProvider? provider, out bool shouldAppend) {
-        _writer = Console.GetWriter(pipe);
+        _currentForeground = ConsoleColor.DefaultForeground;
+        _currentBackground = ConsoleColor.DefaultBackground;
+        _writer = PrettyConsoleExtensions.GetWriter(pipe);
         _provider = provider;
         shouldAppend = true;
     }
@@ -50,9 +65,7 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// Appends a literal segment supplied by the compiler.
     /// </summary>
     public readonly void AppendLiteral(string value) {
-        if (!string.IsNullOrEmpty(value)) {
-            _writer.Write(value);
-        }
+        _writer.Write(value);
     }
 
     /// <summary>
@@ -80,11 +93,6 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="value">Character to write.</param>
     /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
     public readonly void AppendFormatted(char value, int alignment = 0) {
-        if (alignment == 0) {
-            _writer.Write(value);
-            return;
-        }
-
         Span<char> buffer = [value];
         AppendSpan(buffer, alignment);
     }
@@ -92,15 +100,26 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <summary>
     /// Sets the console foreground color to <paramref name="color"/>.
     /// </summary>
-    public readonly void AppendFormatted(ConsoleColor color) {
-        Console.SetColors(color, baseConsole.BackgroundColor);
+    public void AppendFormatted(ConsoleColor color) {
+        if (_currentForeground != color) {
+            _currentForeground = color;
+            ChangeFg(_writer, _currentForeground);
+        }
     }
 
     /// <summary>
-    /// Sets the console foreground color to <paramref name="color"/>.
+    /// Sets the foreground and background colors of the console
     /// </summary>
-    public readonly void AppendFormatted(Color color) {
-        Console.SetColors(color, baseConsole.BackgroundColor);
+    /// <param name="colors"></param>
+    public void AppendFormatted((ConsoleColor Foreground, ConsoleColor Background) colors) {
+        if (_currentForeground != colors.Foreground) {
+            _currentForeground = colors.Foreground;
+            ChangeFg(_writer, _currentForeground);
+        }
+        if (_currentBackground != colors.Background) {
+            _currentBackground = colors.Background;
+            ChangeBg(_writer, _currentBackground);
+        }
     }
 
     /// <summary>
@@ -108,69 +127,75 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     /// <param name="colors"></param>
     /// <param name="alignment"></param>
-    public readonly void AppendFormatted((ConsoleColor foreground, ConsoleColor background) colors, int alignment = 0) {
-        Console.SetColors(colors.foreground, colors.background);
-        if (alignment != 0) {
-            AppendSpan(ReadOnlySpan<char>.Empty, alignment);
-        }
+    public void AppendFormatted((ConsoleColor Foreground, ConsoleColor Background) colors, int alignment) {
+        AppendFormatted(colors);
+        AppendSpan(ReadOnlySpan<char>.Empty, alignment);
     }
 
     /// <summary>
-    /// Writes a <see cref="ColoredOutput"/> segment and applies its colors for the duration of the write.
-    /// </summary>
-    /// <param name="output">Segment to write.</param>
-    /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
-    public readonly void AppendFormatted(ColoredOutput output, int alignment = 0) {
-        Console.WriteCore(output, _writer);
-        if (alignment != 0) {
-            AppendSpan(ReadOnlySpan<char>.Empty, alignment);
-        }
-    }
-
-    /// <summary>
-    /// Writes a buffer of <see cref="ColoredOutput"/> items.
-    /// </summary>
-    /// <param name="outputs">Segments to write.</param>
-    public readonly void AppendFormatted(ReadOnlySpan<ColoredOutput> outputs) {
-        if (outputs.Length is 0) {
-            return;
-        }
-        Console.WriteCore(outputs, _writer);
-    }
-
-    /// <summary>
-    /// Append timeSpan with or without elapsed time formatting (human readable)
+    /// Append timeSpan with optional formatting.
     /// </summary>
     /// <param name="timeSpan"></param>
     /// <param name="format"></param>
-    public readonly void AppendFormatted(TimeSpan timeSpan, string? format = null) {
-        if (format != "hr") {
-            AppendSpanFormattable(timeSpan, 0, format);
+    public readonly void AppendFormatted(TimeSpan timeSpan, string? format = null)
+        => AppendFormatted(timeSpan, alignment: 0, format);
+
+    /// <summary>
+    /// Append timeSpan with optional alignment support and formatting.
+    /// </summary>
+    /// <param name="timeSpan"></param>
+    /// <param name="alignment"></param>
+    /// <param name="format"></param>
+    public readonly void AppendFormatted(TimeSpan timeSpan, int alignment, string? format = null) {
+        if (format != "duration") {
+            AppendSpanFormattable(timeSpan, alignment, format);
             return;
         }
-        if (timeSpan.TotalSeconds < 1) {
-            AppendSpanFormattable(timeSpan.Milliseconds, 0, null);
-            AppendSpan("ms", 0);
-        } else if (timeSpan.TotalSeconds < 60) {
-            AppendSpanFormattable(timeSpan.Seconds, 0, "00");
-            AppendFormatted(':');
-            AppendSpanFormattable(timeSpan.Milliseconds, 0, "00");
-            AppendFormatted('s');
-        } else if (timeSpan.TotalSeconds < 3600) {
-            AppendSpanFormattable(timeSpan.Minutes, 0, "00");
-            AppendFormatted(':');
-            AppendSpanFormattable(timeSpan.Seconds, 0, "00");
-            AppendFormatted('m');
-        } else if (timeSpan.TotalSeconds < 86400) {
-            AppendSpanFormattable(timeSpan.Hours, 0, "00");
-            AppendFormatted(':');
-            AppendSpanFormattable(timeSpan.Minutes, 0, "00");
-            AppendSpan("hr", 0);
-        } else {
-            AppendSpanFormattable(timeSpan.Days, 0, "00");
-            AppendFormatted(':');
-            AppendSpanFormattable(timeSpan.Hours, 0, "00");
-            AppendSpan("d", 0);
+
+        Span<char> buffer = stackalloc char[32];
+        if (buffer.TryWrite($"{(int)timeSpan.TotalHours}h {timeSpan.Minutes}m {timeSpan.Seconds}s", out int written)) {
+            AppendSpan(buffer.Slice(0, written), alignment);
+        }
+    }
+
+    private static ReadOnlySpan<string> FileSizeSuffix => new[] { "B", "KB", "MB", "GB", "TB", "PB" };
+
+    /// <summary>
+    /// Append double with optional formatting.
+    /// </summary>
+    /// <param name="num"></param>
+    /// <param name="format"></param>
+    public readonly void AppendFormatted(double num, string? format = null)
+        => AppendFormatted(num, alignment: 0, format);
+
+    /// <summary>
+    /// Append double with optional alignment and formatting.
+    /// </summary>
+    /// <param name="num"></param>
+    /// <param name="alignment"></param>
+    /// <param name="format"></param>
+    public readonly void AppendFormatted(double num, int alignment, string? format = null) {
+        if (format != "bytes") {
+            AppendSpanFormattable(num, alignment, format);
+            return;
+        }
+
+        const double formatBytesKb = 1024d;
+        const double formatBytesDivisor = 1 / formatBytesKb;
+        var suffix = 0;
+        while (suffix < FileSizeSuffix.Length - 1 && num >= formatBytesKb) {
+            num *= formatBytesDivisor;
+            suffix++;
+        }
+        var unit = FileSizeSuffix[suffix];
+
+        const double defaultThreshold = 1e90;
+
+        Span<char> buffer = num <= defaultThreshold
+                ? stackalloc char[128]
+                : stackalloc char[512];
+        if (buffer.TryWrite($"{num:#,##0.##} {unit}", out int written)) {
+            AppendSpan(buffer.Slice(0, written), alignment);
         }
     }
 
@@ -209,97 +234,106 @@ public readonly ref struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
     /// <param name="format">Optional format specifier.</param>
     public readonly void AppendFormatted(object? value, int alignment = 0, string? format = null) {
-        if (value is null) {
-            AppendSpan(ReadOnlySpan<char>.Empty, alignment);
-            return;
+        switch (value) {
+            case null: {
+                    AppendSpan(ReadOnlySpan<char>.Empty, alignment);
+                    break;
+                }
+            case ISpanFormattable spanFormattable: {
+                    AppendSpanFormattable(spanFormattable, alignment, format);
+                    break;
+                }
+            case IFormattable formattable: {
+                    AppendString(formattable.ToString(format, _provider), alignment);
+                    break;
+                }
+            case string str: {
+                    AppendString(str, alignment);
+                    break;
+                }
+            default: {
+                    AppendString(value.ToString(), alignment);
+                    break;
+                }
         }
-
-        if (value is ConsoleColor consoleColor) {
-            AppendFormatted(consoleColor);
-            return;
-        }
-
-        if (value is Color color) {
-            AppendFormatted(color);
-            return;
-        }
-
-        if (value is ColoredOutput coloredOutput) {
-            AppendFormatted(coloredOutput, alignment);
-            return;
-        }
-
-        if (value is string str) {
-            AppendString(str, alignment);
-            return;
-        }
-
-        if (value is IFormattable formattable) {
-            AppendString(formattable.ToString(format, _provider), alignment);
-            return;
-        }
-
-        AppendString(value.ToString(), alignment);
     }
 
     private readonly void AppendSpanFormattable<T>(T value, int alignment, string? format)
     where T : ISpanFormattable {
-        using var owner = BufferPool.Shared.Rent(out var buffer);
-        int upperBound = BufferPool.ListStartingSize;
-        var formatSpan = format is null ? ReadOnlySpan<char>.Empty : format.AsSpan();
+        ReadOnlySpan<char> formatSpan = format.AsSpan();
+        Span<char> buffer = stackalloc char[128];
+        if (value.TryFormat(buffer, out int charsWritten, formatSpan, _provider)) {
+            AppendSpan(buffer.Slice(0, charsWritten), alignment);
+            return;
+        }
+
+        int lowerBound = 4096;
+        var pool = ArrayPool<char>.Shared;
 
         while (true) {
-            buffer.EnsureCapacity(upperBound);
-            CollectionsMarshal.SetCount(buffer, upperBound);
-            var span = CollectionsMarshal.AsSpan(buffer);
-            if (value.TryFormat(span, out int charsWritten, formatSpan, _provider)) {
-                AppendSpan(span.Slice(0, charsWritten), alignment);
-                break;
+            var array = pool.Rent(lowerBound);
+            try {
+                buffer = new Span<char>(array);
+                if (value.TryFormat(array, out charsWritten, formatSpan, _provider)) {
+                    AppendSpan(buffer.Slice(0, charsWritten), alignment);
+                    return;
+                }
+            } finally {
+                pool.Return(array);
             }
-
-            upperBound *= 2;
+            lowerBound *= 2;
         }
     }
 
     private readonly void AppendString(string? value, int alignment) {
-        if (string.IsNullOrEmpty(value)) {
-            AppendSpan(ReadOnlySpan<char>.Empty, alignment);
-            return;
-        }
-
+        // AppendSpan handles null and empty spans
         AppendSpan(value.AsSpan(), alignment);
     }
 
     private readonly void AppendSpan(scoped ReadOnlySpan<char> span, int alignment) {
-        if (alignment != 0) {
-            bool leftAlign = alignment < 0;
-            int width = Math.Abs(alignment);
-            int padding = width - span.Length;
-            if (padding > 0 && !leftAlign) {
-                WritePadding(padding);
-            }
-
+        if (alignment == 0) {
             if (!span.IsEmpty) {
                 _writer.Write(span);
             }
-
-            if (padding > 0 && leftAlign) {
-                WritePadding(padding);
-            }
             return;
+        }
+
+        bool leftAlign = alignment < 0;
+        int width = Math.Abs(alignment);
+        int padding = width - span.Length;
+        if (padding > 0 && !leftAlign) {
+            WritePadding(padding);
         }
 
         if (!span.IsEmpty) {
             _writer.Write(span);
         }
+
+        if (padding > 0 && leftAlign) {
+            WritePadding(padding);
+        }
     }
 
     private readonly void WritePadding(int count) {
-        if (count <= 0) {
-            return;
-        }
-
         _writer.WriteWhiteSpaces(count);
     }
+
+    /// <summary>
+	/// Resets the console colors if they changed.
+	/// </summary>
+    public void ResetColors() {
+        if (_currentForeground != ConsoleColor.DefaultForeground) {
+            _currentForeground = ConsoleColor.DefaultForeground;
+            ChangeFg(_writer, _currentForeground);
+        }
+        if (_currentBackground != ConsoleColor.DefaultBackground) {
+            _currentBackground = ConsoleColor.DefaultBackground;
+            ChangeBg(_writer, _currentBackground);
+        }
+    }
+
+    /// <summary>
+	/// Writes a new line to the <see cref="TextWriter"/> used internally.
+	/// </summary>
+    public readonly void AppendNewLine() => _writer.WriteLine();
 }
-#pragma warning restore CA1822 // Mark members as static

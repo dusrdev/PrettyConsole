@@ -8,11 +8,9 @@ public class MenusTests {
 
         var choices = new List<string> { "Apple", "Banana", "Cherry" };
 
-        var result = Selection(["Choose a fruit:"], choices);
+        var result = Console.Selection(choices, $"Choose a fruit:");
 
         var output = writer.ToStringAndFlush();
-
-        static string Normalize(string value) => value.Replace("\r\n", "\n");
 
         Assert.Equal(
             """
@@ -25,6 +23,8 @@ public class MenusTests {
             """.Replace("\r\n", "\n"),
             Normalize(output));
         Assert.Equal("Banana", result);
+
+        static string Normalize(string value) => value.Replace("\r\n", "\n");
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public class MenusTests {
 
         var choices = new List<string> { "One", "Two" };
 
-        var result = Selection(["Pick a number:"], choices);
+        var result = Console.Selection(choices, $"Pick a number: ");
 
         Assert.Equal(string.Empty, result);
     }
@@ -46,7 +46,7 @@ public class MenusTests {
 
         var choices = new List<string> { "First", "Second" };
 
-        var result = Selection(["Pick a number:"], choices);
+        var result = Console.Selection(choices, $"Pick a number: ");
 
         Assert.Equal(string.Empty, result);
     }
@@ -58,7 +58,7 @@ public class MenusTests {
 
         var choices = new List<string> { "Mercury", "Venus", "Earth" };
 
-        var result = MultiSelection(["Planets:"], choices);
+        var result = Console.MultiSelection(choices, $"Plants: ");
 
         Assert.Equal(["Earth", "Mercury"], result);
     }
@@ -70,7 +70,7 @@ public class MenusTests {
 
         var choices = new List<string> { "Alpha", "Beta", "Gamma" };
 
-        var result = MultiSelection(["Letters:"], choices);
+        var result = Console.MultiSelection(choices, $"Letters: ");
 
         Assert.Empty(result);
     }
@@ -82,7 +82,7 @@ public class MenusTests {
 
         var choices = new List<string> { "Alpha", "Beta" };
 
-        var result = MultiSelection(["Letters:"], choices);
+        var result = Console.MultiSelection(choices, $"Letters: ");
 
         Assert.Empty(result);
     }
@@ -97,7 +97,7 @@ public class MenusTests {
             ["Edit"] = new List<string> { "Undo", "Redo" }
         };
 
-        var (option, subOption) = TreeMenu(["Menu:"], menu);
+        var (option, subOption) = Console.TreeMenu(menu, $"Menu: ");
 
         Assert.Equal("Edit", option);
         Assert.Equal("Undo", subOption);
@@ -112,7 +112,7 @@ public class MenusTests {
             ["Files"] = new List<string> { "Open" }
         };
 
-        Assert.Throws<ArgumentException>(() => TreeMenu(["Menu:"], menu));
+        Assert.Throws<ArgumentException>(() => Console.TreeMenu(menu, $"Menu: "));
     }
 
     [Fact]
@@ -125,7 +125,7 @@ public class MenusTests {
             ["Edit"] = new List<string> { "Undo" }
         };
 
-        Assert.Throws<ArgumentException>(() => TreeMenu(["Menu:"], menu));
+        Assert.Throws<ArgumentException>(() => Console.TreeMenu(menu, $"Menu: "));
     }
 
     [Fact]
@@ -136,7 +136,7 @@ public class MenusTests {
         var column1 = new List<string> { "Alice", "Bob" };
         var column2 = new List<string> { "30", "25" };
 
-        Table(headers, [column1, column2]);
+        Console.Table(headers, [column1, column2]);
 
         var output = writer.ToString();
         Assert.Contains("Name", output);
@@ -152,6 +152,6 @@ public class MenusTests {
         var headers = new List<string> { "Name", "Age" };
         var column1 = new List<string> { "Alice", "Bob" };
 
-        Assert.Throws<ArgumentException>(() => Table(headers, [column1]));
+        Assert.Throws<ArgumentException>(() => Console.Table(headers, [column1]));
     }
 }

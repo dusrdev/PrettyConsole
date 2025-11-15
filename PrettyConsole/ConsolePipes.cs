@@ -1,20 +1,20 @@
 ﻿namespace PrettyConsole;
 
-public static partial class Console {
+public static partial class PrettyConsoleExtensions {
     /// <summary>
     /// The standard input stream.
     /// </summary>
-    public static TextWriter Out { get; internal set; } = baseConsole.Out;
+    public static TextWriter Out { get; internal set; } = Console.Out;
 
     /// <summary>
     /// The error output stream.
     /// </summary>
-    public static TextWriter Error { get; internal set; } = baseConsole.Error;
+    public static TextWriter Error { get; internal set; } = Console.Error;
 
     /// <summary>
     /// The standard input stream.
     /// </summary>
-    public static TextReader In { get; internal set; } = baseConsole.In;
+    public static TextReader In { get; internal set; } = Console.In;
 
     /// <summary>
     /// Gets the appropriate <see cref="TextWriter"/> based on <paramref name="pipe"/>
@@ -29,15 +29,15 @@ public static partial class Console {
         };
 
     /// <summary>
-    /// Returns the current console buffer width or <paramref name="defaultWidth"/> if <see cref="baseConsole.IsOutputRedirected"/>
+    /// Returns the current console buffer width or <paramref name="defaultWidth"/> if <see cref="Console.IsOutputRedirected"/>
     /// </summary>
     /// <param name="defaultWidth"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     internal static int GetWidthOrDefault(int defaultWidth = 120) {
-        if (baseConsole.IsOutputRedirected) {
+        if (Console.IsOutputRedirected) {
             return defaultWidth;
         }
-        return baseConsole.BufferWidth;
+        return Console.BufferWidth;
     }
 }

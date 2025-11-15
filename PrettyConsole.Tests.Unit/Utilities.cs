@@ -1,12 +1,10 @@
-using System;
 using System.Globalization;
 using System.Text;
-
-using Xunit;
+using System.Text.RegularExpressions;
 
 namespace PrettyConsole.Tests.Unit;
 
-public static class Utilities {
+public static partial class Utilities {
     public static StringReader GetReader(string str) => new(str);
 
     public static TextWriter GetWriter(out StringWriter writer) {
@@ -20,21 +18,14 @@ public static class Utilities {
         return result;
     }
 
-    public static string WithNewLine(this string str) => string.Concat(str, Environment.NewLine);
-
-    public static void SkipIfNoInteractiveConsole() {
-        const string reason = "Interactive console APIs are not available in this environment.";
-
-        if (System.Console.IsOutputRedirected) {
-            Assert.Skip(reason);
+    public static string StripAnsiSequences(string value) {
+        if (string.IsNullOrEmpty(value)) {
+            return string.Empty;
         }
 
-        try {
-            _ = System.Console.CursorTop;
-        } catch (System.IO.IOException) {
-            Assert.Skip(reason);
-        } catch (PlatformNotSupportedException) {
-            Assert.Skip(reason);
-        }
+        return AnsiSequenceRegex().Replace(value, string.Empty);
     }
+
+    [GeneratedRegex(@"\u001b\[[0-9;]*m", RegexOptions.Compiled)]
+    private static partial Regex AnsiSequenceRegex();
 }

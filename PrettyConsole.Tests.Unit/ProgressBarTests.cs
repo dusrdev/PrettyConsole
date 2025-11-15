@@ -1,18 +1,35 @@
 namespace PrettyConsole.Tests.Unit;
 
 public class ProgressBarTests {
+    private readonly bool _consoleAvailable;
+
+    public ProgressBarTests() {
+        try {
+            _ = Console.BufferWidth;
+            _ = Console.CursorLeft;
+            _consoleAvailable = true;
+        } catch (IOException) {
+            _consoleAvailable = false;
+        }
+    }
+
     [Fact]
     public void ProgressBar_Update_WritesStatusAndPercentage() {
-        Utilities.SkipIfNoInteractiveConsole();
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new ProgressBar {
+                ProgressChar = '#',
+                ForegroundColor = White,
+                ProgressColor = Green
+            };
 
-        var bar = new ProgressBar {
-            ProgressChar = '#',
-            ForegroundColor = ConsoleColor.White,
-            ProgressColor = ConsoleColor.Green
-        };
-
-        bar.Update(50, "Loading");
+            bar.Update(50, "Loading");
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
 
         var output = errorWriter.ToString();
         Assert.Contains("Loading", output);
@@ -22,19 +39,24 @@ public class ProgressBarTests {
 
     [Fact]
     public void ProgressBar_Update_SamePercentage_RerendersOutput() {
-        Utilities.SkipIfNoInteractiveConsole();
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new ProgressBar {
+                ProgressChar = '#',
+                ForegroundColor = White,
+                ProgressColor = Green
+            };
 
-        var bar = new ProgressBar {
-            ProgressChar = '#',
-            ForegroundColor = ConsoleColor.White,
-            ProgressColor = ConsoleColor.Green
-        };
+            bar.Update(25, "Loading");
+            errorWriter.ToStringAndFlush();
 
-        bar.Update(25, "Loading");
-        errorWriter.ToStringAndFlush();
-
-        bar.Update(25, "Loading");
+            bar.Update(25, "Loading");
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
 
         var output = errorWriter.ToString();
         Assert.NotEqual(string.Empty, output);
@@ -44,9 +66,10 @@ public class ProgressBarTests {
 
     [Fact]
     public void ProgressBar_Update_SameLineFalse_WritesStatusOnSeparateLine() {
-        Utilities.SkipIfNoInteractiveConsole();
-
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         var originalError = Error;
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
             Error = Utilities.GetWriter(out var errorWriter);
 
@@ -61,18 +84,18 @@ public class ProgressBarTests {
             Assert.Contains(Environment.NewLine + "[", output);
         } finally {
             Error = originalError;
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
         }
     }
 
     [Fact]
     public void ProgressBar_WriteProgressBar_WritesFormattedOutput() {
-        Utilities.SkipIfNoInteractiveConsole();
-
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var outWriter);
 
-            ProgressBar.WriteProgressBar(OutputPipe.Out, 75, ConsoleColor.Cyan, '*');
+            ProgressBar.WriteProgressBar(OutputPipe.Out, 75, Cyan, '*');
 
             var output = outWriter.ToString();
             Assert.Contains("[", output);
@@ -84,23 +107,74 @@ public class ProgressBarTests {
     }
 
     [Fact]
-    public async Task IndeterminateProgressBar_RunAsync_CompletesAndReturnsResult() {
-        Utilities.SkipIfNoInteractiveConsole();
+    public void ProgressBar_WriteProgressBar_RespectsMaxLineWidth() {
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var outWriter);
+
+            ProgressBar.WriteProgressBar(OutputPipe.Out, 50, Cyan, '*', maxLineWidth: 24);
+
+            var output = outWriter.ToString();
+            Assert.Equal(24, output.Length);
+            Assert.Equal('[', output[0]);
+            Assert.Equal('%', output[^1]);
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Fact]
+    public void ProgressBar_Update_RespectsMaxLineWidth() {
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        const int expectedWidth = 32;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new ProgressBar {
+                ProgressColor = Cyan,
+                MaxLineWidth = expectedWidth
+            };
 
-        var bar = new IndeterminateProgressBar {
-            AnimationSequence = new(["|", "/"]),
-            DisplayElapsedTime = false,
-            UpdateRate = 5
-        };
+            bar.Update(50, "Working");
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
 
-        var cancellation = TestContext.Current.CancellationToken;
-        var result = await bar.RunAsync(Task.Run(async () => {
-            await Task.Delay(20, cancellation);
-            return 42;
-        }, cancellation), "Working", cancellation);
+        var output = Utilities.StripAnsiSequences(errorWriter.ToString());
+        int percentIndex = output.LastIndexOf('%');
+        Assert.True(percentIndex > 0, "Output contains a percentage symbol.");
+        int bracketIndex = output.LastIndexOf('[', percentIndex);
+        Assert.True(bracketIndex >= 0, "Output contains a bracketed progress bar.");
 
-        Assert.Equal(42, result);
-        Assert.NotEqual(string.Empty, errorWriter.ToString());
+        var segment = output[bracketIndex..(percentIndex + 1)];
+        Assert.Equal(expectedWidth, segment.Length);
+    }
+
+    [Fact]
+    public async Task IndeterminateProgressBar_RunAsync_CompletesAndReturnsResult() {
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
+        Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new IndeterminateProgressBar {
+                AnimationSequence = new(["|", "/"]),
+                DisplayElapsedTime = false,
+                UpdateRate = 5
+            };
+
+            var cancellation = TestContext.Current.CancellationToken;
+            var result = await bar.RunAsync(Task.Run(async () => {
+                await Task.Delay(20, cancellation);
+                return 42;
+            }, cancellation), "Working", cancellation);
+
+            Assert.Equal(42, result);
+            Assert.NotEqual(string.Empty, errorWriter.ToString());
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
     }
 }

@@ -1,5 +1,3 @@
-using static PrettyConsole.Console;
-
 namespace PrettyConsole.Tests.Features;
 
 public sealed class TreeMenuTest : IPrettyConsoleTest {
@@ -12,8 +10,8 @@ public sealed class TreeMenuTest : IPrettyConsoleTest {
             { "Option 3", ["Option 3.1", "Option 3.2", "Option 3.3"] }
         };
 
-        var (main, sub) = TreeMenu(["Select an option"], options);
-        WriteLine($"Selected: ({main}, {sub})");
+        var (main, sub) = Console.TreeMenu(options, $"Select an option: ");
+        Console.WriteLineInterpolated($"Selected: ({main}, {sub})");
         return ValueTask.CompletedTask;
     }
 }
