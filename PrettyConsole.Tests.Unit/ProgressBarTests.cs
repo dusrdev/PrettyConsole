@@ -1,8 +1,21 @@
 namespace PrettyConsole.Tests.Unit;
 
 public class ProgressBarTests {
+    private readonly bool _consoleAvailable;
+
+    public ProgressBarTests() {
+        try {
+            _ = Console.BufferWidth;
+            _ = Console.CursorLeft;
+            _consoleAvailable = true;
+        } catch (IOException) {
+            _consoleAvailable = false;
+        }
+    }
+
     [Fact]
     public void ProgressBar_Update_WritesStatusAndPercentage() {
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
@@ -26,6 +39,7 @@ public class ProgressBarTests {
 
     [Fact]
     public void ProgressBar_Update_SamePercentage_RerendersOutput() {
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
@@ -52,6 +66,7 @@ public class ProgressBarTests {
 
     [Fact]
     public void ProgressBar_Update_SameLineFalse_WritesStatusOnSeparateLine() {
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         var originalError = Error;
         int cursorLine = 0;
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
@@ -75,6 +90,7 @@ public class ProgressBarTests {
 
     [Fact]
     public void ProgressBar_WriteProgressBar_WritesFormattedOutput() {
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var outWriter);
@@ -92,6 +108,7 @@ public class ProgressBarTests {
 
     [Fact]
     public void ProgressBar_WriteProgressBar_RespectsMaxLineWidth() {
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var outWriter);
@@ -109,6 +126,7 @@ public class ProgressBarTests {
 
     [Fact]
     public void ProgressBar_Update_RespectsMaxLineWidth() {
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
         const int expectedWidth = 32;
@@ -136,6 +154,7 @@ public class ProgressBarTests {
 
     [Fact]
     public async Task IndeterminateProgressBar_RunAsync_CompletesAndReturnsResult() {
+        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
