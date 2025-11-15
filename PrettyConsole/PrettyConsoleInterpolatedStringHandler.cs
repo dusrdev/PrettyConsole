@@ -205,7 +205,11 @@ public struct PrettyConsoleInterpolatedStringHandler {
         }
         var unit = FileSizeSuffix[suffix];
 
-        Span<char> buffer = stackalloc char[128];
+        const double defaultThreshold = 1e90;
+
+        Span<char> buffer = num <= defaultThreshold
+                ? stackalloc char[128]
+                : stackalloc char[512];
         if (buffer.TryWrite($"{num:#,##0.##} {unit}", out int written)) {
             AppendSpan(buffer.Slice(0, written), alignment);
         }
