@@ -6,8 +6,8 @@ public class MarkupTests {
         var expectedEnabled = !Console.IsOutputRedirected && !Console.IsErrorRedirected;
         Assert.Equal(expectedEnabled, Markup.Enabled);
         if (expectedEnabled) {
-            Assert.Equal("\u001b[4m", Markup.Underline);
-            Assert.Equal("\u001b[0m", Markup.Reset);
+            Assert.Equal("\e[4m", Markup.Underline);
+            Assert.Equal("\e[0m", Markup.Reset);
         } else {
             Assert.Equal(string.Empty, Markup.Underline);
             Assert.Equal(string.Empty, Markup.Reset);

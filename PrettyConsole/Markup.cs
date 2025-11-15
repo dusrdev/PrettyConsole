@@ -57,15 +57,15 @@ public static class Markup {
     static Markup() {
         Enabled = !Console.IsOutputRedirected && !Console.IsErrorRedirected;
         if (Enabled) {
-            Reset = "\u001b[0m";
-            Underline = "\u001b[4m";
-            ResetUnderline = "\u001b[24m";
-            Bold = "\u001b[1m";
-            ResetBold = "\u001b[22m";
-            Italic = "\u001b[3m";
-            ResetItalic = "\u001b[23m";
-            Strikethrough = "\u001b[9m";
-            ResetStrikethrough = "\u001b[29m";
+            Reset = "\e[0m";
+            Underline = "\e[4m";
+            ResetUnderline = "\e[24m";
+            Bold = "\e[1m";
+            ResetBold = "\e[22m";
+            Italic = "\e[3m";
+            ResetItalic = "\e[23m";
+            Strikethrough = "\e[9m";
+            ResetStrikethrough = "\e[29m";
         }
     }
 }

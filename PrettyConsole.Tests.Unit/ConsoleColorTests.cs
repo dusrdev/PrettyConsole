@@ -26,7 +26,7 @@ public class ConsoleColorTests {
     public void AnsiColors_DefaultForeground_UsesResetSequence() {
         if (AnsiColors.Enabled) {
             var sequence = AnsiColors.Foreground((ConsoleColor)(-1));
-            Assert.Equal("\u001b[39m", sequence);
+            Assert.Equal("\e[39m", sequence);
         }
     }
 
@@ -34,7 +34,7 @@ public class ConsoleColorTests {
     public void AnsiColors_DefaultBackground_UsesResetSequence() {
         if (AnsiColors.Enabled) {
             var sequence = AnsiColors.Background((ConsoleColor)(-1));
-            Assert.Equal("\u001b[49m", sequence);
+            Assert.Equal("\e[49m", sequence);
         }
     }
 }
