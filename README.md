@@ -2,8 +2,8 @@
 
 [![NuGet](https://img.shields.io/nuget/v/PrettyConsole.svg?style=flat-square)](https://www.nuget.org/packages/PrettyConsole)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/PrettyConsole?style=flat&label=Downloads)](https://www.nuget.org/packages/PrettyConsole)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square)](#)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](License.txt)
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square)](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 
 PrettyConsole is a high-performance, ultra-low-latency, allocation-free extension layer over `System.Console`. The library uses C# extension members (`extension(Console)`) so every API lights up directly on `System.Console` once `using PrettyConsole;` is in scope. It is trimming/AOT ready, preserves SourceLink metadata, and keeps the familiar console experience while adding structured rendering, menus, progress bars, and advanced input helpers.
 
