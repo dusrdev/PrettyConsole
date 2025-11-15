@@ -117,7 +117,7 @@ public class IndeterminateProgressBar {
 
             if (DisplayElapsedTime) {
                 var elapsed = Stopwatch.GetElapsedTime(startTime);
-                Console.WriteInterpolated(OutputPipe.Error, $" [Elapsed: {elapsed:hr}]");
+                Console.WriteInterpolated(OutputPipe.Error, $" [Elapsed: {elapsed:duration}]");
             }
 
             // Compute sleep to maintain UpdateRate between frame starts
