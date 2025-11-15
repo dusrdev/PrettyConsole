@@ -23,8 +23,8 @@ public class Config : ManualConfig {
             .WithOutlierMode(OutlierMode.DontRemove)
             .WithLaunchCount(3)
             .WithWarmupCount(5)
-            .WithIterationCount(20)
-            .WithIterationTime(TimeInterval.FromMilliseconds(500)));
+            .WithIterationCount(30)
+            .WithIterationTime(TimeInterval.FromMilliseconds(100)));
         AddColumnProvider(DefaultColumnProviders.Instance);
         HideColumns(Column.Error, Column.StdDev, Column.Median, Column.RatioSD);
         WithOrderer(new GroupByTypeOrderer());

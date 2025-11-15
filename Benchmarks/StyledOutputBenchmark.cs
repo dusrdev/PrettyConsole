@@ -12,6 +12,7 @@ namespace Benchmarks;
 /// Runs a benchmark printing the following output:
 /// Hello {Green}John{ResetColor}, status = {Cyan}{Percentage}{Reset}%, Elapsed = {Yellow}{Elapsed:c}{Reset}
 /// </summary>
+[Config(typeof(Config))]
 public class StyledOutputBenchmarks {
     private static readonly TimeSpan Elapsed = new(1, 25, 31);
     private const double Percentage = 57.91;

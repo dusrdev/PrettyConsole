@@ -13,15 +13,15 @@ PrettyConsole is a high-performance, allocation-conscious extension layer over `
 
 ## Performance
 
-BenchmarkDotNet (macOS/Apple M2 Pro, .NET 10) measures styled output performance for a single line write:
+BenchmarkDotNet measures [styled output performance](Benchmarks/BenchmarkDotNet.Artifacts/results/Benchmarks.StyledOutputBenchmarks-report-github.md) for a single line write:
 
-| Method         | Mean        | Ratio         | Gen0   | Gen1   | Allocated | Alloc Ratio   |
-|--------------- |------------:|--------------:|-------:|-------:|----------:|--------------:|
-| PrettyConsole  |    95.06 ns | 49.95x faster |      - |      - |         - |            NA |
-| SpectreConsole | 4,747.67 ns |      baseline | 2.1255 | 0.0191 |   17,840 B |               |
-| SystemConsole  |    67.90 ns | 69.92x faster | 0.0028 |      - |      24 B | 743.333x less |
+| Method         | Mean        | Ratio         | Gen0   | Allocated | Alloc Ratio   |
+|--------------- |------------:|--------------:|-------:|----------:|--------------:|
+| PrettyConsole  |    94.37 ns | 49.96x faster |      - |         - |            NA |
+| SpectreConsole | 4,713.76 ns |      baseline | 2.1278 |   17840 B |               |
+| SystemConsole  |    68.77 ns | 68.55x faster | 0.0028 |      24 B | 743.333x less |
 
-PrettyConsole is **the go-to choice for ultra-low-latency, allocation-free console rendering**, running ~50× faster than Spectre.Console while allocating nothing at all—even beating the BCL when you count real-world rendering costs. See `Benchmarks/BenchmarkDotNet.Artifacts/results/Benchmarks.StyledOutputBenchmarks-report-github.md`.
+PrettyConsole is **the go-to choice for ultra-low-latency, allocation-free console rendering**, running ~50× faster than Spectre.Console while allocating nothing at all—even beating the BCL when you count real-world rendering costs.
 
 ## Installation
 
@@ -219,10 +219,6 @@ ProgressBar.WriteProgressBar(OutputPipe.Error, 75, ConsoleColor.Magenta, '*', ma
 `ProgressBar.Update` always re-renders (even if the percentage didn't change) so you can refresh status text. You can also set `ProgressBar.MaxLineWidth` on the instance to limit the rendered `[=====]  42%` line width before each update, mirroring the `maxLineWidth` option on `ProgressBar.WriteProgressBar`. The helper `ProgressBar.WriteProgressBar` keeps the cursor on the same line, which is ideal inside `Console.Overwrite`, and accepts an optional `maxLineWidth` so the entire `[=====]  42%` line can be constrained for left-column layouts.
 
 #### Multiple progress bars with tasks + channels
-
-### Performance
-
-BenchmarkDotNet shows `PrettyConsole` running the styled output scenario in ~95 ns, roughly **50× faster than Spectre.Console** while reporting zero GC allocations even against the baseline. Compared to the BCL `System.Console` version (≈67 ns with 24 B allocated), PrettyConsole still matches or beats it when counting end-to-end rendering costs because it never allocates at all, making it the go-to choice for ultra-low-latency, allocation-free console rendering.  See `Benchmarks/BenchmarkDotNet.Artifacts/results/Benchmarks.StyledOutputBenchmarks-report-github.md` for the full report.
 
 ```csharp
 using System.Linq;

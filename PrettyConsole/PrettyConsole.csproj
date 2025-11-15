@@ -19,7 +19,8 @@
 
 		<Authors>David Shnayder</Authors>
 		<Title>PrettyConsole</Title>
-		<Description>High performance, feature rich and easy to use wrap over System.Console</Description>
+		<Description>High performance, ultra-low-latency, allocation-free, feature rich and easy to use
+			wrap over System.Console</Description>
 		<Copyright>David Shnayder</Copyright>
 		<PackageTags>Console; Output; Input; ANSI</PackageTags>
 		<ImplicitUsings>enable</ImplicitUsings>
