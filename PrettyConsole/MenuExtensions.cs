@@ -19,7 +19,7 @@ public static class MenuExtensions {
         public static string Selection<TList>(TList choices, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default)
             where TList : IList<string> {
             handler.ResetColors();
-            Console.NewLine();
+            handler.AppendNewLine();
 
             for (int i = 0; i < choices.Count; i++) {
                 Console.WriteLineInterpolated($" {i + 1}) {choices[i]}");
@@ -52,7 +52,7 @@ public static class MenuExtensions {
         public static string[] MultiSelection<TList>(TList choices, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default)
             where TList : IList<string> {
             handler.ResetColors();
-            Console.NewLine();
+            handler.AppendNewLine();
 
             for (int i = 0; i < choices.Count; i++) {
                 Console.WriteLineInterpolated($" {i + 1}) {choices[i]}");
@@ -100,7 +100,7 @@ public static class MenuExtensions {
         /// </remarks>
         public static (string option, string subOption) TreeMenu<TList>(Dictionary<string, TList> menu, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where TList : IList<string> {
             handler.ResetColors();
-            Console.NewLine();
+            handler.AppendNewLine();
 
             var menuKeys = menu.Keys.ToArray();
             var maxMainOption = menuKeys.Max(static x => x.Length) + 10; // Used to make sub-tree prefix spaces uniform

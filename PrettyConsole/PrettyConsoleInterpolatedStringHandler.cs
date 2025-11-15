@@ -306,4 +306,9 @@ public struct PrettyConsoleInterpolatedStringHandler {
             ChangeBg(_writer, _currentBackground);
         }
     }
+
+    /// <summary>
+	/// Writes a new line to the <see cref="TextWriter"/> used internally.
+	/// </summary>
+    public readonly void AppendNewLine() => _writer.WriteLine();
 }
