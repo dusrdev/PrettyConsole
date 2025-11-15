@@ -152,25 +152,9 @@ public struct PrettyConsoleInterpolatedStringHandler {
             return;
         }
 
-        Span<char> buffer = stackalloc char[128];
+        Span<char> buffer = stackalloc char[32];
         if (buffer.TryWrite($"{(int)timeSpan.TotalHours}h {timeSpan.Minutes}m {timeSpan.Seconds}s", out int written)) {
             AppendSpan(buffer.Slice(0, written), alignment);
-            return;
-        }
-
-        int lowerBound = 4096;
-        var pool = ArrayPool<char>.Shared;
-
-        while (true) {
-            var array = pool.Rent(lowerBound);
-            buffer = new Span<char>(array);
-            if (buffer.TryWrite($"{(int)timeSpan.TotalHours}h {timeSpan.Minutes}m {timeSpan.Seconds}s", out written)) {
-                AppendSpan(buffer.Slice(0, written), alignment);
-                pool.Return(array);
-                break;
-            }
-            pool.Return(array);
-            lowerBound *= 2;
         }
     }
 
