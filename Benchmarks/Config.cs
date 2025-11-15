@@ -5,6 +5,7 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
@@ -17,10 +18,11 @@ namespace Benchmarks;
 
 public class Config : ManualConfig {
     public Config() {
+        UnionRule = ConfigUnionRule.AlwaysUseLocal;
         SummaryStyle = SummaryStyle.Default.WithRatioStyle(RatioStyle.Trend);
         AddDiagnoser(MemoryDiagnoser.Default);
         AddJob(Job.Default
-            .WithOutlierMode(OutlierMode.DontRemove)
+            .WithOutlierMode(OutlierMode.RemoveAll)
             .WithLaunchCount(3)
             .WithWarmupCount(5)
             .WithIterationCount(30)
@@ -32,6 +34,7 @@ public class Config : ManualConfig {
         WithOptions(ConfigOptions.StopOnFirstError);
         WithOptions(ConfigOptions.DisableLogFile);
         AddExporter(MarkdownExporter.GitHub);
+        AddLogger(ConsoleLogger.Default);
     }
 }
 
