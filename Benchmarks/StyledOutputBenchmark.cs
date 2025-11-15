@@ -41,7 +41,7 @@ public class StyledOutputBenchmarks {
 		return int.MaxValue;
 	}
 
-	[Benchmark]
+	[Benchmark(Baseline = true)]
 	public int SpectreConsole() {
 		_ansiConsole.MarkupLineInterpolated($"Hello [green]John[/], status = [cyan]{Percentage}[/]%, elapsed = [yellow]{Elapsed:c}[/]");
 		return int.MaxValue;
