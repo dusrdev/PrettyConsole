@@ -44,20 +44,10 @@
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
-			- ProgressBar.ForegroundColor docs were fixed (they previously were the same as
-			ProgressColor) which is invalid.
-			- ProgressBar in all variations now shows progress as a round number suffixed by %.
-			- ProgressBar no longer tracks if the percentage is changed, being that the numbers
-			are round, percentage could progress or status needs to be re-written while it stays the
-			same when rounded.
-			- ProgressBar.Update overloads now include an optional parameter "sameLine" which
-			configures whether to render the progress bar at the same of the status. It is set to
-			"true" by default to keep current behavior.
-			- ProgressBar now includes a static method "WriteProgressBar" which renders a static
-			progress bar with the set parameters, it can be used in conjunction with "Overwrite" to
-			create multi-progress-bars UI.
-			- Methods that overwrite lines, now have a note in the remarks to clear the used lines
-			after the last call, to prevent artifacts.
+			- v5.0.0 rewrites the API surface as extension members on `System.Console`, introduces `WriteInterpolated`/`WriteLineInterpolated`, and exposes helpers such as `Selection`, `Menu`, `Table`, `ReadLine`, and `TryReadLine` directly on the console.
+			- `ColoredOutput` and the `Color` struct were removed; styling now flows through the enhanced `ConsoleColor` helpers (`DefaultForeground`, `DefaultBackground`, `Default`, and `/` tuples) together with the interpolated string handler to keep colored output allocation-free.
+			- `ProgressBar` and `IndeterminateProgressBar` are standalone types, and `ProgressBar.WriteProgressBar` plus the instance helper now accept an optional `maxLineWidth` for constrained layouts.
+			- New utilities include `TextWriter.WriteWhiteSpaces(int)` for allocation-free padding, `Markup` for ANSI decorations that collapse when output is redirected, and formatting shortcuts such as `duration` (for `TimeSpan`) and `bytes` (for `double`) on `PrettyConsoleInterpolatedStringHandler`.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
