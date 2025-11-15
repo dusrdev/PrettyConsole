@@ -27,6 +27,8 @@ This version contains a lot of breaking changes, but they were necessary to trim
 
 - `TextWriter` which is the object backing `Console.Out` and `Console.Error` now has a static extension `WriteWhiteSpaces(int)`, which can be used to write paddings and whatever else without any allocations. It was previously an internal method but I chose to expose it for all of you.
 - `Markup` static class provides ANSI escape-sequence toggles (underline, bold, italic, strikethrough) that automatically collapse to empty strings when output/error are redirected, so callers can opt into inline decorations without additional checks.
+- `PrettyConsoleInterpolatedStringHandler` now exposes a `duration` format for `TimeSpan` values (formerly `hr`) that emits `Xh Ym Zs` and a `bytes` format for `double` values that scales through `B/KB/MB/...` with culture-aware separators.
+- `ProgressBar.WriteProgressBar` (and the instance helper via `ProgressBar.MaxLineWidth`) now accept an optional `maxLineWidth` so the full `[=====]  42%` line can be constrained for columnar layouts without overflowing the buffer.
 
 ## v4.1.0
 
