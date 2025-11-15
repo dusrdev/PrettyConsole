@@ -133,7 +133,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
-    /// Append timeSpan with or without elapsed time formatting (human readable)
+    /// Append timeSpan with optional formatting.
     /// </summary>
     /// <param name="timeSpan"></param>
     /// <param name="format"></param>
@@ -141,19 +141,19 @@ public struct PrettyConsoleInterpolatedStringHandler {
         => AppendFormatted(timeSpan, alignment: 0, format);
 
     /// <summary>
-    /// Append timeSpan with optional alignment support.
+    /// Append timeSpan with optional alignment support and formatting.
     /// </summary>
     /// <param name="timeSpan"></param>
     /// <param name="alignment"></param>
     /// <param name="format"></param>
     public readonly void AppendFormatted(TimeSpan timeSpan, int alignment, string? format = null) {
-        if (format != "hr") {
+        if (format != "duration") {
             AppendSpanFormattable(timeSpan, alignment, format);
             return;
         }
 
         Span<char> buffer = stackalloc char[128];
-        if (buffer.TryWrite($"{(int)timeSpan.TotalHours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}", out int written)) {
+        if (buffer.TryWrite($"{(int)timeSpan.TotalHours}h {timeSpan.Minutes}m {timeSpan.Seconds}s", out int written)) {
             AppendSpan(buffer.Slice(0, written), alignment);
             return;
         }
@@ -164,13 +164,50 @@ public struct PrettyConsoleInterpolatedStringHandler {
         while (true) {
             var array = pool.Rent(lowerBound);
             buffer = new Span<char>(array);
-            if (buffer.TryWrite($"{(int)timeSpan.TotalHours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}", out written)) {
+            if (buffer.TryWrite($"{(int)timeSpan.TotalHours}h {timeSpan.Minutes}m {timeSpan.Seconds}s", out written)) {
                 AppendSpan(buffer.Slice(0, written), alignment);
                 pool.Return(array);
                 break;
             }
             pool.Return(array);
             lowerBound *= 2;
+        }
+    }
+
+    private static readonly string[] FileSizeSuffix = ["B", "KB", "MB", "GB", "TB", "PB"];
+
+    /// <summary>
+    /// Append double with optional formatting.
+    /// </summary>
+    /// <param name="num"></param>
+    /// <param name="format"></param>
+    public readonly void AppendFormatted(double num, string? format = null)
+        => AppendFormatted(num, alignment: 0, format);
+
+    /// <summary>
+    /// Append double with optional alignment and formatting.
+    /// </summary>
+    /// <param name="num"></param>
+    /// <param name="alignment"></param>
+    /// <param name="format"></param>
+    public readonly void AppendFormatted(double num, int alignment, string? format = null) {
+        if (format != "bytes") {
+            AppendSpanFormattable(num, alignment, format);
+            return;
+        }
+
+        const double formatBytesKb = 1024d;
+        const double formatBytesDivisor = 1 / formatBytesKb;
+        var suffix = 0;
+        while (suffix < FileSizeSuffix.Length - 1 && num >= formatBytesKb) {
+            num *= formatBytesDivisor;
+            suffix++;
+        }
+        var unit = FileSizeSuffix[suffix];
+
+        Span<char> buffer = stackalloc char[128];
+        if (buffer.TryWrite($"{num:#,##0.##} {unit}", out int written)) {
+            AppendSpan(buffer.Slice(0, written), alignment);
         }
     }
 
