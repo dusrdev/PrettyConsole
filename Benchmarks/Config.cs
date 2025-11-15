@@ -17,15 +17,15 @@ namespace Benchmarks;
 
 public class Config : ManualConfig {
     public Config() {
+        SummaryStyle = SummaryStyle.Default.WithRatioStyle(RatioStyle.Trend);
         AddDiagnoser(MemoryDiagnoser.Default);
         AddJob(Job.Default
-            .WithOutlierMode(OutlierMode.RemoveAll)
-            .WithLaunchCount(1)
-            .WithWarmupCount(10)
-            .WithIterationCount(50)
-            .WithIterationTime(TimeInterval.FromMilliseconds(100)));
+            .WithOutlierMode(OutlierMode.DontRemove)
+            .WithLaunchCount(3)
+            .WithWarmupCount(5)
+            .WithIterationCount(20)
+            .WithIterationTime(TimeInterval.FromMilliseconds(500)));
         AddColumnProvider(DefaultColumnProviders.Instance);
-        // AddColumn(RankColumn.Arabic);
 		HideColumns(Column.Error, Column.StdDev, Column.Median, Column.RatioSD);
         WithOrderer(new GroupByTypeOrderer());
         WithOptions(ConfigOptions.JoinSummary);
