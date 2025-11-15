@@ -108,6 +108,33 @@ public class ProgressBarTests {
     }
 
     [Fact]
+    public void ProgressBar_Update_RespectsMaxLineWidth() {
+        Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        const int expectedWidth = 32;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new ProgressBar {
+                ProgressColor = Cyan,
+                MaxLineWidth = expectedWidth
+            };
+
+            bar.Update(50, "Working");
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+
+        var output = Utilities.StripAnsiSequences(errorWriter.ToString());
+        int percentIndex = output.LastIndexOf('%');
+        Assert.True(percentIndex > 0, "Output contains a percentage symbol.");
+        int bracketIndex = output.LastIndexOf('[', percentIndex);
+        Assert.True(bracketIndex >= 0, "Output contains a bracketed progress bar.");
+
+        var segment = output[bracketIndex..(percentIndex + 1)];
+        Assert.Equal(expectedWidth, segment.Length);
+    }
+
+    [Fact]
     public async Task IndeterminateProgressBar_RunAsync_CompletesAndReturnsResult() {
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;

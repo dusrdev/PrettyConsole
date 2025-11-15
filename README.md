@@ -204,7 +204,7 @@ progress.Update(42.5, "Syncing", sameLine: false);
 ProgressBar.WriteProgressBar(OutputPipe.Error, 75, ConsoleColor.Magenta, '*', maxLineWidth: 32);
 ```
 
-`ProgressBar.Update` always re-renders (even if the percentage didn't change) so you can refresh status text. The helper `ProgressBar.WriteProgressBar` keeps the cursor on the same line, which is ideal inside `Console.Overwrite`, and accepts an optional `maxLineWidth` so the entire `[=====]  42%` line can be constrained for left-column layouts.
+`ProgressBar.Update` always re-renders (even if the percentage didn't change) so you can refresh status text. You can also set `ProgressBar.MaxLineWidth` on the instance to limit the rendered `[=====]  42%` line width before each update, mirroring the `maxLineWidth` option on `ProgressBar.WriteProgressBar`. The helper `ProgressBar.WriteProgressBar` keeps the cursor on the same line, which is ideal inside `Console.Overwrite`, and accepts an optional `maxLineWidth` so the entire `[=====]  42%` line can be constrained for left-column layouts.
 
 #### Multiple progress bars with tasks + channels
 

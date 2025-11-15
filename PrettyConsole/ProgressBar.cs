@@ -32,6 +32,11 @@ public class ProgressBar {
     /// </summary>
     public ConsoleColor ProgressColor { get; set; } = ConsoleColor.DefaultForeground;
 
+    /// <summary>
+    /// Gets or sets an optional total width for the rendered bar line (includes brackets, spacing, and percentage).
+    /// </summary>
+    public int? MaxLineWidth { get; set; }
+
     private readonly Lock _lock = new();
 
     /// <summary>
@@ -84,14 +89,14 @@ public class ProgressBar {
                 if (status.Length > 0) {
                     Console.Write(status, OutputPipe.Error, ForegroundColor);
                     PrettyConsoleExtensions.GetWriter(OutputPipe.Error).WriteWhiteSpaces(1);
-                    WriteProgressBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar);
+                    WriteProgressBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar, MaxLineWidth);
                 }
             } else {
                 bool hasStatus = status.Length > 0;
                 int lines = hasStatus ? 2 : 1;
                 Console.ClearNextLines(lines, OutputPipe.Error);
                 if (hasStatus) Console.WriteLine(status, OutputPipe.Error, ForegroundColor);
-                WriteProgressBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar);
+                WriteProgressBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar, MaxLineWidth);
             }
             Console.GoToLine(currentLine);
         }
