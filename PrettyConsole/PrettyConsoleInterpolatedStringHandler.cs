@@ -18,11 +18,11 @@ public struct PrettyConsoleInterpolatedStringHandler {
         if (AnsiColors.Enabled) {
             ChangeFg = static (writer, color) => writer.Write(AnsiColors.Foreground(color));
             ChangeBg = static (writer, color) => writer.Write(AnsiColors.Background(color));
-		} else {
+        } else {
             ChangeFg = static (_, color) => Console.ForegroundColor = color;
             ChangeBg = static (_, color) => Console.BackgroundColor = color;
-		}
-	}
+        }
+    }
 
     /// <summary>
     /// Creates a new handler that writes to <see cref="OutputPipe.Out"/> .
@@ -104,7 +104,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
         if (_currentForeground != color) {
             _currentForeground = color;
             ChangeFg(_writer, _currentForeground);
-		}
+        }
     }
 
     /// <summary>
@@ -115,11 +115,11 @@ public struct PrettyConsoleInterpolatedStringHandler {
         if (_currentForeground != colors.Foreground) {
             _currentForeground = colors.Foreground;
             ChangeFg(_writer, _currentForeground);
-		}
+        }
         if (_currentBackground != colors.Background) {
             _currentBackground = colors.Background;
             ChangeBg(_writer, _currentBackground);
-		}
+        }
     }
 
     /// <summary>

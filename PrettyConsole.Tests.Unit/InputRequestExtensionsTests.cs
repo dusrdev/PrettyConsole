@@ -17,7 +17,7 @@ public class InputRequestExtensionsTests {
             Assert.Contains("Press something:", writer.ToString());
             Assert.True(invoked);
         } finally {
-			InputRequestExtensions.ConfigureReadKey(null);
-		}
+            InputRequestExtensions.ConfigureReadKey(null);
+        }
     }
 }

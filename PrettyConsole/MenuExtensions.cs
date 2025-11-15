@@ -137,7 +137,7 @@ public static class MenuExtensions {
                 }
             } finally {
                 pool.Return(array);
-			}
+            }
 
             string input = Console.ReadLine(string.Empty, $"Enter your main choice and sub choice separated with space: ");
 

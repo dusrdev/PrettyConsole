@@ -10,7 +10,7 @@ namespace PrettyConsole;
 [UnsupportedOSPlatform("ios")]
 [UnsupportedOSPlatform("tvos")]
 public static partial class PrettyConsoleExtensions {
-	extension(TextWriter @this) {
+    extension(TextWriter @this) {
         /// <summary>
         /// Writes whitespace to this <see cref="TextWriter"/> up to length by chucks
         /// </summary>

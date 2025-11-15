@@ -26,12 +26,12 @@ public class Config : ManualConfig {
             .WithIterationCount(20)
             .WithIterationTime(TimeInterval.FromMilliseconds(500)));
         AddColumnProvider(DefaultColumnProviders.Instance);
-		HideColumns(Column.Error, Column.StdDev, Column.Median, Column.RatioSD);
+        HideColumns(Column.Error, Column.StdDev, Column.Median, Column.RatioSD);
         WithOrderer(new GroupByTypeOrderer());
         WithOptions(ConfigOptions.JoinSummary);
         WithOptions(ConfigOptions.StopOnFirstError);
         WithOptions(ConfigOptions.DisableLogFile);
-		AddExporter(MarkdownExporter.GitHub);
+        AddExporter(MarkdownExporter.GitHub);
     }
 }
 
