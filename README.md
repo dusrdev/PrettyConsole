@@ -4,12 +4,12 @@ PrettyConsole is a high-performance, allocation-conscious extension layer over `
 
 ## Features
 
-* 🚀 Zero-allocation interpolated string handler (`PrettyConsoleInterpolatedStringHandler`) for inline colors and formatting
-* 🎨 Inline color composition with `ConsoleColor` tuples and helpers (`DefaultForeground`, `DefaultBackground`, `Default`)
-* 🔁 Advanced rendering primitives (`Overwrite`, `ClearNextLines`, `GoToLine`, progress bars) that respect console pipes
-* 🧰 Rich input helpers (`TryReadLine`, `Confirm`, `RequestAnyInput`) with `IParsable<T>` and enum support
-* ⚙️ Allocation-conscious span-first APIs (`ISpanFormattable`, `ReadOnlySpan<char>`, `TextWriter.WriteWhiteSpaces`)
-* ⛓ Output routing through `OutputPipe.Out` and `OutputPipe.Error` so piping/redirects continue to work
+- 🚀 Zero-allocation interpolated string handler (`PrettyConsoleInterpolatedStringHandler`) for inline colors and formatting
+- 🎨 Inline color composition with `ConsoleColor` tuples and helpers (`DefaultForeground`, `DefaultBackground`, `Default`)
+- 🔁 Advanced rendering primitives (`Overwrite`, `ClearNextLines`, `GoToLine`, progress bars) that respect console pipes
+- 🧰 Rich input helpers (`TryReadLine`, `Confirm`, `RequestAnyInput`) with `IParsable<T>` and enum support
+- ⚙️ Allocation-conscious span-first APIs (`ISpanFormattable`, `ReadOnlySpan<char>`, `TextWriter.WriteWhiteSpaces`)
+- ⛓ Output routing through `OutputPipe.Out` and `OutputPipe.Error` so piping/redirects continue to work
 
 ## Installation
 
@@ -60,6 +60,14 @@ All fields collapse to `string.Empty` when markup is disabled, so the same call 
   ```csharp
   var elapsed = stopwatch.Elapsed;
   Console.WriteInterpolated($"Completed in {elapsed:duration}"); // Completed in 12h 5m 33s
+  ```
+
+- **`double :bytes` format** — pass any `double` (cast integral sizes if needed) with the `:bytes` specifier to render human-friendly binary size units. Values scale by powers of 1024 through `B`, `KB`, `MB`, `GB`, `TB`, `PB`, and use the `#,##0.##` format so thousands separators and up to two decimal digits follow the current culture:
+
+  ```csharp
+  var transferred = 12_884_901d;
+  Console.WriteInterpolated($"Uploaded {transferred:bytes}"); // Uploaded 12.3 MB
+  Console.WriteInterpolated($"Remaining {remaining,8:bytes}"); // right-aligned units stay tidy
   ```
 
 - **Alignment** — standard alignment syntax works the same way it does with regular interpolated strings, but the handler writes directly into the console buffer. This keeps columnar output zero-allocation friendly:
