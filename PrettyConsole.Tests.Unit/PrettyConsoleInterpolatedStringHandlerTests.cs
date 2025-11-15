@@ -54,5 +54,5 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
         return string.Format(CultureInfo.CurrentCulture, "{0:#,##0.##} {1}", num, FileSizeSuffix[suffix]);
     }
 
-    private static readonly string[] FileSizeSuffix = ["B", "KB", "MB", "GB", "TB", "PB"];
+    private static ReadOnlySpan<string> FileSizeSuffix => new[] { "B", "KB", "MB", "GB", "TB", "PB" };
 }

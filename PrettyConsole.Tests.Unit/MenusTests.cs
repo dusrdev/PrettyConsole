@@ -12,8 +12,6 @@ public class MenusTests {
 
         var output = writer.ToStringAndFlush();
 
-        static string Normalize(string value) => value.Replace("\r\n", "\n");
-
         Assert.Equal(
             """
             Choose a fruit:
@@ -25,6 +23,8 @@ public class MenusTests {
             """.Replace("\r\n", "\n"),
             Normalize(output));
         Assert.Equal("Banana", result);
+
+        static string Normalize(string value) => value.Replace("\r\n", "\n");
     }
 
     [Fact]

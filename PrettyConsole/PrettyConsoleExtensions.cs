@@ -19,9 +19,9 @@ public static partial class PrettyConsoleExtensions {
             ReadOnlySpan<char> whiteSpaces = WhiteSpaces;
 
             while (length > 0) {
-                int cur_length = Math.Min(length, 256);
-                @this.Write(whiteSpaces.Slice(0, cur_length));
-                length -= cur_length;
+                int curLength = Math.Min(length, 256);
+                @this.Write(whiteSpaces.Slice(0, curLength));
+                length -= curLength;
             }
         }
     }

@@ -158,7 +158,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
         }
     }
 
-    private static readonly string[] FileSizeSuffix = ["B", "KB", "MB", "GB", "TB", "PB"];
+    private static ReadOnlySpan<string> FileSizeSuffix => new[] { "B", "KB", "MB", "GB", "TB", "PB" };
 
     /// <summary>
     /// Append double with optional formatting.

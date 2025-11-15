@@ -18,8 +18,6 @@ public static partial class Utilities {
         return result;
     }
 
-    public static string WithNewLine(this string str) => string.Concat(str, Environment.NewLine);
-
     public static string StripAnsiSequences(string value) {
         if (string.IsNullOrEmpty(value)) {
             return string.Empty;
@@ -28,22 +26,6 @@ public static partial class Utilities {
         return AnsiSequenceRegex().Replace(value, string.Empty);
     }
 
-    public static void SkipIfNoInteractiveConsole() {
-        const string reason = "Interactive console APIs are not available in this environment.";
-
-        if (Console.IsOutputRedirected) {
-            Assert.Skip(reason);
-        }
-
-        try {
-            _ = Console.CursorTop;
-        } catch (IOException) {
-            Assert.Skip(reason);
-        } catch (PlatformNotSupportedException) {
-            Assert.Skip(reason);
-        }
-    }
-
-    [GeneratedRegex("\\u001b\\[[0-9;]*m", RegexOptions.Compiled)]
+    [GeneratedRegex(@"\u001b\[[0-9;]*m", RegexOptions.Compiled)]
     private static partial Regex AnsiSequenceRegex();
 }

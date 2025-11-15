@@ -3,7 +3,7 @@ namespace PrettyConsole;
 /// <summary>
 /// Provides methods extending <see cref="Console"/> with more rendering methods.
 /// </summary>
-public static partial class RenderingExtensions {
+public static class RenderingExtensions {
     private static readonly Func<int> DefaultCursorTopAccessor = static () => Console.CursorTop;
     private static readonly Action<int, int> DefaultSetCursorPosition = Console.SetCursorPosition;
 

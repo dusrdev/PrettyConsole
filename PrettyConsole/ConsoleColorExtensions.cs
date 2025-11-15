@@ -20,7 +20,7 @@ public static class ConsoleColorExtensions {
         DefaultBackgroundColor = Console.BackgroundColor;
     }
 
-    extension(ConsoleColor color) {
+    extension(ConsoleColor) {
         /// <summary>
         /// Returns the default foreground color for the shell.
         /// </summary>
