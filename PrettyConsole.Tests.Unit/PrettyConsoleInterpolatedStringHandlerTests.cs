@@ -41,6 +41,91 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
         Assert.Equal($"Size {FormatBytes(value)}", _writer.ToStringAndFlush());
     }
 
+    [Fact]
+    public void CharsWritten_IgnoresAnsiColorAndMarkupSequences() {
+        int chars = Console.WriteInterpolated($"{ConsoleColor.Red}{Markup.Bold}Hi{Markup.Reset}");
+
+        var written = Utilities.StripAnsiSequences(_writer.ToStringAndFlush());
+
+        Assert.Equal("Hi", written);
+        Assert.Equal(2, chars);
+    }
+
+    [Theory]
+    [InlineData(5, "   OK")]
+    [InlineData(-5, "OK   ")]
+    public void Alignment_UsesVisibleLengthWhenMarkupPresent(int alignment, string expected) {
+        int chars = alignment > 0
+            ? Console.WriteInterpolated($"{Markup.Bold}{"OK",5}{Markup.Reset}")
+            : Console.WriteInterpolated($"{Markup.Bold}{"OK",-5}{Markup.Reset}");
+
+        var written = Utilities.StripAnsiSequences(_writer.ToStringAndFlush());
+
+        Assert.Equal(expected, written);
+        Assert.Equal(expected.Length, chars);
+    }
+
+    [Fact]
+    public void WriteLineInterpolated_ReturnsCharsWithoutNewline() {
+        int chars = Console.WriteLineInterpolated($"Hi");
+
+        var written = Utilities.StripAnsiSequences(_writer.ToStringAndFlush());
+
+        Assert.Equal("Hi" + Environment.NewLine, written);
+        Assert.Equal(2, chars);
+    }
+
+    [Fact]
+    public void WriteInterpolated_MixedPrimitivesAndFormats_ReturnsVisibleCount() {
+        var duration = TimeSpan.FromMinutes(5) + TimeSpan.FromSeconds(7);
+
+        int chars = Console.WriteInterpolated($"Id:{123} Ok:{true} Pi:{3.14159:F2} Char:{'X'} Elapsed:{duration:duration}");
+
+        var expected = $"Id:123 Ok:True Pi:3.14 Char:X Elapsed:0h 5m 7s";
+        Assert.Equal(expected, _writer.ToStringAndFlush());
+        Assert.Equal(expected.Length, chars);
+    }
+
+    [Fact]
+    public void WriteInterpolated_ColorTuple_DoesNotAffectVisibleCount() {
+        int chars = Console.WriteInterpolated($"{(ConsoleColor.Red, ConsoleColor.White)}ERR{ConsoleColor.Default} done");
+
+        var written = Utilities.StripAnsiSequences(_writer.ToStringAndFlush());
+
+        Assert.Equal("ERR done", written);
+        Assert.Equal("ERR done".Length, chars);
+    }
+
+    [Theory]
+    [InlineData(6)]
+    [InlineData(-6)]
+    public void WriteInterpolated_ColorTupleAlignment_UsesWidthOnly(int alignment) {
+        int chars = alignment > 0
+            ? Console.WriteInterpolated($"{(ConsoleColor.Blue, ConsoleColor.White),6}")
+            : Console.WriteInterpolated($"{(ConsoleColor.Blue, ConsoleColor.White),-6}");
+
+        var written = Utilities.StripAnsiSequences(_writer.ToStringAndFlush());
+        var expected = new string(' ', 6);
+
+        Assert.Equal(expected, written);
+        Assert.Equal(6, chars);
+    }
+
+    [Fact]
+    public void WriteLineInterpolated_WithColorsAndPrimitives_CountExcludesNewline() {
+        var duration = TimeSpan.FromSeconds(42);
+        var writer = new StringWriter();
+        Error = writer;
+
+        int chars = Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Yellow}[{duration:duration}] {Markup.Bold}done{Markup.Reset}");
+
+        var stripped = Utilities.StripAnsiSequences(writer.ToString());
+        var expected = $"[0h 0m 42s] done{Environment.NewLine}";
+
+        Assert.Equal(expected, stripped);
+        Assert.Equal("[0h 0m 42s] done".Length, chars);
+    }
+
     private static string FormatBytes(double value) {
         const double formatBytesKb = 1024d;
         var suffix = 0;
