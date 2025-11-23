@@ -36,9 +36,7 @@ public static class InputRequestExtensions {
         /// <remarks>
         /// It does not display a question mark or any other prompt, only the message
         /// </remarks>
-        public static bool Confirm([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
-            return Confirm(DefaultConfirmValues, true, handler);
-        }
+        public static bool Confirm([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) => Confirm(DefaultConfirmValues, true, handler);
 
         /// <summary>
         /// Used to get user confirmation

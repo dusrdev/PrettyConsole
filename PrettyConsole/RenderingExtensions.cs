@@ -22,6 +22,15 @@ public static class RenderingExtensions {
 
     extension(Console) {
         /// <summary>
+		/// Write white spaces to <paramref name="pipe"/>
+		/// </summary>
+		/// <param name="length"></param>
+		/// <param name="pipe"></param>
+		public static void WriteWhiteSpaces(int length, OutputPipe pipe = OutputPipe.Out) {
+            PrettyConsoleExtensions.GetWriter(pipe).WriteWhiteSpaces(length);
+		}
+
+        /// <summary>
         /// Clears the next <paramref name="lines"/>.
         /// </summary>
         /// <param name="lines">Amount of lines to clear</param>

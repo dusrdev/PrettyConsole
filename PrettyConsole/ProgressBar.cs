@@ -46,7 +46,6 @@ public class ProgressBar {
     /// <remarks>
     /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
     /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Update(int percentage) => Update(percentage, ReadOnlySpan<char>.Empty, true);
 
     /// <summary>
@@ -56,7 +55,6 @@ public class ProgressBar {
     /// <remarks>
     /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
     /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Update(double percentage) => Update((int)percentage, ReadOnlySpan<char>.Empty, true);
 
     /// <summary>
@@ -68,7 +66,6 @@ public class ProgressBar {
     /// <remarks>
     /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
     /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Update(double percentage, ReadOnlySpan<char> status, bool sameLine = true)
         => Update((int)percentage, status, sameLine);
 
@@ -110,7 +107,6 @@ public class ProgressBar {
     /// <param name="progressColor">The color used for the filled segment of the bar.</param>
     /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
     /// <param name="maxLineWidth">Optional total line length (including brackets and percentage). When provided, the rendered output will not exceed this width unless the decorations already require more characters.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteProgressBar(OutputPipe pipe, double percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null)
         => WriteProgressBar(pipe, (int)percentage, progressColor, progressChar, maxLineWidth);
 
@@ -122,7 +118,6 @@ public class ProgressBar {
     /// <param name="progressColor">The color used for the filled segment of the bar.</param>
     /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
     /// <param name="maxLineWidth">Optional total line length (including brackets and percentage). When provided, the rendered output will not exceed this width unless the decorations already require more characters.</param>
-    [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.NoInlining)]
     public static void WriteProgressBar(OutputPipe pipe, int percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null) {
         Console.ResetColor();
 

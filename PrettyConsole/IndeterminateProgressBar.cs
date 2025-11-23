@@ -164,7 +164,6 @@ public class IndeterminateProgressBar {
         Console.ResetColor();
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
     private Task RunAsyncNonGeneric(Task task, string header, CancellationToken token) => RunAsync(task, header, token);
 
     /// <summary>
