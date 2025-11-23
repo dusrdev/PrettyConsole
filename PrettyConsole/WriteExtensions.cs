@@ -11,8 +11,10 @@ public static class WriteExtensions {
         /// Writes interpolated content using <see cref="PrettyConsoleInterpolatedStringHandler"/> to <see cref="OutputPipe.Out"/>.
         /// </summary>
         /// <param name="handler">Interpolated string handler that streams the content.</param>
-        public static void WriteInterpolated([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
+        /// <returns>The number of characters written by the handler.</returns>
+        public static int WriteInterpolated([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
             handler.ResetColors();
+            return handler.CharsWritten;
         }
 
         /// <summary>
@@ -20,8 +22,10 @@ public static class WriteExtensions {
         /// </summary>
         /// <param name="pipe">Destination pipe. Defaults to <see cref="OutputPipe.Out"/>.</param>
         /// <param name="handler">Interpolated string handler that streams the content.</param>
-        public static void WriteInterpolated(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] PrettyConsoleInterpolatedStringHandler handler = default) {
+        /// <returns>The number of characters written by the handler.</returns>
+        public static int WriteInterpolated(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] PrettyConsoleInterpolatedStringHandler handler = default) {
             handler.ResetColors();
+            return handler.CharsWritten;
         }
 
         /// <summary>
