@@ -49,7 +49,7 @@ public static class InputRequestExtensions {
         /// </remarks>
         public static bool Confirm(ReadOnlySpan<string> trueValues, bool emptyIsTrue = true, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
             handler.ResetColors();
-            var input = PrettyConsoleExtensions.In.ReadLine();
+            var input = ConsoleContext.In.ReadLine();
             if (input is null or { Length: 0 }) {
                 return emptyIsTrue;
             }

@@ -106,7 +106,7 @@ public class IndeterminateProgressBar {
         while (!task.IsCompleted && !token.IsCancellationRequested) {
             try {
                 Console.ForegroundColor = ForegroundColor;
-                PrettyConsoleExtensions.Error.Write(AnimationSequence[seqIndex]);
+                ConsoleContext.Error.Write(AnimationSequence[seqIndex]);
             } finally {
                 Console.ForegroundColor = originalColor;
             }

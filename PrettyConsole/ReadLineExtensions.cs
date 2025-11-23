@@ -16,7 +16,7 @@ public static class ReadLineExtensions {
         /// <returns>True if the parsing was successful, false otherwise</returns>
         public static bool TryReadLine<T>(out T? result, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where T : IParsable<T> {
             handler.ResetColors();
-            var input = PrettyConsoleExtensions.In.ReadLine();
+            var input = ConsoleContext.In.ReadLine();
             return T.TryParse(input, CultureInfo.CurrentCulture, out result);
         }
 
@@ -61,7 +61,7 @@ public static class ReadLineExtensions {
         /// <returns>True if the parsing was successful, false otherwise</returns>
         public static bool TryReadLine<TEnum>(out TEnum result, bool ignoreCase, TEnum @default, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where TEnum : struct, Enum {
             handler.ResetColors();
-            var input = PrettyConsoleExtensions.In.ReadLine();
+            var input = ConsoleContext.In.ReadLine();
             var res = Enum.TryParse(input, ignoreCase, out result);
             if (!res) {
                 result = @default;

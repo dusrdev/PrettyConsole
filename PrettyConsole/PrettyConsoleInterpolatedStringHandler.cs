@@ -61,7 +61,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     public PrettyConsoleInterpolatedStringHandler(int literalLength, int formattedCount, OutputPipe pipe, IFormatProvider? provider, out bool shouldAppend) {
         _currentForeground = ConsoleColor.DefaultForeground;
         _currentBackground = ConsoleColor.DefaultBackground;
-        _writer = PrettyConsoleExtensions.GetWriter(pipe);
+        _writer = ConsoleContext.GetWriter(pipe);
         _provider = provider;
         shouldAppend = true;
     }

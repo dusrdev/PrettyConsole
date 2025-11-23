@@ -85,7 +85,7 @@ public class ProgressBar {
                 Console.ClearNextLines(1, OutputPipe.Error);
                 if (status.Length > 0) {
                     Console.Write(status, OutputPipe.Error, ForegroundColor);
-                    PrettyConsoleExtensions.GetWriter(OutputPipe.Error).WriteWhiteSpaces(1);
+                    ConsoleContext.GetWriter(OutputPipe.Error).WriteWhiteSpaces(1);
                     WriteProgressBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar, MaxLineWidth);
                 }
             } else {
@@ -122,7 +122,7 @@ public class ProgressBar {
         Console.ResetColor();
 
         int p = Math.Clamp(percentage, 0, 100);
-        int bufferWidth = Math.Max(0, PrettyConsoleExtensions.GetWidthOrDefault() - Console.CursorLeft);
+        int bufferWidth = Math.Max(0, ConsoleContext.GetWidthOrDefault() - Console.CursorLeft);
 
         const int bracketsAndSpacing = 3; // '[' + ']' + ' '
         const int percentageWidth = 3; // numeric portion width
@@ -136,7 +136,7 @@ public class ProgressBar {
 
         int barLength = Math.Max(0, constrainedWidth - decorationWidth);
 
-        var writer = PrettyConsoleExtensions.GetWriter(pipe);
+        var writer = ConsoleContext.GetWriter(pipe);
         Console.Write<char>('[', pipe);
 
         if (barLength > 0) {

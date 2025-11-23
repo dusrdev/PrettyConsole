@@ -27,7 +27,7 @@ public static class RenderingExtensions {
 		/// <param name="length"></param>
 		/// <param name="pipe"></param>
 		public static void WriteWhiteSpaces(int length, OutputPipe pipe = OutputPipe.Out) {
-            PrettyConsoleExtensions.GetWriter(pipe).WriteWhiteSpaces(length);
+            ConsoleContext.GetWriter(pipe).WriteWhiteSpaces(length);
 		}
 
         /// <summary>
@@ -39,8 +39,8 @@ public static class RenderingExtensions {
         /// Useful for clearing output of overriding functions, like the ProgressBar
         /// </remarks>
         public static void ClearNextLines(int lines, OutputPipe pipe = OutputPipe.Error) {
-            var textWriter = PrettyConsoleExtensions.GetWriter(pipe);
-            var lineLength = PrettyConsoleExtensions.GetWidthOrDefault();
+            var textWriter = ConsoleContext.GetWriter(pipe);
+            var lineLength = ConsoleContext.GetWidthOrDefault();
             var currentLine = GetCurrentLine();
             GoToLine(currentLine);
             for (int i = 0; i < lines; i++) {
@@ -53,7 +53,7 @@ public static class RenderingExtensions {
         /// Used to end current line or write an empty one, depends whether the current line has any text.
         /// </summary>
         public static void NewLine(OutputPipe pipe = OutputPipe.Out) {
-            PrettyConsoleExtensions.GetWriter(pipe).WriteLine();
+            ConsoleContext.GetWriter(pipe).WriteLine();
         }
 
         /// <summary>
