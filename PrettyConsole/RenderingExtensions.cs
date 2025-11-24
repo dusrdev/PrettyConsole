@@ -28,7 +28,7 @@ public static class RenderingExtensions {
 		/// <param name="pipe"></param>
 		public static void WriteWhiteSpaces(int length, OutputPipe pipe = OutputPipe.Out) {
             ConsoleContext.GetWriter(pipe).WriteWhiteSpaces(length);
-		}
+        }
 
         /// <summary>
         /// Clears the next <paramref name="lines"/>.

@@ -6,13 +6,12 @@ using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
-using BenchmarkDotNet.Toolchains.NativeAot;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Toolchains.NativeAot;
 
 using Perfolizer.Horology;
-
 using Perfolizer.Mathematics.OutlierDetection;
 
 namespace Benchmarks;
