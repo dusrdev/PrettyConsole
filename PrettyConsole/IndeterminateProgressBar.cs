@@ -106,7 +106,7 @@ public class IndeterminateProgressBar {
         while (!task.IsCompleted && !token.IsCancellationRequested) {
             try {
                 Console.ForegroundColor = ForegroundColor;
-                PrettyConsoleExtensions.Error.Write(AnimationSequence[seqIndex]);
+                ConsoleContext.Error.Write(AnimationSequence[seqIndex]);
             } finally {
                 Console.ForegroundColor = originalColor;
             }
@@ -164,7 +164,6 @@ public class IndeterminateProgressBar {
         Console.ResetColor();
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
     private Task RunAsyncNonGeneric(Task task, string header, CancellationToken token) => RunAsync(task, header, token);
 
     /// <summary>

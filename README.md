@@ -13,7 +13,7 @@ PrettyConsole is a high-performance, ultra-low-latency, allocation-free extensio
 - 🎨 Inline color composition with `ConsoleColor` tuples and helpers (`DefaultForeground`, `DefaultBackground`, `Default`)
 - 🔁 Advanced rendering primitives (`Overwrite`, `ClearNextLines`, `GoToLine`, progress bars) that respect console pipes
 - 🧰 Rich input helpers (`TryReadLine`, `Confirm`, `RequestAnyInput`) with `IParsable<T>` and enum support
-- ⚙️ Allocation-conscious span-first APIs (`ISpanFormattable`, `ReadOnlySpan<char>`, `TextWriter.WriteWhiteSpaces`)
+- ⚙️ Allocation-conscious span-first APIs (`ISpanFormattable`, `ReadOnlySpan<char>`, `Console.WriteWhiteSpaces` / `TextWriter.WriteWhiteSpaces`)
 - ⛓ Output routing through `OutputPipe.Out` and `OutputPipe.Error` so piping/redirects continue to work
 
 ## Performance
@@ -47,7 +47,7 @@ This setup lets you call `Console.WriteInterpolated`, `Console.Overwrite`, `Cons
 
 ### Interpolated strings & inline colors
 
-`PrettyConsoleInterpolatedStringHandler` streams interpolated content directly to the selected pipe without allocating. Colors auto-reset at the end of each call.
+`PrettyConsoleInterpolatedStringHandler` streams interpolated content directly to the selected pipe without allocating. Colors auto-reset at the end of each call. `Console.WriteInterpolated` and `Console.WriteLineInterpolated` return the number of visible characters written (handler-emitted escape sequences are excluded) so you can drive padding/width calculations from the same call sites.
 
 ```csharp
 Console.WriteInterpolated($"Hello {ConsoleColor.Green / ConsoleColor.DefaultBackground}world{ConsoleColor.Default}!");
@@ -111,7 +111,7 @@ Console.NewLine(); // writes newline to the default output pipe
 Console.Write(percentage, OutputPipe.Out, ConsoleColor.Cyan, ConsoleColor.DefaultBackground, format: "F2", formatProvider: null);
 ```
 
-Behind the scenes these overloads rent buffers via `BufferPool` and route output to the correct pipe through `PrettyConsoleExtensions.GetWriter`.
+Behind the scenes these overloads rent buffers from the shared `ArrayPool<char>` and route output to the correct pipe through `ConsoleContext.GetWriter`.
 
 ### Basic inputs
 
@@ -154,10 +154,11 @@ Console.SetColors(ConsoleColor.White, ConsoleColor.DarkBlue);
 Console.ResetColors();
 ```
 
-`PrettyConsoleExtensions.Out`/`Error` expose the live writers. Each writer now has `WriteWhiteSpaces(int)` for zero-allocation padding:
+`ConsoleContext.Out`/`Error` expose the live writers (both are settable if you need to swap in test doubles). Use `Console.WriteWhiteSpaces(int length, OutputPipe pipe)` for convenient padding from call sites, or call `WriteWhiteSpaces(int)` on an existing writer:
 
 ```csharp
-PrettyConsoleExtensions.Error.WriteWhiteSpaces(8); // pad status blocks
+Console.WriteWhiteSpaces(8, OutputPipe.Error); // pad status blocks
+ConsoleContext.Error.WriteWhiteSpaces(4);      // same via writer
 ```
 
 ### Advanced outputs
@@ -268,15 +269,15 @@ Each producer reports progress over the channel, the consumer loops with `ReadAl
 
 ### Pipes & writers
 
-PrettyConsole keeps the original console streams accessible:
+PrettyConsole keeps the original console streams accessible (and settable for tests) via `ConsoleContext`:
 
 ```csharp
-TextWriter @out = PrettyConsoleExtensions.Out;
-TextWriter @err = PrettyConsoleExtensions.Error;
-TextReader @in = PrettyConsoleExtensions.In;
+TextWriter @out = ConsoleContext.Out;
+TextWriter @err = ConsoleContext.Error;
+TextReader @in = ConsoleContext.In;
 ```
 
-Use these when you need direct writer access (custom buffering, `WriteWhiteSpaces`, etc.). In cases where you must call raw `System.Console` APIs (e.g., `Console.ReadKey(true)`), do so explicitly—PrettyConsole never hides the built-in console.
+Use these when you need direct writer access (custom buffering, `WriteWhiteSpaces`, etc.) or swap in mocks for testing. In cases where you must call raw `System.Console` APIs (e.g., `Console.ReadKey(true)`), do so explicitly—PrettyConsole never hides the built-in console.
 
 ## Contributing
 

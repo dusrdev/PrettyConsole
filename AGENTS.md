@@ -9,7 +9,7 @@ Summary
   - PrettyConsole/ — main library
   - PrettyConsole.Tests/ — interactive/demo runner (manually selects visual feature demos)
   - PrettyConsole.Tests.Unit/ — xUnit v3 unit tests using Microsoft Testing Platform
-- v5.0.0 (November 2025) removed the legacy `ColoredOutput`/`Color` types; color composition now flows through `ConsoleColor` helpers and tuples exposed by the library.
+- v5.1.0 (current) renames `PrettyConsoleExtensions` to `ConsoleContext`, adds `Console.WriteWhiteSpaces(length, pipe)`, and makes `Out`/`Error`/`In` settable for test doubles. v5.0.0 removed the legacy `ColoredOutput`/`Color` types; color composition now flows through `ConsoleColor` helpers and tuples exposed by the library.
 
 Commands you’ll use often
 
@@ -44,19 +44,19 @@ Repo-specific agent rules and conventions
 High-level architecture and key concepts
 
 - Console facade
-  - Extension members declared via `extension(Console)` attach directly to `System.Console`, so APIs such as `Console.WriteInterpolated`, `Console.TryReadLine`, `Console.Overwrite`, etc. light up once `using PrettyConsole;` (optionally with `using static System.Console;`) is in scope. `PrettyConsoleExtensions` still exposes the live `In`, `Out`, and `Error` streams plus helpers like `GetWidthOrDefault`.
+  - Extension members declared via `extension(Console)` attach directly to `System.Console`, so APIs such as `Console.WriteInterpolated`, `Console.TryReadLine`, `Console.Overwrite`, etc. light up once `using PrettyConsole;` (optionally with `using static System.Console;`) is in scope. `ConsoleContext` exposes the live `In`, `Out`, and `Error` streams (all now settable for testing) plus helpers like `GetWidthOrDefault`.
 - Output routing
-  - `OutputPipe` is a two-value enum (`Out`, `Error`). Most write APIs accept an optional pipe; internally `PrettyConsoleExtensions.GetWriter` resolves the correct `TextWriter` so sequences remain redirect-friendly.
+  - `OutputPipe` is a two-value enum (`Out`, `Error`). Most write APIs accept an optional pipe; internally `ConsoleContext.GetWriter` resolves the correct `TextWriter` so sequences remain redirect-friendly.
 - Interpolated string handler
-  - `PrettyConsoleInterpolatedStringHandler` enables zero-allocation `$"..."` calls for `WriteInterpolated`, `WriteLineInterpolated`, `ReadLine`, `TryReadLine`, `Confirm`, and `RequestAnyInput`. Colors automatically reset after each invocation, and handlers respect the selected pipe and optional `IFormatProvider`. Recent changes ensure any `object` argument that implements `ISpanFormattable` is emitted through the span-based path before falling back to `IFormattable`/string allocations.
+  - `PrettyConsoleInterpolatedStringHandler` enables zero-allocation `$"..."` calls for `WriteInterpolated`, `WriteLineInterpolated`, `ReadLine`, `TryReadLine`, `Confirm`, and `RequestAnyInput`. Colors automatically reset after each invocation, and handlers respect the selected pipe and optional `IFormatProvider`. Recent changes ensure any `object` argument that implements `ISpanFormattable` is emitted through the span-based path before falling back to `IFormattable`/string allocations. `Console.WriteInterpolated`/`WriteLineInterpolated` now return the rendered character count (escape sequences emitted by the handler are excluded), which can be used for padding/layout math.
 - Coloring model
   - `ConsoleColor` now exposes `DefaultForeground`, `DefaultBackground`, and `Default` tuple properties plus `/` operator overloads so you can inline foreground/background tuples (`$"{ConsoleColor.Red / ConsoleColor.White}Error"`). These tuples play nicely with the interpolated string handler and keep color resets allocation-free.
 - Markup decorations
   - The `Markup` static class exposes ANSI sequences for underline, bold, italic, and strikethrough. Fields expand to escape codes only when output/error aren’t redirected; otherwise they collapse to empty strings so callers can safely interpolate them without extra checks.
 - Write APIs
-  - `WriteInterpolated`/`WriteLineInterpolated` host the interpolated-string handler; `Write`/`WriteLine` overloads target `ISpanFormattable` values (including `ref struct`s) and raw `ReadOnlySpan<char>` spans with optional foreground/background overrides. Implementations rent buffers via `BufferPool` to avoid allocation spikes and always reset colors.
+  - `WriteInterpolated`/`WriteLineInterpolated` host the interpolated-string handler; `Write`/`WriteLine` overloads target `ISpanFormattable` values (including `ref struct`s) and raw `ReadOnlySpan<char>` spans with optional foreground/background overrides. Implementations rent buffers from `ArrayPool<char>.Shared` to avoid allocation spikes and always reset colors.
 - TextWriter helpers
-  - `PrettyConsoleExtensions` surfaces a `TextWriter.WriteWhiteSpaces(int)` extension (available via `PrettyConsoleExtensions.Out/Error`) for allocation-free padding. Use it instead of creating temporary `string`s when building menus, tables, or progress output.
+  - `ConsoleContext` surfaces the live `Out`/`Error` writers (now with public setters for test doubles) and keeps helpers like `GetWidthOrDefault`. Use `Console.WriteWhiteSpaces(int length, OutputPipe pipe = OutputPipe.Out)` for direct padding from call sites; `TextWriter.WriteWhiteSpaces(int)` remains available on the writers if you already have them on hand.
 - Inputs
   - `ReadLine`/`TryReadLine` support `IParsable<T>` types, optional defaults, enum parsing with `ignoreCase`, and interpolated prompts. `Confirm` exposes `DefaultConfirmValues`, overloads for custom truthy tokens, and interpolated prompts; `RequestAnyInput` blocks on `ReadKey` with colored prompts if desired.
 - Rendering controls

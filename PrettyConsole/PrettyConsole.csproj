@@ -26,7 +26,7 @@
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>5.0.0</Version>
+		<Version>5.1.0</Version>
 		<Nullable>enable</Nullable>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -43,10 +43,10 @@
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
-			- v5.0.0 rewrites the API surface as extension members on `System.Console`, introduces `WriteInterpolated`/`WriteLineInterpolated`, and exposes helpers such as `Selection`, `Menu`, `Table`, `ReadLine`, and `TryReadLine` directly on the console.
-			- `ColoredOutput` and the `Color` struct were removed; styling now flows through the enhanced `ConsoleColor` helpers (`DefaultForeground`, `DefaultBackground`, `Default`, and `/` tuples) together with the interpolated string handler to keep colored output allocation-free.
-			- `ProgressBar` and `IndeterminateProgressBar` are standalone types, and `ProgressBar.WriteProgressBar` plus the instance helper now accept an optional `maxLineWidth` for constrained layouts.
-			- New utilities include `TextWriter.WriteWhiteSpaces(int)` for allocation-free padding, `Markup` for ANSI decorations that collapse when output is redirected, and formatting shortcuts such as `duration` (for `TimeSpan`) and `bytes` (for `double`) on `PrettyConsoleInterpolatedStringHandler`.
+			- v5.1.0 adds return values to `Console.WriteInterpolated`/`WriteLineInterpolated` so callers can reuse the rendered character count for padding/width calculations (escape sequences emitted by the handler are excluded).
+			- `PrettyConsoleExtensions` is now `ConsoleContext`; the exposed `Out`/`Error`/`In` streams include public setters to simplify testing and redirection scenarios.
+			- New convenience API `Console.WriteWhiteSpaces(int length, OutputPipe pipe = OutputPipe.Out)` reduces boilerplate when padding output; the `TextWriter.WriteWhiteSpaces` helper remains available on the writers.
+			- Existing features continue to flow through the span-first, allocation-conscious pipeline introduced in v5.x, including `ConsoleColor` tuple helpers, ANSI `Markup`, and the progress bar helpers.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
@@ -66,9 +66,5 @@
 		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
 			<_Parameter1>PrettyConsole.Tests.Unit</_Parameter1>
 		</AssemblyAttribute>
-		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-			<_Parameter1>Benchmarks</_Parameter1>
-		</AssemblyAttribute>
 	</ItemGroup>
-
 </Project>

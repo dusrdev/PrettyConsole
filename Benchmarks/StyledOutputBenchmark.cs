@@ -23,7 +23,7 @@ public class StyledOutputBenchmarks {
     [GlobalSetup]
     public void GlobalSetup() {
         _outputWriter = Console.Out;
-        PrettyConsoleExtensions.Out = TextWriter.Null;
+        ConsoleContext.Out = TextWriter.Null;
         _ansiConsole = AnsiConsole.Create(new AnsiConsoleSettings {
             Out = new AnsiConsoleOutput(TextWriter.Null)
         });
@@ -32,7 +32,7 @@ public class StyledOutputBenchmarks {
 
     [GlobalCleanup]
     public void GlobalCleanup() {
-        PrettyConsoleExtensions.Out = _outputWriter;
+        ConsoleContext.Out = _outputWriter;
         _ansiConsole = AnsiConsole.Console;
         Console.SetOut(_outputWriter);
     }

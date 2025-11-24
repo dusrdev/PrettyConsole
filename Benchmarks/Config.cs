@@ -9,9 +9,9 @@ using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Toolchains.NativeAot;
 
 using Perfolizer.Horology;
-
 using Perfolizer.Mathematics.OutlierDetection;
 
 namespace Benchmarks;
@@ -21,12 +21,23 @@ public class Config : ManualConfig {
         UnionRule = ConfigUnionRule.AlwaysUseLocal;
         SummaryStyle = SummaryStyle.Default.WithRatioStyle(RatioStyle.Trend);
         AddDiagnoser(MemoryDiagnoser.Default);
-        AddJob(Job.Default
+        var baseJob = Job.Default
+            .WithId("PGO1")
             .WithOutlierMode(OutlierMode.RemoveAll)
             .WithLaunchCount(3)
             .WithWarmupCount(5)
             .WithIterationCount(30)
-            .WithIterationTime(TimeInterval.FromMilliseconds(100)));
+            .WithIterationTime(TimeInterval.FromMilliseconds(100))
+            .WithEnvironmentVariable("DOTNET_TieredPGO", "1"); // default, explicit for clarity
+
+        AddJob(baseJob);
+        AddJob(baseJob
+            .WithId("PGO2")
+            .WithEnvironmentVariable("DOTNET_TieredPGO", "2"));
+        AddJob(baseJob
+            .WithId("NativeAOT")
+            .WithEnvironmentVariable("DOTNET_TieredPGO", "0") // not applicable, but keep deterministic
+            .WithToolchain(NativeAotToolchain.Net10_0));
         AddColumnProvider(DefaultColumnProviders.Instance);
         HideColumns(Column.Error, Column.StdDev, Column.Median, Column.RatioSD);
         WithOrderer(new GroupByTypeOrderer());
@@ -48,7 +59,8 @@ internal sealed class GroupByTypeOrderer : IOrderer {
     // Sort rows in the summary: first by Type, then Method, then Params
     public IEnumerable<BenchmarkCase> GetSummaryOrder(
         ImmutableArray<BenchmarkCase> cases, Summary summary) =>
-        cases.OrderBy(c => c.Descriptor.Type.FullName)
+        cases.OrderBy(c => c.Job.Id)
+             .ThenBy(c => c.Descriptor.Type.FullName)
              .ThenBy(c => c.Parameters.DisplayInfo);
 
     // We don’t use highlight groups

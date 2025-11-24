@@ -106,7 +106,7 @@ public static class MenuExtensions {
             var maxMainOption = menuKeys.Max(static x => x.Length) + 10; // Used to make sub-tree prefix spaces uniform
 
             var pool = ArrayPool<char>.Shared;
-            var width = PrettyConsoleExtensions.GetWidthOrDefault();
+            var width = ConsoleContext.GetWidthOrDefault();
             var array = pool.Rent(width);
             try {
                 var span = new Span<char>(array);
@@ -117,20 +117,20 @@ public static class MenuExtensions {
                     var subChoices = menu[mainEntry];
 
                     span.TryWrite($"  {i + 1}) {mainEntry}", out int written);
-                    PrettyConsoleExtensions.Out.Write(span.Slice(0, written));
+                    ConsoleContext.Out.Write(span.Slice(0, written));
 
                     var remainingLength = maxMainOption - written;
                     if (remainingLength > 0) {
-                        PrettyConsoleExtensions.Out.WriteWhiteSpaces(remainingLength);
+                        ConsoleContext.Out.WriteWhiteSpaces(remainingLength);
                     }
 
                     for (int j = 0; j < subChoices.Count; j++) {
                         if (j is not 0) {
-                            PrettyConsoleExtensions.Out.WriteWhiteSpaces(maxMainOption);
+                            ConsoleContext.Out.WriteWhiteSpaces(maxMainOption);
                         }
 
                         span.TryWrite($"  {j + 1}) {subChoices[j]}", out written);
-                        PrettyConsoleExtensions.Out.WriteLine(span.Slice(0, written));
+                        ConsoleContext.Out.WriteLine(span.Slice(0, written));
                     }
 
                     Console.NewLine();
@@ -203,8 +203,8 @@ public static class MenuExtensions {
             Span<char> rowSeparation = stackalloc char[header.Length];
             rowSeparation.Fill(rowSeparator);
 
-            PrettyConsoleExtensions.Out.WriteLine(header);
-            PrettyConsoleExtensions.Out.WriteLine(rowSeparation);
+            ConsoleContext.Out.WriteLine(header);
+            ConsoleContext.Out.WriteLine(rowSeparation);
             for (int row = 0; row < height; row++) {
                 for (int i = 0; i < columnsLength; i++) {
                     buffer.Add(columns[i][row].PadRight(lengths[i]));
@@ -212,10 +212,10 @@ public static class MenuExtensions {
 
                 var line = string.Join(columnSeparator, buffer);
                 buffer.Clear();
-                PrettyConsoleExtensions.Out.WriteLine(line);
+                ConsoleContext.Out.WriteLine(line);
             }
 
-            PrettyConsoleExtensions.Out.WriteLine(rowSeparation);
+            ConsoleContext.Out.WriteLine(rowSeparation);
         }
     }
 }

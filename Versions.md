@@ -1,5 +1,13 @@
 # Versions
 
+## v5.1.0
+
+- `Console.WriteInterpolated` and `Console.WriteLineInterpolated` now return a `int` that contains the number of characters written using the handler. This could be used to help calculate paddings or other things when creating structured output.
+  - It will ignore escape sequences that were added using the handler like `ConsoleColor` or `Markup` but if you hardcode your own they might be taken into account. As such, if you do this, I recommend first checking the length without using `ConsoleColor` or `Markup`, then using this result for the calculation.
+- `PrettyConsoleExtensions` that contains the `Out`, `Err`, `In`, etc... was renamed to `ConsoleContext`.
+- The standard `Out`, `Err`, `In` streams now have a public setter, so end users could mock it in their own tests.
+- `Console.WriteWhiteSpaces(length, OutputPipe)` was added to reduce the complexity of using the `TextWriter` extension.
+
 ## v5.0.0 - .NET 10+
 
 This version contains a lot of breaking changes, but they were necessary to trim legacy and sub-optimal things from the library to ensure it remains the best performing library for stylized console outputs.
