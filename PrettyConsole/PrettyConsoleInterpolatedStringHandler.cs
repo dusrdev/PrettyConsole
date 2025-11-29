@@ -300,16 +300,40 @@ public struct PrettyConsoleInterpolatedStringHandler {
         ThrowIfFlushed();
         ReadOnlySpan<char> formatSpan = format.AsSpan();
 
+        int charsWritten;
+        int start = _index;
+
         while (true) {
             Span<char> dest = _buffer.AsSpan(_index);
 
-            if (value.TryFormat(dest, out int charsWritten, formatSpan, _provider)) {
+            if (value.TryFormat(dest, out charsWritten, formatSpan, _provider)) {
                 _index += charsWritten;
                 CharsWritten += charsWritten;
-                return;
+                break;
             }
 
             Grow(_capacity * 2);
+        }
+
+        if (alignment == 0) return;
+
+        if (alignment > 0) { // shift forward and prefix whitespaces
+            int padding = alignment - charsWritten;
+            if (padding <= 0) return;
+
+            EnsureCapacity(padding);
+            var written = _buffer.AsSpan(start, charsWritten);
+            written.CopyTo(_buffer.AsSpan(start + padding, charsWritten));
+            _buffer.AsSpan(start, padding).Fill(' ');
+            _index += padding;
+            CharsWritten += padding;
+        } else { // suffix whitespaces
+            int targetWidth = -alignment;
+            int trailing = targetWidth - charsWritten;
+            if (trailing > 0) {
+                WritePadding(trailing);
+                CharsWritten += trailing;
+            }
         }
     }
 
