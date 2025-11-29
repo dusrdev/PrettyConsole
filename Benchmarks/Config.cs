@@ -31,13 +31,12 @@ public class Config : ManualConfig {
             .WithEnvironmentVariable("DOTNET_TieredPGO", "1"); // default, explicit for clarity
 
         AddJob(baseJob);
-        AddJob(baseJob
-            .WithId("PGO2")
-            .WithEnvironmentVariable("DOTNET_TieredPGO", "2"));
-        AddJob(baseJob
-            .WithId("NativeAOT")
-            .WithEnvironmentVariable("DOTNET_TieredPGO", "0") // not applicable, but keep deterministic
-            .WithToolchain(NativeAotToolchain.Net10_0));
+        // AddJob(baseJob
+        //     .WithId("PGO2")
+        //     .WithEnvironmentVariable("DOTNET_TieredPGO", "2"));
+        // AddJob(baseJob
+        //     .WithId("NativeAOT")
+        //     .WithToolchain(NativeAotToolchain.Net10_0));
         AddColumnProvider(DefaultColumnProviders.Instance);
         HideColumns(Column.Error, Column.StdDev, Column.Median, Column.RatioSD);
         WithOrderer(new GroupByTypeOrderer());

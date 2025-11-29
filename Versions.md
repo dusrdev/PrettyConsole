@@ -1,5 +1,11 @@
 # Versions
 
+## v5.2.0
+
+- `PrettyConsoleInterpolatedStringHandler` was re-written to buffers interpolated content before emitting it (instead of streaming), along with other optimizations.
+- Added a `WhiteSpace` struct to declare padding regions; the handler recognizes it as a special argument and writes that many spaces directly into the buffer.
+- `IndeterminateProgressBar` gains overloads that take a `Func<PrettyConsoleInterpolatedStringHandler>`, letting each frame build status text with captured locals. Use `PrettyConsoleInterpolatedStringHandler.Build` to bind the handler to the correct `OutputPipe` inside the factory.
+
 ## v5.1.0
 
 - `Console.WriteInterpolated` and `Console.WriteLineInterpolated` now return a `int` that contains the number of characters written using the handler. This could be used to help calculate paddings or other things when creating structured output.

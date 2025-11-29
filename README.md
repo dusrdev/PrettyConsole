@@ -12,6 +12,7 @@ PrettyConsole is a high-performance, ultra-low-latency, allocation-free extensio
 - 🚀 Zero-allocation interpolated string handler (`PrettyConsoleInterpolatedStringHandler`) for inline colors and formatting
 - 🎨 Inline color composition with `ConsoleColor` tuples and helpers (`DefaultForeground`, `DefaultBackground`, `Default`)
 - 🔁 Advanced rendering primitives (`Overwrite`, `ClearNextLines`, `GoToLine`, progress bars) that respect console pipes
+- 🧱 Handler-aware `WhiteSpace` struct for zero-allocation padding directly inside interpolated strings
 - 🧰 Rich input helpers (`TryReadLine`, `Confirm`, `RequestAnyInput`) with `IParsable<T>` and enum support
 - ⚙️ Allocation-conscious span-first APIs (`ISpanFormattable`, `ReadOnlySpan<char>`, `Console.WriteWhiteSpaces` / `TextWriter.WriteWhiteSpaces`)
 - ⛓ Output routing through `OutputPipe.Out` and `OutputPipe.Error` so piping/redirects continue to work
@@ -22,11 +23,11 @@ BenchmarkDotNet measures [styled output performance](Benchmarks/BenchmarkDotNet.
 
 | Method         | Mean        | Ratio         | Gen0   | Allocated | Alloc Ratio   |
 |--------------- |------------:|--------------:|-------:|----------:|--------------:|
-| PrettyConsole  |    95.02 ns | 49.73x faster |      - |         - |            NA |
-| SpectreConsole | 4,725.48 ns |      baseline | 2.0902 |   17840 B |               |
-| SystemConsole  |    68.67 ns | 68.81x faster | 0.0028 |      24 B | 743.333x less |
+| PrettyConsole  |    58.34 ns | 86.94x faster |      - |         - |            NA |
+| SpectreConsole | 5,069.69 ns |      baseline | 2.1284 |   17840 B |               |
+| SystemConsole  |    71.82 ns | 70.59x faster | 0.0022 |      24 B | 743.333x less |
 
-PrettyConsole is **the go-to choice for ultra-low-latency, allocation-free console rendering**, running ~50× faster than Spectre.Console while allocating nothing at all—even beating the BCL when you count real-world rendering costs.
+PrettyConsole is **the go-to choice for ultra-low-latency, allocation-free console rendering**, running almost ~90× faster than Spectre.Console while allocating nothing and even beating the manual unrolling with the BCL.
 
 ## Installation
 
@@ -47,7 +48,7 @@ This setup lets you call `Console.WriteInterpolated`, `Console.Overwrite`, `Cons
 
 ### Interpolated strings & inline colors
 
-`PrettyConsoleInterpolatedStringHandler` streams interpolated content directly to the selected pipe without allocating. Colors auto-reset at the end of each call. `Console.WriteInterpolated` and `Console.WriteLineInterpolated` return the number of visible characters written (handler-emitted escape sequences are excluded) so you can drive padding/width calculations from the same call sites.
+`PrettyConsoleInterpolatedStringHandler` now buffers interpolated content in a pooled buffer before flushing to the selected pipe—a v5.2.0 rewrite that delivered a big perf jump while staying allocation-free. Colors auto-reset at the end of each call. `Console.WriteInterpolated` and `Console.WriteLineInterpolated` return the number of visible characters written (handler-emitted escape sequences are excluded) so you can drive padding/width calculations from the same call sites.
 
 ```csharp
 Console.WriteInterpolated($"Hello {ConsoleColor.Green / ConsoleColor.DefaultBackground}world{ConsoleColor.Default}!");
@@ -56,6 +57,9 @@ Console.WriteInterpolated(OutputPipe.Error, $"{ConsoleColor.Yellow / ConsoleColo
 if (!Console.TryReadLine(out int choice, $"Pick option {ConsoleColor.Cyan / ConsoleColor.DefaultBackground}1-5{ConsoleColor.Default}: ")) {
     Console.WriteLineInterpolated($"{ConsoleColor.Red / ConsoleColor.DefaultBackground}Not a number.{ConsoleColor.Default}");
 }
+
+// Zero-allocation padding directly from the handler
+Console.WriteInterpolated($"Header{new WhiteSpace(6)}Value");
 ```
 
 `ConsoleColor.DefaultForeground`, `ConsoleColor.DefaultBackground`, and the `/` operator overload make it easy to compose foreground/background tuples inline (`ConsoleColor.Red / ConsoleColor.White`).
@@ -94,6 +98,17 @@ All fields collapse to `string.Empty` when markup is disabled, so the same call 
   ```
 
 You can combine both, e.g., `$"{elapsed,8:duration}"`, to keep progress/status displays tidy.
+
+- **`WhiteSpace` struct for padding** — pass `new WhiteSpace(length)` inside an interpolated string to emit that many spaces straight from the handler without allocating intermediate strings.
+
+- **Custom escape sequences** — if you need your own ANSI code (extra markup/colors), keep it in an interpolated hole instead of hardcoding it into the literal so the handler can treat it like other escape spans:
+
+```csharp
+var rose = "\u001b[38;5;213m"; // custom 256-color escape
+Console.WriteInterpolated($"{rose}accent text{Markup.Reset}");
+```
+
+Avoid embedding the escape directly in the literal (`"\u001b[38;5;213maccent text"`), which would be measured as visible width and could skew padding/alignment.
 
 ### Basic outputs
 
@@ -223,6 +238,17 @@ ProgressBar.WriteProgressBar(OutputPipe.Error, 75, ConsoleColor.Magenta, '*', ma
 ```
 
 `ProgressBar.Update` always re-renders (even if the percentage didn't change) so you can refresh status text. You can also set `ProgressBar.MaxLineWidth` on the instance to limit the rendered `[=====]  42%` line width before each update, mirroring the `maxLineWidth` option on `ProgressBar.WriteProgressBar`. The helper `ProgressBar.WriteProgressBar` keeps the cursor on the same line, which is ideal inside `Console.Overwrite`, and accepts an optional `maxLineWidth` so the entire `[=====]  42%` line can be constrained for left-column layouts.
+
+#### Indeterminate progress
+
+`IndeterminateProgressBar` renders animated frames on the error pipe. v5.2.0 adds overloads that accept a `Func<PrettyConsoleInterpolatedStringHandler>` so you can generate per-frame headers with captured locals. Bind the handler to the right pipe via `PrettyConsoleInterpolatedStringHandler.Build`:
+
+```csharp
+var spinner = new IndeterminateProgressBar();
+await spinner.RunAsync(workTask, () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"Syncing {DateTime.Now:T}"));
+```
+
+The factory runs each frame, letting you inject dynamic status text without allocations.
 
 #### Multiple progress bars with tasks + channels
 

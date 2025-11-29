@@ -29,18 +29,31 @@ public static class ConsoleContext {
     /// Gets the appropriate <see cref="TextWriter"/> based on <paramref name="pipe"/>
     /// </summary>
     /// <param name="pipe"></param>
-    internal static TextWriter GetWriter(OutputPipe pipe)
+    internal static TextWriter GetPipeTarget(OutputPipe pipe)
         => pipe switch {
             OutputPipe.Error => Error,
             _ => Out
         };
 
     /// <summary>
+    /// Gets the appropriate <see cref="TextWriter"/> based on <paramref name="pipe"/>
+    /// </summary>
+    /// <param name="pipe"></param>
+    internal static (TextWriter Writer, bool IsRedirected) GetPipeTargetAndState(OutputPipe pipe) {
+        return pipe switch {
+            OutputPipe.Out => (Out, !ReferenceEquals(Out, Console.Out) || Console.IsOutputRedirected),
+            OutputPipe.Error => (Error, !ReferenceEquals(Error, Console.Error) || Console.IsErrorRedirected),
+            _ => throw new InvalidOperationException("A pipe that isn't Out or Error is not supported."),
+        };
+    }
+
+    /// <summary>
     /// Returns the current console buffer width or <paramref name="defaultWidth"/> if <see cref="Console.IsOutputRedirected"/>
     /// </summary>
     /// <param name="defaultWidth"></param>
     internal static int GetWidthOrDefault(int defaultWidth = 120) {
-        if (Console.IsOutputRedirected) {
+        // If output is redirected or a custom writer is injected, fall back to the provided default.
+        if (Console.IsOutputRedirected || !ReferenceEquals(Out, Console.Out)) {
             return defaultWidth;
         }
         return Console.BufferWidth;

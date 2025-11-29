@@ -1,8 +1,8 @@
-namespace PrettyConsole.Tests.Unit;
+namespace PrettyConsole.UnitTests;
 
 public class MenusTests {
-    [Fact]
-    public void Selection_ReturnsSelectedChoice_WhenInputValid() {
+    [Test]
+    public async Task Selection_ReturnsSelectedChoice_WhenInputValid() {
         Out = Utilities.GetWriter(out var writer);
         In = Utilities.GetReader("2");
 
@@ -12,7 +12,7 @@ public class MenusTests {
 
         var output = writer.ToStringAndFlush();
 
-        Assert.Equal(
+        await Assert.That(Normalize(output)).IsEqualTo(
             """
             Choose a fruit:
              1) Apple
@@ -20,15 +20,14 @@ public class MenusTests {
              3) Cherry
 
             Enter your choice: 
-            """.Replace("\r\n", "\n"),
-            Normalize(output));
-        Assert.Equal("Banana", result);
+            """.Replace("\r\n", "\n"));
+        await Assert.That(result).IsEqualTo("Banana");
 
         static string Normalize(string value) => value.Replace("\r\n", "\n");
     }
 
-    [Fact]
-    public void Selection_InvalidNumber_ReturnsEmptyString() {
+    [Test]
+    public async Task Selection_InvalidNumber_ReturnsEmptyString() {
         Out = Utilities.GetWriter(out _);
         In = Utilities.GetReader("5");
 
@@ -36,11 +35,11 @@ public class MenusTests {
 
         var result = Console.Selection(choices, $"Pick a number: ");
 
-        Assert.Equal(string.Empty, result);
+        await Assert.That(result).IsEqualTo(string.Empty);
     }
 
-    [Fact]
-    public void Selection_NonNumericInput_ReturnsEmptyString() {
+    [Test]
+    public async Task Selection_NonNumericInput_ReturnsEmptyString() {
         Out = Utilities.GetWriter(out _);
         In = Utilities.GetReader("abc");
 
@@ -48,11 +47,11 @@ public class MenusTests {
 
         var result = Console.Selection(choices, $"Pick a number: ");
 
-        Assert.Equal(string.Empty, result);
+        await Assert.That(result).IsEqualTo(string.Empty);
     }
 
-    [Fact]
-    public void MultiSelection_ReturnsSelectedChoices_InOrder() {
+    [Test]
+    public async Task MultiSelection_ReturnsSelectedChoices_InOrder() {
         Out = Utilities.GetWriter(out _);
         In = Utilities.GetReader("3 1");
 
@@ -60,11 +59,13 @@ public class MenusTests {
 
         var result = Console.MultiSelection(choices, $"Plants: ");
 
-        Assert.Equal(["Earth", "Mercury"], result);
+        await Assert.That(result.Length).IsEqualTo(2);
+        await Assert.That(result[0]).IsEqualTo("Earth");
+        await Assert.That(result[1]).IsEqualTo("Mercury");
     }
 
-    [Fact]
-    public void MultiSelection_InvalidEntry_ReturnsEmptyArray() {
+    [Test]
+    public async Task MultiSelection_InvalidEntry_ReturnsEmptyArray() {
         Out = Utilities.GetWriter(out _);
         In = Utilities.GetReader("2 x");
 
@@ -72,11 +73,11 @@ public class MenusTests {
 
         var result = Console.MultiSelection(choices, $"Letters: ");
 
-        Assert.Empty(result);
+        await Assert.That(result.Length).IsEqualTo(0);
     }
 
-    [Fact]
-    public void MultiSelection_EmptyInput_ReturnsEmptyArray() {
+    [Test]
+    public async Task MultiSelection_EmptyInput_ReturnsEmptyArray() {
         Out = Utilities.GetWriter(out _);
         In = Utilities.GetReader(string.Empty);
 
@@ -84,11 +85,11 @@ public class MenusTests {
 
         var result = Console.MultiSelection(choices, $"Letters: ");
 
-        Assert.Empty(result);
+        await Assert.That(result.Length).IsEqualTo(0);
     }
 
-    [Fact]
-    public void TreeMenu_ValidSelection_ReturnsTuple() {
+    [Test]
+    public async Task TreeMenu_ValidSelection_ReturnsTuple() {
         Out = Utilities.GetWriter(out _);
         In = Utilities.GetReader("2 1");
 
@@ -99,12 +100,12 @@ public class MenusTests {
 
         var (option, subOption) = Console.TreeMenu(menu, $"Menu: ");
 
-        Assert.Equal("Edit", option);
-        Assert.Equal("Undo", subOption);
+        await Assert.That(option).IsEqualTo("Edit");
+        await Assert.That(subOption).IsEqualTo("Undo");
     }
 
-    [Fact]
-    public void TreeMenu_MissingSelectionParts_ThrowsArgumentException() {
+    [Test]
+    public async Task TreeMenu_MissingSelectionParts_ThrowsArgumentException() {
         Out = Utilities.GetWriter(out _);
         In = Utilities.GetReader("1");
 
@@ -112,11 +113,12 @@ public class MenusTests {
             ["Files"] = new List<string> { "Open" }
         };
 
-        Assert.Throws<ArgumentException>(() => Console.TreeMenu(menu, $"Menu: "));
+        await Assert.That(() => Console.TreeMenu(menu, $"Menu: "))
+            .Throws<ArgumentException>();
     }
 
-    [Fact]
-    public void TreeMenu_InvalidIndexes_ThrowsArgumentException() {
+    [Test]
+    public async Task TreeMenu_InvalidIndexes_ThrowsArgumentException() {
         Out = Utilities.GetWriter(out _);
         In = Utilities.GetReader("3 1");
 
@@ -125,11 +127,25 @@ public class MenusTests {
             ["Edit"] = new List<string> { "Undo" }
         };
 
-        Assert.Throws<ArgumentException>(() => Console.TreeMenu(menu, $"Menu: "));
+        await Assert.That(() => Console.TreeMenu(menu, $"Menu: "))
+            .Throws<ArgumentException>();
     }
 
-    [Fact]
-    public void Table_WritesHeaderAndRows() {
+    [Test]
+    public async Task TreeMenu_NonNumericInput_ThrowsArgumentException() {
+        Out = Utilities.GetWriter(out _);
+        In = Utilities.GetReader("a b");
+
+        var menu = new Dictionary<string, IList<string>> {
+            ["Files"] = new List<string> { "Open" }
+        };
+
+        await Assert.That(() => Console.TreeMenu(menu, $"Menu: "))
+            .Throws<ArgumentException>();
+    }
+
+    [Test]
+    public async Task Table_WritesHeaderAndRows() {
         Out = Utilities.GetWriter(out var writer);
 
         var headers = new List<string> { "Name", "Age" };
@@ -139,19 +155,32 @@ public class MenusTests {
         Console.Table(headers, [column1, column2]);
 
         var output = writer.ToString();
-        Assert.Contains("Name", output);
-        Assert.Contains("Age", output);
-        Assert.Contains("Alice", output);
-        Assert.Contains("Bob", output);
+        await Assert.That(output).Contains("Name");
+        await Assert.That(output).Contains("Age");
+        await Assert.That(output).Contains("Alice");
+        await Assert.That(output).Contains("Bob");
     }
 
-    [Fact]
-    public void Table_DifferentHeaderAndColumnCounts_ThrowsArgumentException() {
+    [Test]
+    public async Task Table_DifferentHeaderAndColumnCounts_ThrowsArgumentException() {
         Out = Utilities.GetWriter(out _);
 
         var headers = new List<string> { "Name", "Age" };
         var column1 = new List<string> { "Alice", "Bob" };
 
-        Assert.Throws<ArgumentException>(() => Console.Table(headers, [column1]));
+        await Assert.That(() => Console.Table(headers, [column1]))
+            .Throws<ArgumentException>();
+    }
+
+    [Test]
+    public async Task MultiSelection_MixedValidAndInvalidIndices_ReturnsOnlyValid() {
+        Out = Utilities.GetWriter(out _);
+        In = Utilities.GetReader("1 5 2");
+
+        var choices = new List<string> { "One", "Two", "Three" };
+
+        var result = Console.MultiSelection(choices, $"Numbers: ");
+
+        await Assert.That(result.Length).IsEqualTo(0);
     }
 }

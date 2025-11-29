@@ -46,7 +46,7 @@ public class ProgressBar {
     /// <remarks>
     /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
     /// </remarks>
-    public void Update(int percentage) => Update(percentage, ReadOnlySpan<char>.Empty, true);
+    public void Update(int percentage) => Update(percentage, ReadOnlySpan<char>.Empty);
 
     /// <summary>
     /// Updates the progress bar with the specified percentage.
@@ -55,7 +55,7 @@ public class ProgressBar {
     /// <remarks>
     /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
     /// </remarks>
-    public void Update(double percentage) => Update((int)percentage, ReadOnlySpan<char>.Empty, true);
+    public void Update(double percentage) => Update((int)percentage, ReadOnlySpan<char>.Empty);
 
     /// <summary>
     /// Updates the progress bar with the specified percentage and header text.
@@ -82,16 +82,16 @@ public class ProgressBar {
         lock (_lock) {
             var currentLine = Console.GetCurrentLine();
             if (sameLine) {
-                Console.ClearNextLines(1, OutputPipe.Error);
+                Console.ClearNextLines(1);
                 if (status.Length > 0) {
                     Console.Write(status, OutputPipe.Error, ForegroundColor);
-                    ConsoleContext.GetWriter(OutputPipe.Error).WriteWhiteSpaces(1);
+                    ConsoleContext.GetPipeTarget(OutputPipe.Error).WriteWhiteSpaces(1);
                     WriteProgressBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar, MaxLineWidth);
                 }
             } else {
                 bool hasStatus = status.Length > 0;
                 int lines = hasStatus ? 2 : 1;
-                Console.ClearNextLines(lines, OutputPipe.Error);
+                Console.ClearNextLines(lines);
                 if (hasStatus) Console.WriteLine(status, OutputPipe.Error, ForegroundColor);
                 WriteProgressBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar, MaxLineWidth);
             }
@@ -136,26 +136,13 @@ public class ProgressBar {
 
         int barLength = Math.Max(0, constrainedWidth - decorationWidth);
 
-        var writer = ConsoleContext.GetWriter(pipe);
-        Console.Write<char>('[', pipe);
+        int filled = Math.Min((int)(barLength * p * 0.01), barLength);
+        Span<char> s = filled > 0
+                    ? stackalloc char[filled]
+                    : Span<char>.Empty;
+        s.Fill(progressChar);
+        int remaining = barLength - filled;
 
-        if (barLength > 0) {
-            int filled = Math.Min((int)(barLength * p * 0.01), barLength);
-
-            if (filled > 0) {
-                Console.SetColors(progressColor, Console.BackgroundColor);
-                Span<char> s = stackalloc char[filled];
-                s.Fill(progressChar);
-                writer.Write(s);
-                Console.ResetColor();
-            }
-
-            int remaining = barLength - filled;
-            if (remaining > 0) {
-                writer.WriteWhiteSpaces(remaining);
-            }
-        }
-
-        Console.WriteInterpolated(pipe, $"] {p,3}%");
+        Console.WriteInterpolated(pipe, $"[{progressColor}{s}{ConsoleColor.DefaultForeground}{new WhiteSpace(remaining)}] {p,3}%");
     }
 }

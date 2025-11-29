@@ -23,16 +23,16 @@ public static class InputRequestExtensions {
         /// <summary>
         /// Used to wait for user input
         /// </summary>
-        /// <param name="handler">Interpolated string handler that streams the content.</param>
+        /// <param name="handler"/>
         public static void RequestAnyInput([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
-            handler.ResetColors();
+            handler.Flush();
             _ = s_readKey();
         }
 
         /// <summary>
         /// Used to get user confirmation with the default values ["y", "yes"] or just pressing enter
         /// </summary>
-        /// <param name="handler">Interpolated string handler that streams the content.</param>
+        /// <param name="handler"/>
         /// <remarks>
         /// It does not display a question mark or any other prompt, only the message
         /// </remarks>
@@ -43,12 +43,12 @@ public static class InputRequestExtensions {
         /// </summary>
         /// <param name="trueValues">a collection of values that indicate positive confirmation</param>
         /// <param name="emptyIsTrue">if simply pressing enter is considered positive or not</param>
-        /// <param name="handler">Interpolated string handler that streams the content.</param>
+        /// <param name="handler"/>
         /// <remarks>
         /// It does not display a question mark or any other prompt, only the message
         /// </remarks>
         public static bool Confirm(ReadOnlySpan<string> trueValues, bool emptyIsTrue = true, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
-            handler.ResetColors();
+            handler.Flush();
             var input = ConsoleContext.In.ReadLine();
             if (input is null or { Length: 0 }) {
                 return emptyIsTrue;

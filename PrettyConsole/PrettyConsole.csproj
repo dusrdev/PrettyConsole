@@ -26,7 +26,7 @@
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>5.1.0</Version>
+		<Version>5.2.0</Version>
 		<Nullable>enable</Nullable>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -43,10 +43,9 @@
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
-			- v5.1.0 adds return values to `Console.WriteInterpolated`/`WriteLineInterpolated` so callers can reuse the rendered character count for padding/width calculations (escape sequences emitted by the handler are excluded).
-			- `PrettyConsoleExtensions` is now `ConsoleContext`; the exposed `Out`/`Error`/`In` streams include public setters to simplify testing and redirection scenarios.
-			- New convenience API `Console.WriteWhiteSpaces(int length, OutputPipe pipe = OutputPipe.Out)` reduces boilerplate when padding output; the `TextWriter.WriteWhiteSpaces` helper remains available on the writers.
-			- Existing features continue to flow through the span-first, allocation-conscious pipeline introduced in v5.x, including `ConsoleColor` tuple helpers, ANSI `Markup`, and the progress bar helpers.
+			- `PrettyConsoleInterpolatedStringHandler` was re-written to buffers interpolated content before emitting it (instead of streaming), along with other optimizations.
+			- Added a `WhiteSpace` struct to declare padding regions; the handler recognizes it as a special argument and writes that many spaces directly into the buffer.
+			- `IndeterminateProgressBar` gains overloads that take a `Func{PrettyConsoleInterpolatedStringHandler}`, letting each frame build status text with captured locals. Use `PrettyConsoleInterpolatedStringHandler.Build` to bind the handler to the correct `OutputPipe` inside the factory.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
@@ -65,6 +64,9 @@
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
 			<_Parameter1>PrettyConsole.Tests.Unit</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>PrettyConsole.UnitTests</_Parameter1>
 		</AssemblyAttribute>
 	</ItemGroup>
 </Project>

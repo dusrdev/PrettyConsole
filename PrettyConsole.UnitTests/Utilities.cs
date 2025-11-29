@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace PrettyConsole.Tests.Unit;
+namespace PrettyConsole.UnitTests;
 
 public static partial class Utilities {
     public static StringReader GetReader(string str) => new(str);

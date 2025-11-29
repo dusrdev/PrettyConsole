@@ -1,8 +1,8 @@
-namespace PrettyConsole.Tests.Unit;
+namespace PrettyConsole.UnitTests;
 
 public class AdvancedOutputsTests {
-    [Fact]
-    public void Overwrite_ExecutesActionAndWritesOutput() {
+    [Test]
+    public async Task Overwrite_ExecutesActionAndWritesOutput() {
         Error = Utilities.GetWriter(out var writer);
         bool executed = false;
         int cursorLine = 0;
@@ -16,12 +16,12 @@ public class AdvancedOutputsTests {
             RenderingExtensions.ConfigureCursorAccessors(null, null);
         }
 
-        Assert.True(executed);
-        Assert.Contains("Progress", writer.ToString());
+        await Assert.That(executed).IsTrue();
+        await Assert.That(writer.ToString()).Contains("Progress");
     }
 
-    [Fact]
-    public void Overwrite_WithState_ExecutesActionAndWritesOutput() {
+    [Test]
+    public async Task Overwrite_WithState_ExecutesActionAndWritesOutput() {
         Error = Utilities.GetWriter(out var writer);
         bool executed = false;
         int cursorLine = 0;
@@ -35,21 +35,21 @@ public class AdvancedOutputsTests {
             RenderingExtensions.ConfigureCursorAccessors(null, null);
         }
 
-        Assert.True(executed);
-        Assert.Contains("Done", writer.ToString());
+        await Assert.That(executed).IsTrue();
+        await Assert.That(writer.ToString()).Contains("Done");
     }
 
-    [Fact]
+    [Test]
     public async Task TypeWrite_Regular() {
         Out = Utilities.GetWriter(out var stringWriter);
         await Console.TypeWrite("Hello world!", Green / Black, 10);
-        Assert.Contains("Hello world!", stringWriter.ToString());
+        await Assert.That(stringWriter.ToString()).Contains("Hello world!");
     }
 
-    [Fact]
+    [Test]
     public async Task TypeWriteLine_Regular() {
         Out = Utilities.GetWriter(out var stringWriter);
         await Console.TypeWriteLine("Hello world!", Green / ConsoleColor.Default, 10);
-        Assert.Contains("Hello world!" + Environment.NewLine, stringWriter.ToString());
+        await Assert.That(stringWriter.ToString()).Contains("Hello world!" + Environment.NewLine);
     }
 }

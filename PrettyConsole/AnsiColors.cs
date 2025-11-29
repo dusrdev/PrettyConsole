@@ -1,21 +1,13 @@
 namespace PrettyConsole;
 
 internal static class AnsiColors {
-    private const string ForegroundResetSequence = "\e[39m";
-    private const string BackgroundResetSequence = "\e[49m";
+    internal const string ForegroundResetSequence = "\e[39m";
+    internal const string BackgroundResetSequence = "\e[49m";
 
-    private static readonly string[] ForegroundCodes = null!;
-    private static readonly string[] BackgroundCodes = null!;
-
-    /// <summary>
-    /// Gets a value indicating whether ANSI color sequences are emitted.
-    /// </summary>
-    public static readonly bool Enabled;
+    private static readonly string[] ForegroundCodes;
+    private static readonly string[] BackgroundCodes;
 
     static AnsiColors() {
-        Enabled = !Console.IsOutputRedirected && !Console.IsErrorRedirected;
-        if (!Enabled) return;
-
         ForegroundCodes = new string[16];
         BackgroundCodes = new string[16];
         foreach (var color in Enum.GetValues<ConsoleColor>()) {
@@ -45,7 +37,7 @@ internal static class AnsiColors {
     }
 
 
-    private static string BuildForegroundSequence(ConsoleColor color) {
+    internal static string BuildForegroundSequence(ConsoleColor color) {
         return color switch {
             ConsoleColor.Black => "\e[30m",
             ConsoleColor.DarkBlue => "\e[34m",
@@ -67,7 +59,7 @@ internal static class AnsiColors {
         };
     }
 
-    private static string BuildBackgroundSequence(ConsoleColor color) {
+    internal static string BuildBackgroundSequence(ConsoleColor color) {
         return color switch {
             ConsoleColor.Black => "\e[40m",
             ConsoleColor.DarkBlue => "\e[44m",

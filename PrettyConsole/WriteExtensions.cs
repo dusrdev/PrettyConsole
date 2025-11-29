@@ -10,10 +10,10 @@ public static class WriteExtensions {
         /// <summary>
         /// Writes interpolated content using <see cref="PrettyConsoleInterpolatedStringHandler"/> to <see cref="OutputPipe.Out"/>.
         /// </summary>
-        /// <param name="handler">Interpolated string handler that streams the content.</param>
+        /// <param name="handler"/>
         /// <returns>The number of characters written by the handler.</returns>
         public static int WriteInterpolated([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
-            handler.ResetColors();
+            handler.Flush();
             return handler.CharsWritten;
         }
 
@@ -21,10 +21,10 @@ public static class WriteExtensions {
         /// Writes interpolated content using <see cref="PrettyConsoleInterpolatedStringHandler"/>.
         /// </summary>
         /// <param name="pipe">Destination pipe. Defaults to <see cref="OutputPipe.Out"/>.</param>
-        /// <param name="handler">Interpolated string handler that streams the content.</param>
+        /// <param name="handler"/>
         /// <returns>The number of characters written by the handler.</returns>
         public static int WriteInterpolated(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] PrettyConsoleInterpolatedStringHandler handler = default) {
-            handler.ResetColors();
+            handler.Flush();
             return handler.CharsWritten;
         }
 
@@ -91,20 +91,21 @@ public static class WriteExtensions {
         where T : ISpanFormattable, allows ref struct {
             int lowerBound = 4096;
             var pool = ArrayPool<char>.Shared;
+            char[] array;
 
             while (true) {
-                var array = pool.Rent(lowerBound);
-                try {
-                    var buffer = new Span<char>(array);
-                    if (item.TryFormat(array, out int charsWritten, format, formatProvider)) {
-                        Write(buffer.Slice(0, charsWritten), pipe, foreground, background);
-                        return;
-                    }
-                } finally {
-                    pool.Return(array);
+                array = pool.Rent(lowerBound);
+
+                var buffer = new Span<char>(array);
+                if (item.TryFormat(array, out int charsWritten, format, formatProvider)) {
+                    Write(buffer.Slice(0, charsWritten), pipe, foreground, background);
+                    break;
                 }
+
                 lowerBound *= 2;
             }
+
+            pool.Return(array);
         }
 
         /// <summary>
@@ -135,7 +136,7 @@ public static class WriteExtensions {
         /// <param name="background">background color</param>
         public static void Write(ReadOnlySpan<char> span, OutputPipe pipe, ConsoleColor foreground, ConsoleColor background) {
             Console.SetColors(foreground, background);
-            ConsoleContext.GetWriter(pipe).Write(span);
+            ConsoleContext.GetPipeTarget(pipe).Write(span);
             Console.ResetColor();
         }
     }
