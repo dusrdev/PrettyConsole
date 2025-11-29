@@ -271,7 +271,7 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
         try {
             Out = Utilities.GetWriter(out var writer);
 
-            Console.WriteInterpolated($"{ "Hi",4}{ "Bye",-5}");
+            Console.WriteInterpolated($"{"Hi",4}{"Bye",-5}");
 
             await Assert.That(writer.ToString()).IsEqualTo("  HiBye  ");
         } finally {
