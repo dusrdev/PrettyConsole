@@ -124,7 +124,7 @@ public static class MenuExtensions {
                         ConsoleContext.Out.WriteWhiteSpaces(maxMainOption);
                     }
 
-                    Console.WriteInterpolated($"  {j + 1}) {subChoices[j]}");
+                    Console.WriteLineInterpolated($"  {j + 1}) {subChoices[j]}");
                 }
 
                 Console.NewLine();
