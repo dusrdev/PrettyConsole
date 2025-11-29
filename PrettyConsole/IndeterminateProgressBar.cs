@@ -21,7 +21,7 @@ public class IndeterminateProgressBar {
     /// <remarks>
     /// You can also choose from some defaults in <see cref="Patterns"/>
     /// </remarks>
-    public ReadOnlyCollection<string> AnimationSequence { get; set; } = Patterns.Twirl;
+    public ReadOnlyCollection<string> AnimationSequence { get; init; } = Patterns.Twirl;
 
     /// <summary>
     /// Gets or sets the foreground color of the progress bar.
@@ -31,13 +31,13 @@ public class IndeterminateProgressBar {
     /// <summary>
     /// Gets or sets a value indicating whether to display the elapsed time in the progress bar.
     /// </summary>
-    public bool DisplayElapsedTime { get; set; } = true;
+    public bool DisplayElapsedTime { get; init; } = true;
 
     /// <summary>
     /// Gets or sets the update rate (in ms) of the indeterminate progress bar.
     /// </summary>
     /// <remarks>Default = 200</remarks>
-    public int UpdateRate { get; set; } = 200;
+    public int UpdateRate { get; init; } = 200;
 
     /// <summary>
     /// Runs the indeterminate progress bar while the specified task is running.
@@ -46,18 +46,20 @@ public class IndeterminateProgressBar {
     /// <param name="token"></param>
     /// <returns>The output of the running task</returns>
     public async Task<T> RunAsync<T>(Task<T> task, CancellationToken token = default) {
-        return await RunAsync(task, string.Empty, token);
+        await RunAsyncNonGeneric(task, null, token);
+
+        return task.IsCompleted ? task.Result : await task;
     }
 
     /// <summary>
-    /// Runs the indeterminate progress bar while the specified task is running.
+    /// Runs the indeterminate progress bar while the specified task is running, using a dynamic header factory.
     /// </summary>
     /// <param name="task"></param>
-    /// <param name="header">The header which to display before the progress char</param>
+    /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>
     /// <param name="token"></param>
-    /// <returns>The output of the running task</returns>
-    public async Task<T> RunAsync<T>(Task<T> task, string header, CancellationToken token = default) {
-        await RunAsyncNonGeneric(task, header, token);
+    /// <returns>The output of the running task.</returns>
+    public async Task<T> RunAsync<T>(Task<T> task, Func<OutputPipe, PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token = default) {
+        await RunAsyncNonGeneric(task, headerFactory, token);
 
         return task.IsCompleted ? task.Result : await task;
     }
@@ -68,18 +70,24 @@ public class IndeterminateProgressBar {
     /// <param name="task"></param>
     /// <param name="token"></param>
     /// <returns></returns>
-    public async Task RunAsync(Task task, CancellationToken token = default) {
-        await RunAsync(task, string.Empty, token);
-    }
+    public Task RunAsync(Task task, CancellationToken token = default) => RunAsyncNonGeneric(task, null, token);
 
     /// <summary>
-    /// Runs the indeterminate progress bar while the specified task is running.
+    /// Runs the indeterminate progress bar while the specified task is running, using a dynamic header factory.
     /// </summary>
     /// <param name="task"></param>
-    /// <param name="header">The header which to display before the progress char</param>
+    /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>
     /// <param name="token"></param>
-    /// <returns></returns>
-    public async Task RunAsync(Task task, string header, CancellationToken token = default) {
+    public Task RunAsync(Task task, Func<OutputPipe, PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token) => RunAsyncNonGeneric(task, headerFactory, token);
+
+
+    /// <summary>
+    /// Runs the indeterminate progress bar while the specified task is running, using a dynamic header factory.
+    /// </summary>
+    /// <param name="task"></param>
+    /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>
+    /// <param name="token"></param>
+    private async Task RunAsyncNonGeneric(Task task, Func<OutputPipe, PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token) {
         try {
             if (task.Status is not TaskStatus.Running) {
                 task.Start();
@@ -98,14 +106,16 @@ public class IndeterminateProgressBar {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token);
 
         // Cancel the delay token as soon as the bound task completes
-        _ = task.ContinueWith(static (t, state) => ((CancellationTokenSource)state!).Cancel(), linkedCts,
+        _ = task.ContinueWith(static (_, state) => ((CancellationTokenSource)state!).Cancel(), linkedCts,
             CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
         while (!task.IsCompleted && !token.IsCancellationRequested) {
             Console.WriteInterpolated(OutputPipe.Error, $"{ForegroundColor}{AnimationSequence[seqIndex]}{ConsoleColor.DefaultForeground}");
 
-            if (header.Length > 0) {
-                Console.WriteInterpolated(OutputPipe.Error, $" {header}");
+            if (headerFactory is not null) {
+                ConsoleContext.Error.WriteWhiteSpaces(1);
+                var headerHandler = headerFactory(OutputPipe.Error);
+                headerHandler.Flush();
             }
 
             if (DisplayElapsedTime) {
@@ -141,7 +151,7 @@ public class IndeterminateProgressBar {
             }
 
             // Always clear once per frame
-            Console.ClearNextLines(1, OutputPipe.Error);
+            Console.ClearNextLines(1);
 
             if (token.IsCancellationRequested || task.IsCompleted) {
                 break;
@@ -154,8 +164,6 @@ public class IndeterminateProgressBar {
             }
         }
     }
-
-    private Task RunAsyncNonGeneric(Task task, string header, CancellationToken token) => RunAsync(task, header, token);
 
     /// <summary>
     /// Provides constant animation sequences that can be used for <see cref="AnimationSequence"/>

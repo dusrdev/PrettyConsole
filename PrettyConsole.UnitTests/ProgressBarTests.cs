@@ -215,10 +215,10 @@ public class ProgressBarTests {
             };
 
             var cancellation = CancellationToken.None;
-            var result = await bar.RunAsync(Task.Run(async () => {
+            int result = await bar.RunAsync(Task.Run(async () => {
                 await Task.Delay(20, cancellation);
                 return 42;
-            }, cancellation), "Working", cancellation);
+            }, cancellation), _ => $"Working", cancellation);
 
             await Assert.That(result).IsEqualTo(42);
             await Assert.That(errorWriter.ToString()).IsNotEqualTo(string.Empty);
@@ -263,7 +263,7 @@ public class ProgressBarTests {
             };
 
             var completed = Task.FromResult(5);
-            var result = await bar.RunAsync(completed, "done");
+            var result = await bar.RunAsync(completed, _ => $"done");
 
             await Assert.That(result).IsEqualTo(5);
         } finally {
@@ -280,15 +280,15 @@ public class ProgressBarTests {
         try {
             var bar = new IndeterminateProgressBar {
                 DisplayElapsedTime = false,
-                UpdateRate = 5
+                UpdateRate = 100
             };
 
             var task = Task.Run(async () => {
-                await Task.Delay(1000, cts.Token);
+                await Task.Delay(10000, cts.Token);
             }, cts.Token);
 
-            cts.CancelAfter(10);
-            await bar.RunAsync(task, "cancelled", cts.Token);
+            cts.CancelAfter(200);
+            await bar.RunAsync(task, _ => $"cancelled", cts.Token);
         } catch (OperationCanceledException) {
             // expected in this path
         } finally {
