@@ -23,7 +23,7 @@ public static class InputRequestExtensions {
         /// <summary>
         /// Used to wait for user input
         /// </summary>
-        /// <param name="handler">Interpolated string handler that streams the content.</param>
+        /// <param name="handler"/>
         public static void RequestAnyInput([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
             handler.Flush();
             _ = s_readKey();
@@ -32,7 +32,7 @@ public static class InputRequestExtensions {
         /// <summary>
         /// Used to get user confirmation with the default values ["y", "yes"] or just pressing enter
         /// </summary>
-        /// <param name="handler">Interpolated string handler that streams the content.</param>
+        /// <param name="handler"/>
         /// <remarks>
         /// It does not display a question mark or any other prompt, only the message
         /// </remarks>
@@ -43,7 +43,7 @@ public static class InputRequestExtensions {
         /// </summary>
         /// <param name="trueValues">a collection of values that indicate positive confirmation</param>
         /// <param name="emptyIsTrue">if simply pressing enter is considered positive or not</param>
-        /// <param name="handler">Interpolated string handler that streams the content.</param>
+        /// <param name="handler"/>
         /// <remarks>
         /// It does not display a question mark or any other prompt, only the message
         /// </remarks>
