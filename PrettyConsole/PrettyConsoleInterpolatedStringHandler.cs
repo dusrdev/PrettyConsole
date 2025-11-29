@@ -2,8 +2,6 @@ using System.Buffers;
 
 namespace PrettyConsole;
 
-//TODO: Check if optional values for alignment can reduce overloads
-
 /// <summary>
 /// Interpolated string handler that handles formatting
 /// </summary>
@@ -68,6 +66,14 @@ public struct PrettyConsoleInterpolatedStringHandler {
         _provider = provider;
         shouldAppend = true;
     }
+
+    /// <summary>
+	/// Creates a <see cref="PrettyConsoleInterpolatedStringHandler"/> instance attached to <paramref name="pipe"/>.
+	/// </summary>
+	/// <param name="pipe"></param>
+	/// <param name="handler"></param>
+	/// <returns></returns>
+    public static PrettyConsoleInterpolatedStringHandler Build(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] PrettyConsoleInterpolatedStringHandler handler = default) => handler;
 
     /// <summary>
     /// Appends a literal segment supplied by the compiler.

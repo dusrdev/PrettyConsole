@@ -10,6 +10,6 @@ public sealed class IndeterminateProgressBarTest : IPrettyConsoleTest {
             // UpdateRate = 120,
             DisplayElapsedTime = true
         };
-        await prg.RunAsync(Task.Delay(5_000), _ => $"...{ConsoleColor.Green}Running{ConsoleColor.DefaultForeground}...", CancellationToken.None);
+        await prg.RunAsync(Task.Delay(5_000), () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"...{ConsoleColor.Green}Running{ConsoleColor.DefaultForeground}..."), CancellationToken.None);
     }
 }

@@ -4,7 +4,7 @@
 
 - `PrettyConsoleInterpolatedStringHandler` was rewritten to buffer the contents instead of stream them, along with other optimizations, massively improving performance.
 - `WhiteSpace` is a new struct that declares a section of whitespace with length, `PrettyConsoleInterpolatedStringHandler` was thought to recognize it is a special parameter and will render a region of whitespaces with that length to the buffer.
-- `IndeterminateProgressBar` overloads that accepted a `header` now accept a `Func<OutputPipe, PrettyConsoleInterpolatedStringHandler>` instead, which can be used to pull in data from variables via a closure and enable a more dynamic rendering of statuses. `OutputPipe` here should be ignored using `_` and not used inside the lambda, it is invoked internally to render to the correct pipe.
+- Add overloads to `IndeterminateProgressBar` that accept a `Func<PrettyConsoleInterpolatedStringHandler>` instead, which can be used to pull in data from variables via a closure and enable a more dynamic rendering of statuses. `PrettyConsoleInterpolatedStringHandler.Build` should be used to return it attached to the right `OutputPipe`.
 
 ## v5.1.0
 

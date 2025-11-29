@@ -1,5 +1,3 @@
-using TUnit.Core.Attributes;
-
 namespace PrettyConsole.UnitTests;
 
 [SkipWhenConsoleUnavailable]
@@ -218,7 +216,7 @@ public class ProgressBarTests {
             int result = await bar.RunAsync(Task.Run(async () => {
                 await Task.Delay(20, cancellation);
                 return 42;
-            }, cancellation), _ => $"Working", cancellation);
+            }, cancellation), () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"Working"), cancellation);
 
             await Assert.That(result).IsEqualTo(42);
             await Assert.That(errorWriter.ToString()).IsNotEqualTo(string.Empty);
@@ -263,7 +261,7 @@ public class ProgressBarTests {
             };
 
             var completed = Task.FromResult(5);
-            var result = await bar.RunAsync(completed, _ => $"done");
+            var result = await bar.RunAsync(completed, () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"done"));
 
             await Assert.That(result).IsEqualTo(5);
         } finally {
@@ -288,7 +286,7 @@ public class ProgressBarTests {
             }, cts.Token);
 
             cts.CancelAfter(200);
-            await bar.RunAsync(task, _ => $"cancelled", cts.Token);
+            await bar.RunAsync(task, "cancelled", cts.Token);
         } catch (OperationCanceledException) {
             // expected in this path
         } finally {

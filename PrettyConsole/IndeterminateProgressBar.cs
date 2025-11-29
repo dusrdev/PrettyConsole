@@ -52,13 +52,25 @@ public class IndeterminateProgressBar {
     }
 
     /// <summary>
+    /// Runs the indeterminate progress bar while the specified task is running.
+    /// </summary>
+    /// <param name="task"></param>
+    /// <param name="header"></param>
+    /// <param name="token"></param>
+    public async Task<T> RunAsync<T>(Task<T> task, string header, CancellationToken token) {
+        await RunAsyncNonGeneric(task, () => WrapHeader(header), token);
+
+        return task.IsCompleted ? task.Result : await task;
+    }
+
+    /// <summary>
     /// Runs the indeterminate progress bar while the specified task is running, using a dynamic header factory.
     /// </summary>
     /// <param name="task"></param>
     /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>
     /// <param name="token"></param>
     /// <returns>The output of the running task.</returns>
-    public async Task<T> RunAsync<T>(Task<T> task, Func<OutputPipe, PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token = default) {
+    public async Task<T> RunAsync<T>(Task<T> task, Func<PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token = default) {
         await RunAsyncNonGeneric(task, headerFactory, token);
 
         return task.IsCompleted ? task.Result : await task;
@@ -73,12 +85,22 @@ public class IndeterminateProgressBar {
     public Task RunAsync(Task task, CancellationToken token = default) => RunAsyncNonGeneric(task, null, token);
 
     /// <summary>
+    /// Runs the indeterminate progress bar while the specified task is running.
+    /// </summary>
+    /// <param name="task"></param>
+    /// <param name="header"></param>
+    /// <param name="token"></param>
+    public Task RunAsync(Task task, string header, CancellationToken token) {
+        return RunAsyncNonGeneric(task, () => WrapHeader(header), token);
+    }
+
+    /// <summary>
     /// Runs the indeterminate progress bar while the specified task is running, using a dynamic header factory.
     /// </summary>
     /// <param name="task"></param>
     /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>
     /// <param name="token"></param>
-    public Task RunAsync(Task task, Func<OutputPipe, PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token) => RunAsyncNonGeneric(task, headerFactory, token);
+    public Task RunAsync(Task task, Func<PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token) => RunAsyncNonGeneric(task, headerFactory, token);
 
 
     /// <summary>
@@ -87,7 +109,7 @@ public class IndeterminateProgressBar {
     /// <param name="task"></param>
     /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>
     /// <param name="token"></param>
-    private async Task RunAsyncNonGeneric(Task task, Func<OutputPipe, PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token) {
+    private async Task RunAsyncNonGeneric(Task task, Func<PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token) {
         try {
             if (task.Status is not TaskStatus.Running) {
                 task.Start();
@@ -114,8 +136,7 @@ public class IndeterminateProgressBar {
 
             if (headerFactory is not null) {
                 ConsoleContext.Error.WriteWhiteSpaces(1);
-                var headerHandler = headerFactory(OutputPipe.Error);
-                headerHandler.Flush();
+                headerFactory().Flush();
             }
 
             if (DisplayElapsedTime) {
@@ -164,6 +185,9 @@ public class IndeterminateProgressBar {
             }
         }
     }
+
+    private static PrettyConsoleInterpolatedStringHandler WrapHeader(string header)
+        => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"{header}");
 
     /// <summary>
     /// Provides constant animation sequences that can be used for <see cref="AnimationSequence"/>
