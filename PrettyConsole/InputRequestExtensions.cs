@@ -25,7 +25,7 @@ public static class InputRequestExtensions {
         /// </summary>
         /// <param name="handler">Interpolated string handler that streams the content.</param>
         public static void RequestAnyInput([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
-            handler.ResetColors();
+            handler.Flush();
             _ = s_readKey();
         }
 
@@ -48,7 +48,7 @@ public static class InputRequestExtensions {
         /// It does not display a question mark or any other prompt, only the message
         /// </remarks>
         public static bool Confirm(ReadOnlySpan<string> trueValues, bool emptyIsTrue = true, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
-            handler.ResetColors();
+            handler.Flush();
             var input = ConsoleContext.In.ReadLine();
             if (input is null or { Length: 0 }) {
                 return emptyIsTrue;

@@ -24,17 +24,13 @@ public class ConsoleColorTests {
 
     [Fact]
     public void AnsiColors_DefaultForeground_UsesResetSequence() {
-        if (AnsiColors.Enabled) {
-            var sequence = AnsiColors.Foreground((ConsoleColor)(-1));
-            Assert.Equal("\e[39m", sequence);
-        }
+        var sequence = AnsiColors.Foreground((ConsoleColor)(-1));
+        Assert.Equal("\e[39m", sequence);
     }
 
     [Fact]
     public void AnsiColors_DefaultBackground_UsesResetSequence() {
-        if (AnsiColors.Enabled) {
-            var sequence = AnsiColors.Background((ConsoleColor)(-1));
-            Assert.Equal("\e[49m", sequence);
-        }
+        var sequence = AnsiColors.Background((ConsoleColor)(-1));
+        Assert.Equal("\e[49m", sequence);
     }
 }

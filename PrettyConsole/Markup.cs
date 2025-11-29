@@ -5,67 +5,47 @@ namespace PrettyConsole;
 /// </summary>
 public static class Markup {
     /// <summary>
-    /// Gets a value indicating whether markup sequences are emitted.
-    /// </summary>
-    public static readonly bool Enabled;
-
-    /// <summary>
     /// Resets all decorations and colors.
     /// </summary>
-    public static readonly string Reset = string.Empty;
+    public const string Reset = "\e[0m";
 
     /// <summary>
     /// Enables underlined text.
     /// </summary>
-    public static readonly string Underline = string.Empty;
+    public const string Underline = "\e[4m";
 
     /// <summary>
     /// Disables underlined text.
     /// </summary>
-    public static readonly string ResetUnderline = string.Empty;
+    public const string ResetUnderline = "\e[24m";
 
     /// <summary>
     /// Enables bold text.
     /// </summary>
-    public static readonly string Bold = string.Empty;
+    public const string Bold = "\e[1m";
 
     /// <summary>
     /// Disables bold text.
     /// </summary>
-    public static readonly string ResetBold = string.Empty;
+    public const string ResetBold = "\e[22m";
 
     /// <summary>
     /// Enables italic text.
     /// </summary>
-    public static readonly string Italic = string.Empty;
+    public const string Italic = "\e[3m";
 
     /// <summary>
     /// Disables italic text.
     /// </summary>
-    public static readonly string ResetItalic = string.Empty;
+    public const string ResetItalic = "\e[23m";
 
     /// <summary>
     /// Enables strikethrough text.
     /// </summary>
-    public static readonly string Strikethrough = string.Empty;
+    public const string Strikethrough = "\e[9m";
 
     /// <summary>
     /// Disables strikethrough text.
     /// </summary>
-    public static readonly string ResetStrikethrough = string.Empty;
-
-    static Markup() {
-        Enabled = !Console.IsOutputRedirected && !Console.IsErrorRedirected;
-        if (Enabled) {
-            Reset = "\e[0m";
-            Underline = "\e[4m";
-            ResetUnderline = "\e[24m";
-            Bold = "\e[1m";
-            ResetBold = "\e[22m";
-            Italic = "\e[3m";
-            ResetItalic = "\e[23m";
-            Strikethrough = "\e[9m";
-            ResetStrikethrough = "\e[29m";
-        }
-    }
+    public const string ResetStrikethrough = "\e[29m";
 }

@@ -36,6 +36,18 @@ public static class ConsoleContext {
         };
 
     /// <summary>
+    /// Gets the appropriate <see cref="TextWriter"/> based on <paramref name="pipe"/>
+    /// </summary>
+    /// <param name="pipe"></param>
+    internal static (TextWriter Writer, bool IsRedirected) GetWriterAndRedirection(OutputPipe pipe) {
+        return pipe switch {
+            OutputPipe.Out => (Out, Console.IsOutputRedirected),
+            OutputPipe.Error => (Error, Console.IsErrorRedirected),
+            _ => throw new InvalidOperationException("A pipe that isn't Out or Error is not supported."),
+        };
+    }
+
+    /// <summary>
     /// Returns the current console buffer width or <paramref name="defaultWidth"/> if <see cref="Console.IsOutputRedirected"/>
     /// </summary>
     /// <param name="defaultWidth"></param>

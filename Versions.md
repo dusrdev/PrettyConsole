@@ -1,5 +1,9 @@
 # Versions
 
+## v5.2.0
+
+- `PrettyConsoleInterpolatedStringHandler` was rewritten to buffer the contents instead of stream them, along with other optimizations, massively improving performance.
+
 ## v5.1.0
 
 - `Console.WriteInterpolated` and `Console.WriteLineInterpolated` now return a `int` that contains the number of characters written using the handler. This could be used to help calculate paddings or other things when creating structured output.
