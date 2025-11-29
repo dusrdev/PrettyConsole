@@ -89,6 +89,7 @@ public class PrettyConsoleExtensionsTests {
 #pragma warning restore TUnit0055 // Do not overwrite the Console writer
 
     [Test]
+    [SkipWhenConsoleUnavailable]
     public async Task RenderingExtensions_DefaultCursorAccessor_IsInvoked() {
         // use default cursor accessors (no override)
         int line = Console.GetCurrentLine();
