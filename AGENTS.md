@@ -9,7 +9,7 @@ Summary
   - PrettyConsole/ — main library
   - PrettyConsole.Tests/ — interactive/demo runner (manually selects visual feature demos)
   - PrettyConsole.Tests.Unit/ — xUnit v3 unit tests using Microsoft Testing Platform
-- v5.1.0 (current) renames `PrettyConsoleExtensions` to `ConsoleContext`, adds `Console.WriteWhiteSpaces(length, pipe)`, and makes `Out`/`Error`/`In` settable for test doubles. v5.0.0 removed the legacy `ColoredOutput`/`Color` types; color composition now flows through `ConsoleColor` helpers and tuples exposed by the library.
+- v5.2.0 (current) rewrites `PrettyConsoleInterpolatedStringHandler` to buffer before writing for a major perf bump, recognizes a new `WhiteSpace` struct that expands to the requested padding length, and adds `IndeterminateProgressBar` overloads that take a `Func<PrettyConsoleInterpolatedStringHandler>` (use `PrettyConsoleInterpolatedStringHandler.Build` to bind the right `OutputPipe`). v5.1.0 renamed `PrettyConsoleExtensions` to `ConsoleContext`, added `Console.WriteWhiteSpaces(length, pipe)`, and made `Out`/`Error`/`In` settable for test doubles. v5.0.0 removed the legacy `ColoredOutput`/`Color` types; color composition now flows through `ConsoleColor` helpers and tuples exposed by the library.
 
 Commands you’ll use often
 
@@ -48,7 +48,7 @@ High-level architecture and key concepts
 - Output routing
   - `OutputPipe` is a two-value enum (`Out`, `Error`). Most write APIs accept an optional pipe; internally `ConsoleContext.GetWriter` resolves the correct `TextWriter` so sequences remain redirect-friendly.
 - Interpolated string handler
-  - `PrettyConsoleInterpolatedStringHandler` enables zero-allocation `$"..."` calls for `WriteInterpolated`, `WriteLineInterpolated`, `ReadLine`, `TryReadLine`, `Confirm`, and `RequestAnyInput`. Colors automatically reset after each invocation, and handlers respect the selected pipe and optional `IFormatProvider`. Recent changes ensure any `object` argument that implements `ISpanFormattable` is emitted through the span-based path before falling back to `IFormattable`/string allocations. `Console.WriteInterpolated`/`WriteLineInterpolated` now return the rendered character count (escape sequences emitted by the handler are excluded), which can be used for padding/layout math.
+  - `PrettyConsoleInterpolatedStringHandler` buffers the interpolated content before emitting it, yielding a large perf boost while staying allocation-free. It enables `$"..."` calls for `WriteInterpolated`, `WriteLineInterpolated`, `ReadLine`, `TryReadLine`, `Confirm`, and `RequestAnyInput`. Colors auto-reset, handlers respect the selected pipe/`IFormatProvider`, and `object` arguments that implement `ISpanFormattable` are emitted via the span path before falling back to `IFormattable`/string. `Console.WriteInterpolated`/`WriteLineInterpolated` return the rendered character count (handler-emitted escape sequences excluded). Passing the new `WhiteSpace` struct writes a span of padding directly from the handler without allocations.
 - Coloring model
   - `ConsoleColor` now exposes `DefaultForeground`, `DefaultBackground`, and `Default` tuple properties plus `/` operator overloads so you can inline foreground/background tuples (`$"{ConsoleColor.Red / ConsoleColor.White}Error"`). These tuples play nicely with the interpolated string handler and keep color resets allocation-free.
 - Markup decorations
@@ -66,7 +66,7 @@ High-level architecture and key concepts
 - Menus and tables
   - `Selection` returns a single choice or empty string on invalid input; `MultiSelection` parses space-separated indices into string arrays; `TreeMenu` renders two-level hierarchies and validates input (throwing `ArgumentException` when selections are invalid); `Table` renders headers + columns with width calculations.
 - Progress bars
-  - `IndeterminateProgressBar` binds to running `Task` instances, optionally starts tasks, supports cancellable `RunAsync` overloads, exposes `AnimationSequence`, `Patterns`, `ForegroundColor`, `DisplayElapsedTime`, and `UpdateRate`. Frames render on the error pipe and auto-clear.
+  - `IndeterminateProgressBar` binds to running `Task` instances, optionally starts tasks, supports cancellable `RunAsync` overloads, exposes `AnimationSequence`, `Patterns`, `ForegroundColor`, `DisplayElapsedTime`, and `UpdateRate`. Frames render on the error pipe and auto-clear. v5.2.0 adds overloads that accept a `Func<PrettyConsoleInterpolatedStringHandler>` so status text can be built per-frame with captured locals (call `PrettyConsoleInterpolatedStringHandler.Build(pipe)` inside the lambda to target the right output pipe).
   - `ProgressBar` maintains a single-line bar on the error pipe. `Update` accepts `int`/`double` percentages plus optional status spans, and exposes `ProgressChar`, `ForegroundColor`, and `ProgressColor` for customization. The static `ProgressBar.WriteProgressBar` helper renders one-off segments without moving the cursor (so you can stack multiple bars within an `Overwrite` block).
 - Packaging and targets
   - `PrettyConsole.csproj` targets net10.0, enables trimming/AOT (`IsTrimmable`, `IsAotCompatible`), embeds SourceLink, and grants `InternalsVisibleTo` the unit-test project.

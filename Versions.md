@@ -2,9 +2,9 @@
 
 ## v5.2.0
 
-- `PrettyConsoleInterpolatedStringHandler` was rewritten to buffer the contents instead of stream them, along with other optimizations, massively improving performance.
-- `WhiteSpace` is a new struct that declares a section of whitespace with length, `PrettyConsoleInterpolatedStringHandler` was thought to recognize it is a special parameter and will render a region of whitespaces with that length to the buffer.
-- Add overloads to `IndeterminateProgressBar` that accept a `Func<PrettyConsoleInterpolatedStringHandler>` instead, which can be used to pull in data from variables via a closure and enable a more dynamic rendering of statuses. `PrettyConsoleInterpolatedStringHandler.Build` should be used to return it attached to the right `OutputPipe`.
+- `PrettyConsoleInterpolatedStringHandler` was re-written to buffers interpolated content before emitting it (instead of streaming), along with other optimizations.
+- Added a `WhiteSpace` struct to declare padding regions; the handler recognizes it as a special argument and writes that many spaces directly into the buffer.
+- `IndeterminateProgressBar` gains overloads that take a `Func<PrettyConsoleInterpolatedStringHandler>`, letting each frame build status text with captured locals. Use `PrettyConsoleInterpolatedStringHandler.Build` to bind the handler to the correct `OutputPipe` inside the factory.
 
 ## v5.1.0
 
