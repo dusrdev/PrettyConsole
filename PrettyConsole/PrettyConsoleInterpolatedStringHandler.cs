@@ -146,16 +146,6 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
-    /// Sets the foreground and background colors of the console
-    /// </summary>
-    /// <param name="colors"></param>
-    /// <param name="alignment"></param>
-    public void AppendFormatted((ConsoleColor Foreground, ConsoleColor Background) colors, int alignment) {
-        AppendFormatted(colors);
-        AppendSpan(ReadOnlySpan<char>.Empty, alignment);
-    }
-
-    /// <summary>
     /// Append timeSpan with optional formatting.
     /// </summary>
     /// <param name="timeSpan"></param>
@@ -237,16 +227,9 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
-    /// Appends a value type that implements <see cref="ISpanFormattable"/> without boxing.
-    /// </summary>
-    public void AppendFormatted<T>(T value) where T : ISpanFormattable {
-        AppendSpanFormattable(value, alignment: 0, format: null);
-    }
-
-    /// <summary>
     /// Appends a value type that implements <see cref="ISpanFormattable"/> without boxing while respecting alignment.
     /// </summary>
-    public void AppendFormatted<T>(T value, int alignment) where T : ISpanFormattable {
+    public void AppendFormatted<T>(T value, int alignment = 0) where T : ISpanFormattable {
         AppendSpanFormattable(value, alignment, format: null);
     }
 
