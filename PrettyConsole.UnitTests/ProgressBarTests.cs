@@ -138,6 +138,39 @@ public class ProgressBarTests {
     }
 
     [Test]
+    public async Task ProgressBar_Update_Overloads_WriteOutput() {
+        var originalError = Error;
+        Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new ProgressBar { ProgressColor = Cyan };
+
+            bar.Update(10);
+            bar.Update(20.0, "status");
+        } finally {
+            Error = originalError;
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+
+        await Assert.That(errorWriter.ToString()).Contains("status");
+    }
+
+    [Test]
+    public async Task ProgressBar_WriteProgressBar_DoubleOverload_WritesOutput() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+
+            ProgressBar.WriteProgressBar(OutputPipe.Out, 33.3, Blue, '*');
+
+            await Assert.That(writer.ToString()).Contains("33%");
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
     public async Task IndeterminateProgressBar_RunAsync_CompletesAndReturnsResult() {
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
@@ -158,6 +191,30 @@ public class ProgressBarTests {
             await Assert.That(result).IsEqualTo(42);
             await Assert.That(errorWriter.ToString()).IsNotEqualTo(string.Empty);
         } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+    }
+
+    [Test]
+    public async Task IndeterminateProgressBar_RunAsync_OverloadsAndForegroundSetter() {
+        var originalError = Error;
+        Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new IndeterminateProgressBar {
+                DisplayElapsedTime = false,
+                UpdateRate = 5
+            };
+            bar.ForegroundColor = Cyan;
+
+            var genericResult = await bar.RunAsync(Task.Run(async () => { await Task.Delay(10); return 7; }));
+            await bar.RunAsync(Task.Run(async () => await Task.Delay(10)));
+
+            await Assert.That(genericResult).IsEqualTo(7);
+            await Assert.That(errorWriter.ToString()).IsNotEqualTo(string.Empty);
+        } finally {
+            Error = originalError;
             RenderingExtensions.ConfigureCursorAccessors(null, null);
         }
     }

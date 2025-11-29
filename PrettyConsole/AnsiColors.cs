@@ -37,7 +37,7 @@ internal static class AnsiColors {
     }
 
 
-    private static string BuildForegroundSequence(ConsoleColor color) {
+    internal static string BuildForegroundSequence(ConsoleColor color) {
         return color switch {
             ConsoleColor.Black => "\e[30m",
             ConsoleColor.DarkBlue => "\e[34m",
@@ -59,7 +59,7 @@ internal static class AnsiColors {
         };
     }
 
-    private static string BuildBackgroundSequence(ConsoleColor color) {
+    internal static string BuildBackgroundSequence(ConsoleColor color) {
         return color switch {
             ConsoleColor.Black => "\e[40m",
             ConsoleColor.DarkBlue => "\e[44m",

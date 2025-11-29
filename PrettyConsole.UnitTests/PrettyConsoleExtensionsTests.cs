@@ -13,4 +13,48 @@ public class PrettyConsoleExtensionsTests {
         await Assert.That(writer.ToString().Length).IsEqualTo(300);
         await Assert.That(writer.ToString().All(c => c == ' ')).IsTrue();
     }
+
+    [Test]
+    public async Task Console_WriteWhiteSpaces_RoutesToCorrectPipe() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+
+            Console.WriteWhiteSpaces(5);
+
+            await Assert.That(writer.ToString()).IsEqualTo("     ");
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task ConsoleContext_GetPipeTargetAndState_ReportsCustomOutAsRedirected() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+
+            var (pipeWriter, redirected) = ConsoleContext.GetPipeTargetAndState(OutputPipe.Out);
+
+            await Assert.That(pipeWriter).IsSameReferenceAs(writer);
+            await Assert.That(redirected).IsTrue();
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task ConsoleContext_GetPipeTargetAndState_TracksConsoleStreams() {
+        var originalOut = Out;
+        try {
+            Out = Console.Out;
+
+            var (pipeWriter, redirected) = ConsoleContext.GetPipeTargetAndState(OutputPipe.Out);
+
+            await Assert.That(pipeWriter).IsSameReferenceAs(Console.Out);
+            await Assert.That(redirected).IsEqualTo(Console.IsOutputRedirected);
+        } finally {
+            Out = originalOut;
+        }
+    }
 }

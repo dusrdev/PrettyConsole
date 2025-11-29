@@ -10,6 +10,90 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
     }
 
     [Test]
+    public async Task ReadOnlySpanAlignment_PadsCorrectly() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+
+            ReadOnlySpan<char> span = "Hi".AsSpan();
+            Console.WriteInterpolated($"{span,5}");
+
+            await Assert.That(writer.ToString()).IsEqualTo("   Hi");
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task GenericFormatsAndAlignment_WorkForISpanFormattable() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+
+            decimal amount = 12.34m;
+            Console.WriteInterpolated($"{amount:F1} {(decimal)5.5,6:F2}");
+
+            await Assert.That(writer.ToString()).IsEqualTo("12.3   5.50");
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task ColorTokens_CountWhenNotRedirected() {
+        var originalOut = Out;
+        try {
+            Out = Console.Out;
+
+            int chars = Console.WriteInterpolated($"{ConsoleColor.Red}X{ConsoleColor.Default}");
+
+            await Assert.That(chars).IsEqualTo(1);
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task GrowAndEnsureCapacity_HandleLargePayloads() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+            var longText = new string('x', 5000);
+
+            Console.WriteInterpolated($"{longText}");
+
+            await Assert.That(writer.ToString().Length).IsEqualTo(5000);
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task ThrowsAfterFlush_WhenAppendingFurther() {
+        var handler = new PrettyConsoleInterpolatedStringHandler(0, 0, OutputPipe.Out, provider: null, out var shouldAppend);
+        await Assert.That(shouldAppend).IsTrue();
+
+        handler.AppendLiteral("ok");
+        handler.Flush();
+
+        await Assert.That(() => handler.AppendLiteral("fail")).Throws<InvalidOperationException>();
+    }
+
+    [Test]
+    public async Task AlignmentWithPaddingRight_AddsSpaces() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+
+            Console.WriteInterpolated($"{123,-5}");
+
+            await Assert.That(writer.ToString()).IsEqualTo("123  ");
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
     [Arguments(0, 0, 0, "0h 0m 0s")]
     [Arguments(0, 1, 2, "0h 1m 2s")]
     [Arguments(5, 59, 59, "5h 59m 59s")]

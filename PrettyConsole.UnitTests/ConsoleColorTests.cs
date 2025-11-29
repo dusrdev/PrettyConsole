@@ -77,4 +77,15 @@ public class ConsoleColorTests {
         var sequence = AnsiColors.Background(color);
         await Assert.That(sequence).IsEqualTo(expectedSequence);
     }
+
+    [Test]
+    public async Task AnsiColors_InternalBuilders_MatchPublicAccessors() {
+        foreach (var color in Enum.GetValues<ConsoleColor>()) {
+            var fgBuilt = AnsiColors.BuildForegroundSequence(color);
+            var bgBuilt = AnsiColors.BuildBackgroundSequence(color);
+
+            await Assert.That(AnsiColors.Foreground(color)).IsEqualTo(fgBuilt);
+            await Assert.That(AnsiColors.Background(color)).IsEqualTo(bgBuilt);
+        }
+    }
 }

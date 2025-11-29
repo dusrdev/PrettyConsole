@@ -94,6 +94,14 @@ public class WriteExtensionsTests {
         await Assert.That(_errorWriter.ToStringAndFlush()).IsEqualTo("Data");
     }
 
+    [Test]
+    public async Task Write_ReadOnlySpan_DefaultAndForeground() {
+        Console.Write("abc".AsSpan(), OutputPipe.Out);
+        Console.Write("XYZ".AsSpan(), OutputPipe.Out, ConsoleColor.Green);
+
+        await Assert.That(_writer.ToStringAndFlush()).IsEqualTo("abcXYZ");
+    }
+
     private readonly ref struct LongFormatStud : ISpanFormattable {
         public const int Length = 1024;
 
