@@ -29,7 +29,7 @@ public static class ConsoleContext {
     /// Gets the appropriate <see cref="TextWriter"/> based on <paramref name="pipe"/>
     /// </summary>
     /// <param name="pipe"></param>
-    internal static TextWriter GetWriter(OutputPipe pipe)
+    internal static TextWriter GetPipeTarget(OutputPipe pipe)
         => pipe switch {
             OutputPipe.Error => Error,
             _ => Out
@@ -39,10 +39,10 @@ public static class ConsoleContext {
     /// Gets the appropriate <see cref="TextWriter"/> based on <paramref name="pipe"/>
     /// </summary>
     /// <param name="pipe"></param>
-    internal static (TextWriter Writer, bool IsRedirected) GetWriterAndRedirection(OutputPipe pipe) {
+    internal static (TextWriter Writer, bool IsRedirected) GetPipeTargetAndState(OutputPipe pipe) {
         return pipe switch {
-            OutputPipe.Out => (Out, Console.IsOutputRedirected),
-            OutputPipe.Error => (Error, Console.IsErrorRedirected),
+            OutputPipe.Out => (Out, !ReferenceEquals(Out, Console.Out) || Console.IsOutputRedirected),
+            OutputPipe.Error => (Error, !ReferenceEquals(Error, Console.Error) || Console.IsErrorRedirected),
             _ => throw new InvalidOperationException("A pipe that isn't Out or Error is not supported."),
         };
     }

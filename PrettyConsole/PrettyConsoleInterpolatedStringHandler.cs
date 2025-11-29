@@ -64,7 +64,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
         _buffer = BufferPool.Rent(_capacity);
         _currentForeground = ConsoleColor.DefaultForeground;
         _currentBackground = ConsoleColor.DefaultBackground;
-        (_writer, _isRedirected) = ConsoleContext.GetWriterAndRedirection(pipe);
+        (_writer, _isRedirected) = ConsoleContext.GetPipeTargetAndState(pipe);
         _provider = provider;
         shouldAppend = true;
     }

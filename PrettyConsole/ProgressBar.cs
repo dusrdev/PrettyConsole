@@ -85,7 +85,7 @@ public class ProgressBar {
                 Console.ClearNextLines(1, OutputPipe.Error);
                 if (status.Length > 0) {
                     Console.Write(status, OutputPipe.Error, ForegroundColor);
-                    ConsoleContext.GetWriter(OutputPipe.Error).WriteWhiteSpaces(1);
+                    ConsoleContext.GetPipeTarget(OutputPipe.Error).WriteWhiteSpaces(1);
                     WriteProgressBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar, MaxLineWidth);
                 }
             } else {
@@ -136,7 +136,7 @@ public class ProgressBar {
 
         int barLength = Math.Max(0, constrainedWidth - decorationWidth);
 
-        var writer = ConsoleContext.GetWriter(pipe);
+        var writer = ConsoleContext.GetPipeTarget(pipe);
         Console.Write<char>('[', pipe);
 
         if (barLength > 0) {
