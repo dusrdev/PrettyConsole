@@ -91,20 +91,21 @@ public static class WriteExtensions {
         where T : ISpanFormattable, allows ref struct {
             int lowerBound = 4096;
             var pool = ArrayPool<char>.Shared;
+            char[] array;
 
             while (true) {
-                var array = pool.Rent(lowerBound);
-                try {
-                    var buffer = new Span<char>(array);
-                    if (item.TryFormat(array, out int charsWritten, format, formatProvider)) {
-                        Write(buffer.Slice(0, charsWritten), pipe, foreground, background);
-                        return;
-                    }
-                } finally {
-                    pool.Return(array);
+                array = pool.Rent(lowerBound);
+
+                var buffer = new Span<char>(array);
+                if (item.TryFormat(array, out int charsWritten, format, formatProvider)) {
+                    Write(buffer.Slice(0, charsWritten), pipe, foreground, background);
+                    break;
                 }
+
                 lowerBound *= 2;
             }
+
+            pool.Return(array);
         }
 
         /// <summary>

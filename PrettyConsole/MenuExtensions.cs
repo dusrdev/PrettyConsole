@@ -66,7 +66,7 @@ public static class MenuExtensions {
                 return [];
             }
 
-            var entries = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var entries = input.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
             if (entries.Length is 0) {
                 return [];
@@ -105,38 +105,29 @@ public static class MenuExtensions {
             var menuKeys = menu.Keys.ToArray();
             var maxMainOption = menuKeys.Max(static x => x.Length) + 10; // Used to make sub-tree prefix spaces uniform
 
-            var pool = ArrayPool<char>.Shared;
             var width = ConsoleContext.GetWidthOrDefault();
-            var array = pool.Rent(width);
-            try {
-                var span = new Span<char>(array);
 
-                //Enumerate options and sub-options
-                for (int i = 0; i < menuKeys.Length; i++) {
-                    var mainEntry = menuKeys[i];
-                    var subChoices = menu[mainEntry];
+            //Enumerate options and sub-options
+            for (int i = 0; i < menuKeys.Length; i++) {
+                var mainEntry = menuKeys[i];
+                var subChoices = menu[mainEntry];
 
-                    span.TryWrite($"  {i + 1}) {mainEntry}", out int written);
-                    ConsoleContext.Out.Write(span.Slice(0, written));
+                int written = Console.WriteInterpolated($"  {i + 1}) {mainEntry}");
 
-                    var remainingLength = maxMainOption - written;
-                    if (remainingLength > 0) {
-                        ConsoleContext.Out.WriteWhiteSpaces(remainingLength);
-                    }
-
-                    for (int j = 0; j < subChoices.Count; j++) {
-                        if (j is not 0) {
-                            ConsoleContext.Out.WriteWhiteSpaces(maxMainOption);
-                        }
-
-                        span.TryWrite($"  {j + 1}) {subChoices[j]}", out written);
-                        ConsoleContext.Out.WriteLine(span.Slice(0, written));
-                    }
-
-                    Console.NewLine();
+                var remainingLength = maxMainOption - written;
+                if (remainingLength > 0) {
+                    ConsoleContext.Out.WriteWhiteSpaces(remainingLength);
                 }
-            } finally {
-                pool.Return(array);
+
+                for (int j = 0; j < subChoices.Count; j++) {
+                    if (j is not 0) {
+                        ConsoleContext.Out.WriteWhiteSpaces(maxMainOption);
+                    }
+
+                    Console.WriteInterpolated($"  {j + 1}) {subChoices[j]}");
+                }
+
+                Console.NewLine();
             }
 
             string input = Console.ReadLine(string.Empty, $"Enter your main choice and sub choice separated with space: ");
