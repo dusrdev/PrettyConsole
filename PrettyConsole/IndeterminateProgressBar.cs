@@ -88,8 +88,6 @@ public class IndeterminateProgressBar {
             //ignore
         }
 
-        Console.ResetColor();
-        ConsoleColor originalColor = Console.ForegroundColor;
         long startTime = Stopwatch.GetTimestamp();
         long updateRateAsTicks = TimeSpan.FromMilliseconds(UpdateRate).Ticks;
 
@@ -104,12 +102,7 @@ public class IndeterminateProgressBar {
             CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
         while (!task.IsCompleted && !token.IsCancellationRequested) {
-            try {
-                Console.ForegroundColor = ForegroundColor;
-                ConsoleContext.Error.Write(AnimationSequence[seqIndex]);
-            } finally {
-                Console.ForegroundColor = originalColor;
-            }
+            Console.WriteInterpolated(OutputPipe.Error, $"{ForegroundColor}{AnimationSequence[seqIndex]}{ConsoleColor.DefaultForeground}");
 
             if (header.Length > 0) {
                 Console.WriteInterpolated(OutputPipe.Error, $" {header}");
@@ -160,8 +153,6 @@ public class IndeterminateProgressBar {
                 seqIndex = 0;
             }
         }
-
-        Console.ResetColor();
     }
 
     private Task RunAsyncNonGeneric(Task task, string header, CancellationToken token) => RunAsync(task, header, token);
