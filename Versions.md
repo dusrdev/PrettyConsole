@@ -3,6 +3,7 @@
 ## v5.2.0
 
 - `PrettyConsoleInterpolatedStringHandler` was rewritten to buffer the contents instead of stream them, along with other optimizations, massively improving performance.
+- `WhiteSpace` is a new struct that declares a section of whitespace with length, `PrettyConsoleInterpolatedStringHandler` was thought to recognize it is a special parameter and will render a region of whitespaces with that length to the buffer.
 
 ## v5.1.0
 

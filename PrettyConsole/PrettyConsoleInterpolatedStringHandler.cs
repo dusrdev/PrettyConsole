@@ -137,12 +137,24 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
-    /// Sets the foreground and background colors of the console
+    /// Sets the foreground and background colors of the console.
     /// </summary>
     /// <param name="colors"></param>
     public void AppendFormatted((ConsoleColor Foreground, ConsoleColor Background) colors) {
         AppendFormatted(colors.Foreground);
         AppendFormattedBackground(colors.Background);
+    }
+
+    /// <summary>
+	/// Appends a region of whitespaces to the buffer.
+	/// </summary>
+	/// <param name="whiteSpace"></param>
+    public void AppendFormatted(WhiteSpace whiteSpace) {
+        var length = whiteSpace.Length;
+        EnsureCapacity(length);
+        _buffer.AsSpan(_index, length).Fill(' ');
+        _index += length;
+        CharsWritten += length;
     }
 
     /// <summary>
