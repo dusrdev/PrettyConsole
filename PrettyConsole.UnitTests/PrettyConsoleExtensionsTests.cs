@@ -73,16 +73,20 @@ public class PrettyConsoleExtensionsTests {
         }
     }
 
+#pragma warning disable TUnit0055 // Do not overwrite the Console writer
     [Test]
     public async Task ConsoleContext_GetWidthOrDefault_WhenRedirected() {
         var originalOut = Console.Out;
+
         Console.SetOut(new StringWriter());
+
 
         int width = ConsoleContext.GetWidthOrDefault(77);
         Console.SetOut(originalOut);
 
         await Assert.That(width).IsEqualTo(77);
     }
+#pragma warning restore TUnit0055 // Do not overwrite the Console writer
 
     [Test]
     public async Task RenderingExtensions_DefaultCursorAccessor_IsInvoked() {
