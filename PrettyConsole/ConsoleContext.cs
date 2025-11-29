@@ -52,7 +52,8 @@ public static class ConsoleContext {
     /// </summary>
     /// <param name="defaultWidth"></param>
     internal static int GetWidthOrDefault(int defaultWidth = 120) {
-        if (Console.IsOutputRedirected) {
+        // If output is redirected or a custom writer is injected, fall back to the provided default.
+        if (Console.IsOutputRedirected || !ReferenceEquals(Out, Console.Out)) {
             return defaultWidth;
         }
         return Console.BufferWidth;

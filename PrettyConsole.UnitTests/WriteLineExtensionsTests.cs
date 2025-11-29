@@ -58,10 +58,10 @@ public class WriteLineExtensionsTests {
             Console.WriteLine("span".AsSpan(), OutputPipe.Out);
             Console.WriteLine("more".AsSpan(), OutputPipe.Out, ConsoleColor.Cyan);
 
-            var expected = $"span{writer.NewLine}more{writer.NewLine}";
-            await Assert.That(writer.ToString()).IsEqualTo(expected);
-        } finally {
-            Out = originalOut;
-        }
+        var expected = $"span{writer.NewLine}more{writer.NewLine}";
+        await Assert.That(writer.ToString()).IsEqualTo(expected);
+    } finally {
+        Out = originalOut;
     }
+}
 }

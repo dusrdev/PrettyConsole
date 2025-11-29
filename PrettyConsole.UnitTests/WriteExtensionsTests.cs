@@ -89,6 +89,13 @@ public class WriteExtensionsTests {
     }
 
     [Test]
+    public async Task Write_SpanFormattable_WithColorsAndFormatProvider_DirectOverload() {
+        var value = 42.195;
+        Console.Write(value, OutputPipe.Out, White, Black, "F1", CultureInfo.InvariantCulture);
+        await Assert.That(_writer.ToStringAndFlush()).IsEqualTo("42.2");
+    }
+
+    [Test]
     public async Task Write_ReadOnlySpan_WithColors_WritesToSelectedPipe() {
         Console.Write("Data".AsSpan(), OutputPipe.Error, ConsoleColor.Green, ConsoleColor.Black);
         await Assert.That(_errorWriter.ToStringAndFlush()).IsEqualTo("Data");

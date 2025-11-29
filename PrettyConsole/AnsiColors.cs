@@ -1,8 +1,8 @@
 namespace PrettyConsole;
 
 internal static class AnsiColors {
-    private const string ForegroundResetSequence = "\e[39m";
-    private const string BackgroundResetSequence = "\e[49m";
+    internal const string ForegroundResetSequence = "\e[39m";
+    internal const string BackgroundResetSequence = "\e[49m";
 
     private static readonly string[] ForegroundCodes;
     private static readonly string[] BackgroundCodes;

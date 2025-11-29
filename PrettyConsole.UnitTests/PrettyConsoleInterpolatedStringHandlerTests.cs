@@ -195,6 +195,90 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
         await Assert.That(chars).IsEqualTo("[0h 0m 42s] done".Length);
     }
 
+    [Test]
+    public async Task AppendFormattedBackground_ChangesBackgroundWhenNotRedirected() {
+        var originalOut = Out;
+        try {
+            Out = Console.Out;
+            int chars = Console.WriteInterpolated($"{ConsoleColor.Red}{ConsoleColor.Black / ConsoleColor.White}X");
+            await Assert.That(chars).IsEqualTo(1);
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task AppendFormattedObject_WithAlignment_UsesObjectToString() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+            var obj = new object();
+
+            Console.WriteInterpolated($"{obj,6}");
+
+            await Assert.That(writer.ToString()).IsEqualTo($"{obj,6}");
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task AppendFormattedTimeSpan_WithAlignmentAndDurationFormat() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+            var ts = TimeSpan.FromSeconds(5);
+
+            Console.WriteInterpolated($"{ts,10:duration}");
+
+            await Assert.That(writer.ToString()).IsEqualTo("0h 0m 5s");
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task AppendFormattedDouble_WithAlignmentAndFormat() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+
+            Console.WriteInterpolated($"{12.345,8:F2}");
+
+            await Assert.That(writer.ToString()).IsEqualTo("   12.35");
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task AppendSpanFormattable_WithAlignmentAndFormat() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+
+            Console.WriteInterpolated($"{1234,6:D}");
+
+            await Assert.That(writer.ToString()).IsEqualTo("  1234");
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task AppendSpan_LeftAndRightAlignment() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+
+            Console.WriteInterpolated($"{ "Hi",4}{ "Bye",-5}");
+
+            await Assert.That(writer.ToString()).IsEqualTo("  HiBye  ");
+        } finally {
+            Out = originalOut;
+        }
+    }
+
     private static string FormatBytes(double value) {
         const double formatBytesKb = 1024d;
         var suffix = 0;

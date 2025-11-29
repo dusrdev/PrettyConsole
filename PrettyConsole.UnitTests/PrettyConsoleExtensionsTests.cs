@@ -57,4 +57,37 @@ public class PrettyConsoleExtensionsTests {
             Out = originalOut;
         }
     }
+
+    [Test]
+    public async Task ConsoleContext_GetPipeTargetAndState_ForErrorPipe() {
+        var originalErr = Error;
+        try {
+            Error = Utilities.GetWriter(out var writer);
+
+            var (pipeWriter, redirected) = ConsoleContext.GetPipeTargetAndState(OutputPipe.Error);
+
+            await Assert.That(pipeWriter).IsSameReferenceAs(writer);
+            await Assert.That(redirected).IsTrue();
+        } finally {
+            Error = originalErr;
+        }
+    }
+
+    [Test]
+    public async Task ConsoleContext_GetWidthOrDefault_WhenRedirected() {
+        var originalOut = Console.Out;
+        Console.SetOut(new StringWriter());
+
+        int width = ConsoleContext.GetWidthOrDefault(77);
+        Console.SetOut(originalOut);
+
+        await Assert.That(width).IsEqualTo(77);
+    }
+
+    [Test]
+    public async Task RenderingExtensions_DefaultCursorAccessor_IsInvoked() {
+        // use default cursor accessors (no override)
+        int line = Console.GetCurrentLine();
+        await Assert.That(line).IsGreaterThanOrEqualTo(0);
+    }
 }

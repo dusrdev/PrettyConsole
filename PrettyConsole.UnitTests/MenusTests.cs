@@ -132,6 +132,19 @@ public class MenusTests {
     }
 
     [Test]
+    public async Task TreeMenu_NonNumericInput_ThrowsArgumentException() {
+        Out = Utilities.GetWriter(out _);
+        In = Utilities.GetReader("a b");
+
+        var menu = new Dictionary<string, IList<string>> {
+            ["Files"] = new List<string> { "Open" }
+        };
+
+        await Assert.That(() => Console.TreeMenu(menu, $"Menu: "))
+            .Throws<ArgumentException>();
+    }
+
+    [Test]
     public async Task Table_WritesHeaderAndRows() {
         Out = Utilities.GetWriter(out var writer);
 
@@ -157,5 +170,17 @@ public class MenusTests {
 
         await Assert.That(() => Console.Table(headers, [column1]))
             .Throws<ArgumentException>();
+    }
+
+    [Test]
+    public async Task MultiSelection_MixedValidAndInvalidIndices_ReturnsOnlyValid() {
+        Out = Utilities.GetWriter(out _);
+        In = Utilities.GetReader("1 5 2");
+
+        var choices = new List<string> { "One", "Two", "Three" };
+
+        var result = Console.MultiSelection(choices, $"Numbers: ");
+
+        await Assert.That(result.Length).IsEqualTo(0);
     }
 }

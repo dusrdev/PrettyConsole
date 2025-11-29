@@ -171,6 +171,38 @@ public class ProgressBarTests {
     }
 
     [Test]
+    public async Task ProgressBar_Update_DoubleOverload_WritesPercentage() {
+        Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new ProgressBar { ProgressColor = Green };
+            bar.Update(12.5);
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+
+        await Assert.That(errorWriter.ToString()).IsNotEqualTo(string.Empty);
+    }
+
+    [Test]
+    public async Task ProgressBar_Update_StatusSpan_SameLineFalse() {
+        Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new ProgressBar { ProgressColor = Green };
+            ReadOnlySpan<char> status = "span-status".AsSpan();
+
+            bar.Update(30, status, sameLine: false);
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+
+        await Assert.That(errorWriter.ToString()).Contains("span-status");
+    }
+
+    [Test]
     public async Task IndeterminateProgressBar_RunAsync_CompletesAndReturnsResult() {
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
@@ -217,6 +249,53 @@ public class ProgressBarTests {
             Error = originalError;
             RenderingExtensions.ConfigureCursorAccessors(null, null);
         }
+    }
+
+    [Test]
+    public async Task IndeterminateProgressBar_RunAsync_Generic_TaskAlreadyCompleted() {
+        Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            var bar = new IndeterminateProgressBar {
+                DisplayElapsedTime = false,
+                UpdateRate = 5
+            };
+
+            var completed = Task.FromResult(5);
+            var result = await bar.RunAsync(completed, "done");
+
+            await Assert.That(result).IsEqualTo(5);
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+    }
+
+    [Test]
+    public async Task IndeterminateProgressBar_RunAsync_CancelsQuickly() {
+        Error = Utilities.GetWriter(out var errorWriter);
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        using var cts = new CancellationTokenSource();
+        try {
+            var bar = new IndeterminateProgressBar {
+                DisplayElapsedTime = false,
+                UpdateRate = 5
+            };
+
+            var task = Task.Run(async () => {
+                await Task.Delay(1000, cts.Token);
+            }, cts.Token);
+
+            cts.CancelAfter(10);
+            await bar.RunAsync(task, "cancelled", cts.Token);
+        } catch (OperationCanceledException) {
+            // expected in this path
+        } finally {
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+
+        await Assert.That(errorWriter.ToString()).Contains("cancelled");
     }
 }
 

@@ -87,5 +87,9 @@ public class ConsoleColorTests {
             await Assert.That(AnsiColors.Foreground(color)).IsEqualTo(fgBuilt);
             await Assert.That(AnsiColors.Background(color)).IsEqualTo(bgBuilt);
         }
+
+        ConsoleColor @default = (ConsoleColor)(-1);
+        await Assert.That(AnsiColors.Foreground(@default)).IsEqualTo(AnsiColors.ForegroundResetSequence);
+        await Assert.That(AnsiColors.Background(@default)).IsEqualTo(AnsiColors.BackgroundResetSequence);
     }
 }
