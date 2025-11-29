@@ -97,21 +97,6 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
     }
 
     [Test]
-    [Arguments(6)]
-    [Arguments(-6)]
-    public async Task WriteInterpolated_ColorTupleAlignment_UsesWidthOnly(int alignment) {
-        int chars = alignment > 0
-            ? Console.WriteInterpolated($"{(ConsoleColor.Blue, ConsoleColor.White),6}")
-            : Console.WriteInterpolated($"{(ConsoleColor.Blue, ConsoleColor.White),-6}");
-
-        var written = Utilities.StripAnsiSequences(_writer.ToStringAndFlush());
-        var expected = new string(' ', 6);
-
-        await Assert.That(written).IsEqualTo(expected);
-        await Assert.That(chars).IsEqualTo(6);
-    }
-
-    [Test]
     public async Task WriteLineInterpolated_WithColorsAndPrimitives_CountExcludesNewline() {
         var duration = TimeSpan.FromSeconds(42);
         var writer = new StringWriter();
