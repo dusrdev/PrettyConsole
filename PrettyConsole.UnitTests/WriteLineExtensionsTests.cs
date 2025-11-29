@@ -1,4 +1,4 @@
-namespace PrettyConsole.Tests.Unit;
+namespace PrettyConsole.UnitTests;
 
 public class WriteLineExtensionsTests {
     private readonly StringWriter _writer;
@@ -9,23 +9,23 @@ public class WriteLineExtensionsTests {
         Error = Utilities.GetWriter(out _errorWriter);
     }
 
-    [Fact]
-    public void WriteLine_Interpolated_AppendsNewLine() {
+    [Test]
+    public async Task WriteLine_Interpolated_AppendsNewLine() {
         var originalOut = Out;
         var writer = new StringWriter();
         Out = writer;
 
         try {
             Console.WriteLineInterpolated(OutputPipe.Out, $"Line {7}");
-            Assert.Equal($"Line 7{writer.NewLine}", writer.ToString());
+            await Assert.That(writer.ToString()).IsEqualTo($"Line 7{writer.NewLine}");
         } finally {
             Out = originalOut;
         }
     }
 
-    [Fact]
-    public void WriteLine_ReadOnlySpan_WithColors_AppendsNewLine() {
+    [Test]
+    public async Task WriteLine_ReadOnlySpan_WithColors_AppendsNewLine() {
         Console.WriteLine("SpanLine".AsSpan(), OutputPipe.Out, ConsoleColor.Yellow, ConsoleColor.Black);
-        Assert.Equal($"SpanLine{_writer.NewLine}", _writer.ToStringAndFlush());
+        await Assert.That(_writer.ToStringAndFlush()).IsEqualTo($"SpanLine{_writer.NewLine}");
     }
 }

@@ -4,22 +4,36 @@ on:
   pull_request:
   workflow_dispatch:
 
+env:
+  TEST_PROJECT: PrettyConsole.UnitTests/PrettyConsole.UnitTests.csproj
+  TEST_ARTIFACTS: artifacts/
+  TEST_RUNNER: artifacts/PrettyConsole.UnitTests
+
 jobs:
-  unit-tests-matrix:
+  unit-tests:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, windows-latest, macos-latest]
-    uses: dusrdev/actions/.github/workflows/reusable-dotnet-test-mtp.yaml@main
-    with:
-      platform: ${{ matrix.platform }}
-      dotnet-version: 10.0.x
-      test-project-path: PrettyConsole.Tests.Unit/PrettyConsole.Tests.Unit.csproj
+        include:
+          - os: ubuntu-latest
+          - os: macos-latest
+          - os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
 
-  unit-tests-debug:
-    uses: dusrdev/actions/.github/workflows/reusable-dotnet-test-mtp.yaml@main
-    with:
-      platform: ubuntu-latest
-      dotnet-version: 10.0.x
-      test-project-path: PrettyConsole.Tests.Unit/PrettyConsole.Tests.Unit.csproj
-      use-debug: true
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish native AOT test runner
+        run: |
+          dotnet publish ${{ env.TEST_PROJECT }} -c Release -o "${{ env.TEST_ARTIFACTS }}"
+
+      - name: Run published tests
+        shell: bash
+        run: |
+          exe="${{ env.TEST_RUNNER }}"
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then exe="$exe.exe"; fi
+          "$exe"

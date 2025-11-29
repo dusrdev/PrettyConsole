@@ -1,8 +1,8 @@
-namespace PrettyConsole.Tests.Unit;
+namespace PrettyConsole.UnitTests;
 
 public class InputRequestExtensionsTests {
-    [Fact]
-    public void RequestAnyInput_WritesPrompt_AndInvokesReadKey() {
+    [Test]
+    public async Task RequestAnyInput_WritesPrompt_AndInvokesReadKey() {
         Out = Utilities.GetWriter(out var writer);
         bool invoked = false;
 
@@ -14,8 +14,8 @@ public class InputRequestExtensionsTests {
 
             Console.RequestAnyInput($"Press something:");
 
-            Assert.Contains("Press something:", writer.ToString());
-            Assert.True(invoked);
+            await Assert.That(writer.ToString()).Contains("Press something:");
+            await Assert.That(invoked).IsTrue();
         } finally {
             InputRequestExtensions.ConfigureReadKey(null);
         }

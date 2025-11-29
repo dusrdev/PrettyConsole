@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace PrettyConsole.Tests.Unit;
+namespace PrettyConsole.UnitTests;
 
 public class WriteExtensionsTests {
     private readonly StringWriter _writer;
@@ -11,36 +11,36 @@ public class WriteExtensionsTests {
         Error = Utilities.GetWriter(out _errorWriter);
     }
 
-    [Fact]
-    public void Write_Interpolated_WritesFormattedContent_ToOutPipe() {
+    [Test]
+    public async Task Write_Interpolated_WritesFormattedContent_ToOutPipe() {
         var originalOut = Out;
         var writer = new StringWriter();
         Out = writer;
 
         try {
             Console.WriteInterpolated(OutputPipe.Out, $"Hello {42}");
-            Assert.Equal("Hello 42", writer.ToString());
+            await Assert.That(writer.ToString()).IsEqualTo("Hello 42");
         } finally {
             Out = originalOut;
         }
     }
 
-    [Fact]
-    public void Write_Interpolated_WritesFormattedContent_ToErrorPipe() {
+    [Test]
+    public async Task Write_Interpolated_WritesFormattedContent_ToErrorPipe() {
         var originalError = Error;
         var writer = new StringWriter();
         Error = writer;
 
         try {
             Console.WriteInterpolated(OutputPipe.Error, $"Error {123}");
-            Assert.Equal("Error 123", writer.ToString());
+            await Assert.That(writer.ToString()).IsEqualTo("Error 123");
         } finally {
             Error = originalError;
         }
     }
 
-    [Fact]
-    public void Write_Interpolated_IgnoresColorTokensInOutput() {
+    [Test]
+    public async Task Write_Interpolated_IgnoresColorTokensInOutput() {
         var originalOut = Out;
         var writer = new StringWriter();
         Out = writer;
@@ -51,47 +51,47 @@ public class WriteExtensionsTests {
 
             var normalized = Utilities.StripAnsiSequences(writer.ToString());
 
-            Assert.Equal("Colors Green Red", normalized);
+            await Assert.That(normalized).IsEqualTo("Colors Green Red");
         } finally {
             Out = originalOut;
         }
     }
 
-    [Fact]
-    public void Write_SpanFormattable_NoColors() {
+    [Test]
+    public async Task Write_SpanFormattable_NoColors() {
         Console.Write<double>(3.14);
-        Assert.Equal("3.14", _writer.ToStringAndFlush());
+        await Assert.That(_writer.ToStringAndFlush()).IsEqualTo("3.14");
     }
 
-    [Fact]
-    public void Write_SpanFormattable_ForegroundColor() {
+    [Test]
+    public async Task Write_SpanFormattable_ForegroundColor() {
         Console.Write(3.14, OutputPipe.Out, White);
-        Assert.Equal("3.14", _writer.ToStringAndFlush());
+        await Assert.That(_writer.ToStringAndFlush()).IsEqualTo("3.14");
     }
 
-    [Fact]
-    public void Write_SpanFormattable_ForegroundAndBackgroundColor() {
+    [Test]
+    public async Task Write_SpanFormattable_ForegroundAndBackgroundColor() {
         Console.Write(3.14, OutputPipe.Out, White, Black);
-        Assert.Equal("3.14", _writer.ToStringAndFlush());
+        await Assert.That(_writer.ToStringAndFlush()).IsEqualTo("3.14");
     }
 
-    [Fact]
-    public void Write_SpanFormattable_VeryLongObjectFormat() {
+    [Test]
+    public async Task Write_SpanFormattable_VeryLongObjectFormat() {
         var obj = new LongFormatStud();
         Console.Write<LongFormatStud>(obj);
-        Assert.Equal(new string('X', LongFormatStud.Length), _writer.ToStringAndFlush());
+        await Assert.That(_writer.ToStringAndFlush()).IsEqualTo(new string('X', LongFormatStud.Length));
     }
 
-    [Fact]
-    public void Write_SpanFormattable_WithFormatAndProvider() {
+    [Test]
+    public async Task Write_SpanFormattable_WithFormatAndProvider() {
         Console.Write(12.345, OutputPipe.Out, White, Black, "F2", CultureInfo.InvariantCulture);
-        Assert.Equal("12.35", _writer.ToStringAndFlush());
+        await Assert.That(_writer.ToStringAndFlush()).IsEqualTo("12.35");
     }
 
-    [Fact]
-    public void Write_ReadOnlySpan_WithColors_WritesToSelectedPipe() {
+    [Test]
+    public async Task Write_ReadOnlySpan_WithColors_WritesToSelectedPipe() {
         Console.Write("Data".AsSpan(), OutputPipe.Error, ConsoleColor.Green, ConsoleColor.Black);
-        Assert.Equal("Data", _errorWriter.ToStringAndFlush());
+        await Assert.That(_errorWriter.ToStringAndFlush()).IsEqualTo("Data");
     }
 
     private readonly ref struct LongFormatStud : ISpanFormattable {

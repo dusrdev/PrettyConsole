@@ -1,21 +1,11 @@
-namespace PrettyConsole.Tests.Unit;
+using TUnit.Core.Attributes;
 
+namespace PrettyConsole.UnitTests;
+
+[SkipWhenConsoleUnavailable]
 public class ProgressBarTests {
-    private readonly bool _consoleAvailable;
-
-    public ProgressBarTests() {
-        try {
-            _ = Console.BufferWidth;
-            _ = Console.CursorLeft;
-            _consoleAvailable = true;
-        } catch (IOException) {
-            _consoleAvailable = false;
-        }
-    }
-
-    [Fact]
-    public void ProgressBar_Update_WritesStatusAndPercentage() {
-        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
+    [Test]
+    public async Task ProgressBar_Update_WritesStatusAndPercentage() {
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
@@ -32,14 +22,13 @@ public class ProgressBarTests {
         }
 
         var output = errorWriter.ToString();
-        Assert.Contains("Loading", output);
-        Assert.Contains("#", output);
-        Assert.Contains("50", output);
+        await Assert.That(output).Contains("Loading");
+        await Assert.That(output).Contains("#");
+        await Assert.That(output).Contains("50");
     }
 
-    [Fact]
-    public void ProgressBar_Update_SamePercentage_RerendersOutput() {
-        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
+    [Test]
+    public async Task ProgressBar_Update_SamePercentage_RerendersOutput() {
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
@@ -59,14 +48,13 @@ public class ProgressBarTests {
         }
 
         var output = errorWriter.ToString();
-        Assert.NotEqual(string.Empty, output);
-        Assert.Contains("Loading", output);
-        Assert.Contains("25", output);
+        await Assert.That(output).IsNotEqualTo(string.Empty);
+        await Assert.That(output).Contains("Loading");
+        await Assert.That(output).Contains("25");
     }
 
-    [Fact]
-    public void ProgressBar_Update_SameLineFalse_WritesStatusOnSeparateLine() {
-        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
+    [Test]
+    public async Task ProgressBar_Update_SameLineFalse_WritesStatusOnSeparateLine() {
         var originalError = Error;
         int cursorLine = 0;
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
@@ -80,17 +68,16 @@ public class ProgressBarTests {
             bar.Update(75, "Working", sameLine: false);
 
             var output = errorWriter.ToString();
-            Assert.Contains("Working", output);
-            Assert.Contains(Environment.NewLine + "[", output);
+            await Assert.That(output).Contains("Working");
+            await Assert.That(output).Contains(Environment.NewLine + "[");
         } finally {
             Error = originalError;
             RenderingExtensions.ConfigureCursorAccessors(null, null);
         }
     }
 
-    [Fact]
-    public void ProgressBar_WriteProgressBar_WritesFormattedOutput() {
-        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
+    [Test]
+    public async Task ProgressBar_WriteProgressBar_WritesFormattedOutput() {
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var outWriter);
@@ -98,17 +85,16 @@ public class ProgressBarTests {
             ProgressBar.WriteProgressBar(OutputPipe.Out, 75, Cyan, '*');
 
             var output = outWriter.ToString();
-            Assert.Contains("[", output);
-            Assert.Contains("75%", output);
-            Assert.Contains("*", output);
+            await Assert.That(output).Contains("[");
+            await Assert.That(output).Contains("75%");
+            await Assert.That(output).Contains("*");
         } finally {
             Out = originalOut;
         }
     }
 
-    [Fact]
-    public void ProgressBar_WriteProgressBar_RespectsMaxLineWidth() {
-        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
+    [Test]
+    public async Task ProgressBar_WriteProgressBar_RespectsMaxLineWidth() {
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var outWriter);
@@ -116,17 +102,16 @@ public class ProgressBarTests {
             ProgressBar.WriteProgressBar(OutputPipe.Out, 50, Cyan, '*', maxLineWidth: 24);
 
             var output = outWriter.ToString();
-            Assert.Equal(24, output.Length);
-            Assert.Equal('[', output[0]);
-            Assert.Equal('%', output[^1]);
+            await Assert.That(output.Length).IsEqualTo(24);
+            await Assert.That(output[0]).IsEqualTo('[');
+            await Assert.That(output[^1]).IsEqualTo('%');
         } finally {
             Out = originalOut;
         }
     }
 
-    [Fact]
-    public void ProgressBar_Update_RespectsMaxLineWidth() {
-        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
+    [Test]
+    public async Task ProgressBar_Update_RespectsMaxLineWidth() {
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
         const int expectedWidth = 32;
@@ -144,17 +129,16 @@ public class ProgressBarTests {
 
         var output = Utilities.StripAnsiSequences(errorWriter.ToString());
         int percentIndex = output.LastIndexOf('%');
-        Assert.True(percentIndex > 0, "Output contains a percentage symbol.");
+        await Assert.That(percentIndex > 0).IsTrue();
         int bracketIndex = output.LastIndexOf('[', percentIndex);
-        Assert.True(bracketIndex >= 0, "Output contains a bracketed progress bar.");
+        await Assert.That(bracketIndex >= 0).IsTrue();
 
         var segment = output[bracketIndex..(percentIndex + 1)];
-        Assert.Equal(expectedWidth, segment.Length);
+        await Assert.That(segment.Length).IsEqualTo(expectedWidth);
     }
 
-    [Fact]
+    [Test]
     public async Task IndeterminateProgressBar_RunAsync_CompletesAndReturnsResult() {
-        Assert.SkipWhen(!_consoleAvailable, "Console handle unavailable for this environment.");
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
@@ -165,16 +149,36 @@ public class ProgressBarTests {
                 UpdateRate = 5
             };
 
-            var cancellation = TestContext.Current.CancellationToken;
+            var cancellation = CancellationToken.None;
             var result = await bar.RunAsync(Task.Run(async () => {
                 await Task.Delay(20, cancellation);
                 return 42;
             }, cancellation), "Working", cancellation);
 
-            Assert.Equal(42, result);
-            Assert.NotEqual(string.Empty, errorWriter.ToString());
+            await Assert.That(result).IsEqualTo(42);
+            await Assert.That(errorWriter.ToString()).IsNotEqualTo(string.Empty);
         } finally {
             RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+    }
+}
+
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+internal sealed class SkipWhenConsoleUnavailableAttribute : SkipAttribute {
+    public SkipWhenConsoleUnavailableAttribute() : base("Console handle unavailable for this environment.") {
+    }
+
+    public override Task<bool> ShouldSkip(TestRegisteredContext testContext) => Task.FromResult(!ConsoleAvailability.IsAvailable());
+}
+
+internal static class ConsoleAvailability {
+    public static bool IsAvailable() {
+        try {
+            _ = Console.BufferWidth;
+            _ = Console.CursorLeft;
+            return true;
+        } catch (IOException) {
+            return false;
         }
     }
 }

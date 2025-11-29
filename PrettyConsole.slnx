@@ -1,6 +1,6 @@
 <Solution>
   <Project Path="Benchmarks/Benchmarks.csproj" />
-  <Project Path="PrettyConsole.Tests.Unit/PrettyConsole.Tests.Unit.csproj" />
   <Project Path="PrettyConsole.Tests/PrettyConsole.Tests.csproj" />
+  <Project Path="PrettyConsole.UnitTests/PrettyConsole.UnitTests.csproj" />
   <Project Path="PrettyConsole/PrettyConsole.csproj" />
 </Solution>
