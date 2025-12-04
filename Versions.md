@@ -4,7 +4,7 @@
 
 - `PrettyConsoleInterpolatedStringHandler`:
   - Turned more of the methods to be `public` to enhance the usability of it in an advance usage (unrolling its creation). To further aid in this.
-  - Added `AppendHandlerContent` which can inline the contents of an another `PrettyConsoleInterpolatedStringHandler` to the source instance and enable nested use cases.
+  - Added `AppendInline` which can inline the contents of an another `PrettyConsoleInterpolatedStringHandler` to the source instance and enable nested use cases.
   - Added another constructor that accepts just `OutputPipe` and an optional `IFormatProvider`.
   - Is now passed by `ref` to accepting methods.
 - Added `SkipLines` which can be used to move the cursor `n` amount of lines forward. This can be used to keep the output of overwritten lines, like progress bars, spinners, `OverWrite` and so on and forth.

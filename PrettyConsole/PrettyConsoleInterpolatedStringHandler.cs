@@ -429,7 +429,8 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     /// <param name="pipe"></param>
     /// <param name="handler"></param>
-    public void AppendHandlerContent(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] ref PrettyConsoleInterpolatedStringHandler handler) {
+    /// <remarks>After copying the content, <see cref="FlushWithoutWrite"/> is called on the incoming handler.</remarks>
+    public void AppendInline(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] ref PrettyConsoleInterpolatedStringHandler handler) {
         ThrowIfFlushed();
         handler.ResetColors();
         ReadOnlySpan<char> other = handler.WrittenSpan;

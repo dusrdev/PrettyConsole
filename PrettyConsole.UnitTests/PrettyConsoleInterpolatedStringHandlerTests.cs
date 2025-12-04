@@ -331,7 +331,7 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
         (_, var isRedirected) = GetPipeTargetAndState(OutputPipe.Out);
 
         var handler = new PrettyConsoleInterpolatedStringHandler(OutputPipe.Out);
-        handler.AppendHandlerContent(OutputPipe.Out, $"{Green}Hello");
+        handler.AppendInline(OutputPipe.Out, $"{Green}Hello");
 
         if (isRedirected) {
             await Assert.That(new string(handler.WrittenSpan)).IsEqualTo("Hello");
