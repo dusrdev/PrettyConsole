@@ -293,4 +293,51 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
     }
 
     private static ReadOnlySpan<string> FileSizeSuffix => new[] { "B", "KB", "MB", "GB", "TB", "PB" };
+
+    [Test]
+    public async Task AppendWhiteSpace() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+
+            Console.WriteInterpolated($"{new WhiteSpace(5)}");
+
+            await Assert.That(writer.ToString()).IsEqualTo(new string(' ', 5));
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task ManualCtor() {
+
+        var originalOut = Out;
+        try {
+            Out = Console.Out;
+
+            var handler = new PrettyConsoleInterpolatedStringHandler(OutputPipe.Out);
+            handler.AppendFormatted(Green);
+            handler.AppendSpan("Hello");
+            handler.ResetColors();
+
+            await Assert.That(new string(handler.WrittenSpan)).IsEqualTo($"{AnsiColors.Foreground(Green)}Hello{AnsiColors.ForegroundResetSequence}");
+
+            handler.FlushWithoutWrite();
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task NestedHandler() {
+        var originalOut = Out;
+        try {
+            Out = Console.Out;
+            var handler = new PrettyConsoleInterpolatedStringHandler(OutputPipe.Out);
+            handler.AppendHandlerContent(OutputPipe.Out, $"{Green}Hello");
+            await Assert.That(handler.WrittenSpan.ToString()).IsEqualTo($"{AnsiColors.Foreground(Green)}Hello{AnsiColors.ForegroundResetSequence}");
+        } finally {
+            Out = originalOut;
+        }
+    }
 }
