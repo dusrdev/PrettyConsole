@@ -11,6 +11,7 @@
 - `Confirm(trueValues, ref handler, bool emptyIsTrue = true)` parameters were reordered, `emptyIsTrue` is now the last parameter.
 - `IndeterminateProgressBar` overloads with the `Func` now use `PrettyConsoleInterpolatedStringHandlerFactory` instead, and usage is now `(builder, out handler) => handler = PrettyConsoleInterpolatedStringHandler.Build(...)`. This was required to reduce compiler created struct copies and increase safety.
   - Building custom handlers is now done with `PrettyConsoleInterpolatedStringHandlerBuilder` which contains a thread-safe singleton; `PrettyConsoleInterpolatedStringHandler.Build` was removed in favor of using the builder.
+- `AnsiColors` which provides static utilities to convert `ConsoleColor` to `ANSI` sequences is now public (was previously internal)
 
 ## v5.2.0
 
