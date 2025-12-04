@@ -216,7 +216,7 @@ public class ProgressBarTests {
             int result = await bar.RunAsync(Task.Run(async () => {
                 await Task.Delay(20, cancellation);
                 return 42;
-            }, cancellation), () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"Working"), cancellation);
+            }, cancellation), (out value) => value = PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"Working"), cancellation);
 
             await Assert.That(result).IsEqualTo(42);
             await Assert.That(errorWriter.ToString()).IsNotEqualTo(string.Empty);
@@ -261,7 +261,7 @@ public class ProgressBarTests {
             };
 
             var completed = Task.FromResult(5);
-            var result = await bar.RunAsync(completed, () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"done"));
+            var result = await bar.RunAsync(completed, (out value) => value = PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"done"));
 
             await Assert.That(result).IsEqualTo(5);
         } finally {

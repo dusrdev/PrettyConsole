@@ -58,7 +58,7 @@ public class IndeterminateProgressBar {
     /// <param name="header"></param>
     /// <param name="token"></param>
     public async Task<T> RunAsync<T>(Task<T> task, string header, CancellationToken token) {
-        await RunAsyncNonGeneric(task, () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"{header}"), token);
+        await RunAsyncNonGeneric(task, (out value) => value = PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"{header}"), token);
 
         return task.IsCompleted ? task.Result : await task;
     }
@@ -70,7 +70,7 @@ public class IndeterminateProgressBar {
     /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>
     /// <param name="token"></param>
     /// <returns>The output of the running task.</returns>
-    public async Task<T> RunAsync<T>(Task<T> task, Func<PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token = default) {
+    public async Task<T> RunAsync<T>(Task<T> task, RefAction<PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token = default) {
         await RunAsyncNonGeneric(task, headerFactory, token);
 
         return task.IsCompleted ? task.Result : await task;
@@ -91,7 +91,7 @@ public class IndeterminateProgressBar {
     /// <param name="header"></param>
     /// <param name="token"></param>
     public Task RunAsync(Task task, string header, CancellationToken token) {
-        return RunAsyncNonGeneric(task, () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"{header}"), token);
+        return RunAsyncNonGeneric(task, (out value) => value = PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"{header}"), token);
     }
 
     /// <summary>
@@ -100,8 +100,7 @@ public class IndeterminateProgressBar {
     /// <param name="task"></param>
     /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>
     /// <param name="token"></param>
-    public Task RunAsync(Task task, Func<PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token) => RunAsyncNonGeneric(task, headerFactory, token);
-
+    public Task RunAsync(Task task, RefAction<PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token) => RunAsyncNonGeneric(task, headerFactory, token);
 
     /// <summary>
     /// Runs the indeterminate progress bar while the specified task is running, using a dynamic header factory.
@@ -109,7 +108,7 @@ public class IndeterminateProgressBar {
     /// <param name="task"></param>
     /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>
     /// <param name="token"></param>
-    private async Task RunAsyncNonGeneric(Task task, Func<PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token) {
+    private async Task RunAsyncNonGeneric(Task task, RefAction<PrettyConsoleInterpolatedStringHandler>? headerFactory, CancellationToken token) {
         try {
             if (task.Status is not TaskStatus.Running) {
                 task.Start();
@@ -136,7 +135,8 @@ public class IndeterminateProgressBar {
 
             if (headerFactory is not null) {
                 ConsoleContext.Error.WriteWhiteSpaces(1);
-                headerFactory().Flush();
+                headerFactory.Invoke(out var handler);
+                handler.Flush();
             }
 
             if (DisplayElapsedTime) {

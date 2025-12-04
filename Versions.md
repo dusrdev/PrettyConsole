@@ -1,13 +1,15 @@
 # Versions
 
-## v5.2.1
+## v5.3.0
 
 - `PrettyConsoleInterpolatedStringHandler`:
   - Turned more of the methods to be `public` to enhance the usability of it in an advance usage (unrolling its creation). To further aid in this.
   - Added `AppendHandlerContent` which can inline the contents of an another `PrettyConsoleInterpolatedStringHandler` to the source instance and enable nested use cases.
   - Added another constructor that accepts just `OutputPipe` and an optional `IFormatProvider`.
+  - Is now passed by `ref` to accepting methods.
 - Added `SkipLines` which can be used to move the cursor `n` amount of lines forward. This can be used to keep the output of overwritten lines, like progress bars, spinners, `OverWrite` and so on and forth.
 - `Confirm(trueValues, ref handler, bool emptyIsTrue = true)` parameters were reordered, `emptyIsTrue` is now the last parameter.
+- `IndeterminateProgressBar` overloads with the `Func` now use `RefAction` instead, and usage is now `(out value) => value = PrettyConsoleInterpolatedStringHandler.Build(...)`. This was required to reduce compiler created struct copies and increase safety.
 
 ## v5.2.0
 
