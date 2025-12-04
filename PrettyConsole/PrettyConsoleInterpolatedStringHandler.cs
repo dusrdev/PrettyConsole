@@ -19,6 +19,8 @@ public struct PrettyConsoleInterpolatedStringHandler {
     private ConsoleColor _currentForeground;
     private ConsoleColor _currentBackground;
 
+    private readonly Span<char> Written => new(_buffer, 0, _index);
+
     /// <summary>
 	/// Returns the written portion of the internal buffer as <see cref="ReadOnlySpan{Char}"/>.
 	/// </summary>
@@ -361,7 +363,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
 	/// </summary>
 	/// <param name="span"></param>
 	/// <param name="alignment"></param>
-    public void AppendSpan(scoped ReadOnlySpan<char> span, int alignment) {
+    public void AppendSpan(scoped ReadOnlySpan<char> span, int alignment = 0) {
         ThrowIfFlushed();
 
         if (alignment == 0) {
@@ -423,11 +425,13 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="handler"></param>
     public void AppendHandlerContent(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] PrettyConsoleInterpolatedStringHandler handler = default) {
         ThrowIfFlushed();
+        handler.ResetColors();
         ReadOnlySpan<char> other = handler.WrittenSpan;
         EnsureCapacity(other.Length);
         other.CopyTo(_buffer.AsSpan(_index, other.Length));
         _index += other.Length;
         CharsWritten += handler.CharsWritten;
+        handler.FlushWithoutWrite();
     }
 
     /// <summary>
@@ -483,12 +487,32 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
-	/// Writes the underline buffer to the held <see cref="TextWriter"/>.
+	/// Resets the colors of the contents if they were overwritten.
 	/// </summary>
-    public void Flush() {
-        ThrowIfFlushed();
+    public void ResetColors() {
         AppendFormatted(ConsoleColor.DefaultForeground);
         AppendFormattedBackground(ConsoleColor.DefaultBackground);
+    }
+
+    /// <summary>
+	/// Clears the internal buffer and returns it to the underlying array pool without writing to the to the held <see cref="TextWriter"/>.
+	/// </summary>
+    /// <remarks>This overload does not reset colors.</remarks>
+    public void FlushWithoutWrite() {
+        ThrowIfFlushed();
+        var written = Written;
+        written.Clear();
+        BufferPool.Return(_buffer, false);
+        _flushed = true;
+    }
+
+    /// <summary>
+	/// Writes the underline buffer to the held <see cref="TextWriter"/> and clears and returns the underlying buffer to the underlying array pool.
+	/// </summary>
+    /// <param name="resetColors">Whether to reset colors before flushing</param>
+    public void Flush(bool resetColors = true) {
+        ThrowIfFlushed();
+        if (resetColors) ResetColors();
         Span<char> written = new(_buffer, 0, _index);
         _writer.Write(written);
         written.Clear();
