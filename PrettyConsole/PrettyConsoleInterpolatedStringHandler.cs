@@ -42,7 +42,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="pipe">The pipe to stream the output to.</param>
     /// <param name="provider">Optional format provider used when formatting values.</param>
     public PrettyConsoleInterpolatedStringHandler(OutputPipe pipe, IFormatProvider? provider = null)
-        : this(0, 0, OutputPipe.Out, provider: provider, out _) {
+        : this(0, 0, pipe, provider: provider, out _) {
     }
 
     /// <summary>
@@ -89,7 +89,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
 	/// <param name="pipe"></param>
 	/// <param name="handler"></param>
 	/// <returns></returns>
-    public static PrettyConsoleInterpolatedStringHandler Build(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] PrettyConsoleInterpolatedStringHandler handler = default) => handler;
+    public static ref PrettyConsoleInterpolatedStringHandler Build(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] ref PrettyConsoleInterpolatedStringHandler handler) => ref handler;
 
     /// <summary>
     /// Appends a literal segment supplied by the compiler.
@@ -204,6 +204,8 @@ public struct PrettyConsoleInterpolatedStringHandler {
             _index += written;
             CharsWritten += written;
         }
+
+        AlignLastSection(alignment, written);
     }
 
     private static ReadOnlySpan<string> FileSizeSuffix => new[] { "B", "KB", "MB", "GB", "TB", "PB" };
@@ -251,6 +253,8 @@ public struct PrettyConsoleInterpolatedStringHandler {
             _index += written;
             CharsWritten += written;
         }
+
+        AlignLastSection(alignment, written);
     }
 
     /// <summary>
@@ -315,7 +319,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
         ReadOnlySpan<char> formatSpan = format.AsSpan();
 
         int charsWritten;
-        int start = _index;
+        // int start = _index;
 
         while (true) {
             Span<char> dest = _buffer.AsSpan(_index);
@@ -329,21 +333,31 @@ public struct PrettyConsoleInterpolatedStringHandler {
             Grow(_capacity * 2);
         }
 
+        AlignLastSection(alignment, charsWritten);
+    }
+
+    /// <summary>
+	/// Align the last written section.
+	/// </summary>
+	/// <param name="alignment"></param>
+	/// <param name="length">Section length</param>
+    private void AlignLastSection(int alignment, int length) {
         if (alignment == 0) return;
 
         if (alignment > 0) { // shift forward and prefix whitespaces
-            int padding = alignment - charsWritten;
+            int padding = alignment - length;
             if (padding <= 0) return;
 
             EnsureCapacity(padding);
-            var written = _buffer.AsSpan(start, charsWritten);
-            written.CopyTo(_buffer.AsSpan(start + padding, charsWritten));
+            var start = _index - length;
+            var written = _buffer.AsSpan(start, length);
+            written.CopyTo(_buffer.AsSpan(start + padding, length));
             _buffer.AsSpan(start, padding).Fill(' ');
             _index += padding;
             CharsWritten += padding;
         } else { // suffix whitespaces
             int targetWidth = -alignment;
-            int trailing = targetWidth - charsWritten;
+            int trailing = targetWidth - length;
             if (trailing > 0) {
                 WritePadding(trailing);
             }
@@ -423,7 +437,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     /// <param name="pipe"></param>
     /// <param name="handler"></param>
-    public void AppendHandlerContent(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] PrettyConsoleInterpolatedStringHandler handler = default) {
+    public void AppendHandlerContent(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] ref PrettyConsoleInterpolatedStringHandler handler) {
         ThrowIfFlushed();
         handler.ResetColors();
         ReadOnlySpan<char> other = handler.WrittenSpan;

@@ -7,6 +7,7 @@
   - Added `AppendHandlerContent` which can inline the contents of an another `PrettyConsoleInterpolatedStringHandler` to the source instance and enable nested use cases.
   - Added another constructor that accepts just `OutputPipe` and an optional `IFormatProvider`.
 - Added `SkipLines` which can be used to move the cursor `n` amount of lines forward. This can be used to keep the output of overwritten lines, like progress bars, spinners, `OverWrite` and so on and forth.
+- `Confirm(trueValues, ref handler, bool emptyIsTrue = true)` parameters were reordered, `emptyIsTrue` is now the last parameter.
 
 ## v5.2.0
 

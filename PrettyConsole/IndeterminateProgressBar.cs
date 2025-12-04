@@ -58,7 +58,7 @@ public class IndeterminateProgressBar {
     /// <param name="header"></param>
     /// <param name="token"></param>
     public async Task<T> RunAsync<T>(Task<T> task, string header, CancellationToken token) {
-        await RunAsyncNonGeneric(task, () => WrapHeader(header), token);
+        await RunAsyncNonGeneric(task, () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"{header}"), token);
 
         return task.IsCompleted ? task.Result : await task;
     }
@@ -91,7 +91,7 @@ public class IndeterminateProgressBar {
     /// <param name="header"></param>
     /// <param name="token"></param>
     public Task RunAsync(Task task, string header, CancellationToken token) {
-        return RunAsyncNonGeneric(task, () => WrapHeader(header), token);
+        return RunAsyncNonGeneric(task, () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"{header}"), token);
     }
 
     /// <summary>
@@ -185,9 +185,6 @@ public class IndeterminateProgressBar {
             }
         }
     }
-
-    private static PrettyConsoleInterpolatedStringHandler WrapHeader(string header)
-        => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"{header}");
 
     /// <summary>
     /// Provides constant animation sequences that can be used for <see cref="AnimationSequence"/>

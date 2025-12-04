@@ -14,7 +14,7 @@ public static class ReadLineExtensions {
         /// <param name="result">The result of the parsing</param>
         /// <param name="handler"/>
         /// <returns>True if the parsing was successful, false otherwise</returns>
-        public static bool TryReadLine<T>(out T? result, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where T : IParsable<T> {
+        public static bool TryReadLine<T>(out T? result, [InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler) where T : IParsable<T> {
             handler.Flush();
             var input = ConsoleContext.In.ReadLine();
             return T.TryParse(input, CultureInfo.CurrentCulture, out result);
@@ -28,8 +28,8 @@ public static class ReadLineExtensions {
         /// <param name="default">The default value to return if parsing fails</param>
         /// <param name="handler"/>
         /// <returns>True if the parsing was successful, false otherwise</returns>
-        public static bool TryReadLine<T>(out T result, T @default, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where T : IParsable<T> {
-            var couldParse = TryReadLine(out T? innerResult, handler);
+        public static bool TryReadLine<T>(out T result, T @default, [InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler) where T : IParsable<T> {
+            var couldParse = TryReadLine(out T? innerResult, ref handler);
             if (couldParse) {
                 result = innerResult!;
                 return true;
@@ -46,8 +46,8 @@ public static class ReadLineExtensions {
         /// <param name="ignoreCase">Whether to ignore case when parsing</param>
         /// <param name="handler"/>
         /// <returns>True if the parsing was successful, false otherwise</returns>
-        public static bool TryReadLine<TEnum>(out TEnum result, bool ignoreCase, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where TEnum : struct, Enum {
-            return TryReadLine(out result, ignoreCase, default, handler);
+        public static bool TryReadLine<TEnum>(out TEnum result, bool ignoreCase, [InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler) where TEnum : struct, Enum {
+            return TryReadLine(out result, ignoreCase, default, ref handler);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ public static class ReadLineExtensions {
         /// <param name="default">The default value to return if parsing fails</param>
         /// <param name="handler"/>
         /// <returns>True if the parsing was successful, false otherwise</returns>
-        public static bool TryReadLine<TEnum>(out TEnum result, bool ignoreCase, TEnum @default, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where TEnum : struct, Enum {
+        public static bool TryReadLine<TEnum>(out TEnum result, bool ignoreCase, TEnum @default, [InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler) where TEnum : struct, Enum {
             handler.Flush();
             var input = ConsoleContext.In.ReadLine();
             var res = Enum.TryParse(input, ignoreCase, out result);
@@ -75,8 +75,8 @@ public static class ReadLineExtensions {
         /// <param name="handler"/>
         /// <returns>A string if the user entered any, empty string otherwise - never null.</returns>
         [OverloadResolutionPriority(3)]
-        public static string ReadLine([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
-            _ = TryReadLine(out string result, string.Empty, handler);
+        public static string ReadLine([InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler) {
+            _ = TryReadLine(out string result, string.Empty, ref handler);
             return result;
         }
 
@@ -87,8 +87,8 @@ public static class ReadLineExtensions {
         /// <param name="handler"/>
         /// <returns>The result of the parsing</returns>
         [OverloadResolutionPriority(2)]
-        public static T? ReadLine<T>([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where T : IParsable<T> {
-            _ = TryReadLine(out T? result, handler);
+        public static T? ReadLine<T>([InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler) where T : IParsable<T> {
+            _ = TryReadLine(out T? result, ref handler);
             return result;
         }
 
@@ -100,8 +100,8 @@ public static class ReadLineExtensions {
         /// <param name="handler"/>
         /// <returns>The result of the parsing</returns>
         [OverloadResolutionPriority(1)]
-        public static T ReadLine<T>(T @default, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where T : IParsable<T> {
-            _ = TryReadLine(out T result, @default, handler);
+        public static T ReadLine<T>(T @default, [InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler) where T : IParsable<T> {
+            _ = TryReadLine(out T result, @default, ref handler);
             return result;
         }
     }

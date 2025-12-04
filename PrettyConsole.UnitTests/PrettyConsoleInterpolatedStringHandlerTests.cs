@@ -231,7 +231,7 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
 
             Console.WriteInterpolated($"{ts,10:duration}");
 
-            await Assert.That(writer.ToString()).IsEqualTo("0h 0m 5s");
+            await Assert.That(writer.ToString()).IsEqualTo("  0h 0m 5s");
         } finally {
             Out = originalOut;
         }
