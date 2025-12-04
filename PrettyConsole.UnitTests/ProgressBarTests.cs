@@ -216,7 +216,7 @@ public class ProgressBarTests {
             int result = await bar.RunAsync(Task.Run(async () => {
                 await Task.Delay(20, cancellation);
                 return 42;
-            }, cancellation), () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"Working"), cancellation);
+            }, cancellation), (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"Working"), cancellation);
 
             await Assert.That(result).IsEqualTo(42);
             await Assert.That(errorWriter.ToString()).IsNotEqualTo(string.Empty);
@@ -261,7 +261,7 @@ public class ProgressBarTests {
             };
 
             var completed = Task.FromResult(5);
-            var result = await bar.RunAsync(completed, () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"done"));
+            var result = await bar.RunAsync(completed, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"done"));
 
             await Assert.That(result).IsEqualTo(5);
         } finally {
@@ -305,6 +305,14 @@ internal sealed class SkipWhenConsoleUnavailableAttribute : SkipAttribute {
     public override Task<bool> ShouldSkip(TestRegisteredContext testContext) => Task.FromResult(!ConsoleAvailability.IsAvailable());
 }
 
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+internal sealed class SkipWhenConsoleColorsUnavailableAttribute : SkipAttribute {
+    public SkipWhenConsoleColorsUnavailableAttribute() : base("Console color APIs unavailable for this environment.") {
+    }
+
+    public override Task<bool> ShouldSkip(TestRegisteredContext testContext) => Task.FromResult(!ConsoleAvailability.ColorsSupported());
+}
+
 internal static class ConsoleAvailability {
     public static bool IsAvailable() {
         try {
@@ -313,6 +321,26 @@ internal static class ConsoleAvailability {
             return true;
         } catch (IOException) {
             return false;
+        }
+    }
+
+    public static bool ColorsSupported() {
+        var originalForeground = Console.ForegroundColor;
+        var originalBackground = Console.BackgroundColor;
+
+        try {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.BackgroundColor = ConsoleColor.DarkRed;
+
+            return Console.ForegroundColor == ConsoleColor.Cyan
+                && Console.BackgroundColor == ConsoleColor.DarkRed;
+        } catch (IOException) {
+            return false;
+        } catch (PlatformNotSupportedException) {
+            return false;
+        } finally {
+            Console.ForegroundColor = originalForeground;
+            Console.BackgroundColor = originalBackground;
         }
     }
 }

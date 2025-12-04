@@ -47,7 +47,7 @@ public class AdvancedInputsTests {
         var reader = Utilities.GetReader("ok");
         In = reader;
 
-        var res = Console.Confirm(["ok", "okay"], false, $"Proceed?");
+        var res = Console.Confirm(["ok", "okay"], $"Proceed?", false);
 
         await Assert.That(stringWriter.ToStringAndFlush()).IsEqualTo("Proceed?");
         await Assert.That(res).IsTrue();

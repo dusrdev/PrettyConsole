@@ -10,24 +10,40 @@ public struct PrettyConsoleInterpolatedStringHandler {
     private static readonly ArrayPool<char> BufferPool = ArrayPool<char>.Shared;
 
     private bool _flushed;
-
     private char[] _buffer;
-
     private int _index;
-
     private int _capacity = 4096;
-
     private readonly TextWriter _writer;
     private readonly bool _isRedirected;
     private readonly IFormatProvider? _provider;
-
     private ConsoleColor _currentForeground;
     private ConsoleColor _currentBackground;
 
+    private readonly Span<char> Written => new(_buffer, 0, _index);
+
     /// <summary>
-	/// The number of characters written in this instance of <see cref="PrettyConsoleInterpolatedStringHandler"/>.
+	/// Returns the written portion of the internal buffer as <see cref="ReadOnlySpan{Char}"/>.
 	/// </summary>
+    public readonly ReadOnlySpan<char> WrittenSpan {
+        get {
+            ThrowIfFlushed();
+            return new(_buffer, 0, _index);
+        }
+    }
+
+    /// <summary>
+    /// The number of characters written in this instance of <see cref="PrettyConsoleInterpolatedStringHandler"/>.
+    /// </summary>
     public int CharsWritten { get; private set; }
+
+    /// <summary>
+    /// Creates a new handler that writes to <paramref name="pipe"/>.
+    /// </summary>
+    /// <param name="pipe">The pipe to stream the output to.</param>
+    /// <param name="provider">Optional format provider used when formatting values.</param>
+    public PrettyConsoleInterpolatedStringHandler(OutputPipe pipe, IFormatProvider? provider = null)
+        : this(0, 0, pipe, provider: provider, out _) {
+    }
 
     /// <summary>
     /// Creates a new handler that writes to <see cref="OutputPipe.Out"/> .
@@ -68,14 +84,6 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
-	/// Creates a <see cref="PrettyConsoleInterpolatedStringHandler"/> instance attached to <paramref name="pipe"/>.
-	/// </summary>
-	/// <param name="pipe"></param>
-	/// <param name="handler"></param>
-	/// <returns></returns>
-    public static PrettyConsoleInterpolatedStringHandler Build(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] PrettyConsoleInterpolatedStringHandler handler = default) => handler;
-
-    /// <summary>
     /// Appends a literal segment supplied by the compiler.
     /// </summary>
     public void AppendLiteral(string value) {
@@ -89,18 +97,16 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="value">Formatted string.</param>
     /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
     /// <param name="format">Unused string format specifier.</param>
-    public void AppendFormatted(string? value, int alignment = 0, string? format = null) {
-        AppendString(value, alignment);
-    }
+    public void AppendFormatted(string? value, int alignment = 0, string? format = null)
+        => AppendString(value, alignment);
 
     /// <summary>
     /// Appends a span segment
     /// </summary>
     /// <param name="value">Characters to write.</param>
     /// <param name="alignment">Optional alignment as provided by the interpolation.</param>
-    public void AppendFormatted(scoped ReadOnlySpan<char> value, int alignment = 0) {
-        AppendSpan(value, alignment);
-    }
+    public void AppendFormatted(scoped ReadOnlySpan<char> value, int alignment = 0)
+        => AppendSpan(value, alignment);
 
     /// <summary>
     /// Appends a single character.
@@ -155,13 +161,8 @@ public struct PrettyConsoleInterpolatedStringHandler {
 	/// Appends a region of whitespaces to the buffer.
 	/// </summary>
 	/// <param name="whiteSpace"></param>
-    public void AppendFormatted(WhiteSpace whiteSpace) {
-        var length = whiteSpace.Length;
-        EnsureCapacity(length);
-        _buffer.AsSpan(_index, length).Fill(' ');
-        _index += length;
-        CharsWritten += length;
-    }
+    public void AppendFormatted(WhiteSpace whiteSpace)
+        => WritePadding(whiteSpace.Length);
 
     /// <summary>
     /// Append timeSpan with optional formatting.
@@ -195,6 +196,8 @@ public struct PrettyConsoleInterpolatedStringHandler {
             _index += written;
             CharsWritten += written;
         }
+
+        AlignLastSection(alignment, written);
     }
 
     private static ReadOnlySpan<string> FileSizeSuffix => new[] { "B", "KB", "MB", "GB", "TB", "PB" };
@@ -242,28 +245,27 @@ public struct PrettyConsoleInterpolatedStringHandler {
             _index += written;
             CharsWritten += written;
         }
+
+        AlignLastSection(alignment, written);
     }
 
     /// <summary>
     /// Appends a value type that implements <see cref="ISpanFormattable"/> without boxing while respecting alignment.
     /// </summary>
-    public void AppendFormatted<T>(T value, int alignment = 0) where T : ISpanFormattable {
-        AppendSpanFormattable(value, alignment, format: null);
-    }
+    public void AppendFormatted<T>(T value, int alignment = 0) where T : ISpanFormattable
+        => AppendSpanFormattable(value, alignment, format: null);
 
     /// <summary>
     /// Appends a value type that implements <see cref="ISpanFormattable"/> without boxing using the provided format string.
     /// </summary>
-    public void AppendFormatted<T>(T value, string? format) where T : ISpanFormattable {
-        AppendSpanFormattable(value, alignment: 0, format);
-    }
+    public void AppendFormatted<T>(T value, string? format) where T : ISpanFormattable
+        => AppendSpanFormattable(value, alignment: 0, format);
 
     /// <summary>
     /// Appends a value type that implements <see cref="ISpanFormattable"/> without boxing using alignment and format string.
     /// </summary>
-    public void AppendFormatted<T>(T value, int alignment, string? format) where T : ISpanFormattable {
-        AppendSpanFormattable(value, alignment, format);
-    }
+    public void AppendFormatted<T>(T value, int alignment, string? format) where T : ISpanFormattable
+        => AppendSpanFormattable(value, alignment, format);
 
     /// <summary>
     /// Appends an object value when the compiler cannot resolve a more specific overload.
@@ -296,13 +298,20 @@ public struct PrettyConsoleInterpolatedStringHandler {
         }
     }
 
+    /// <summary>
+	/// Append <paramref name="value"/> formatted into the internal buffer with <paramref name="alignment"/>.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	/// <param name="value"></param>
+	/// <param name="alignment"></param>
+	/// <param name="format"></param>
     private void AppendSpanFormattable<T>(T value, int alignment, string? format)
     where T : ISpanFormattable {
         ThrowIfFlushed();
         ReadOnlySpan<char> formatSpan = format.AsSpan();
 
         int charsWritten;
-        int start = _index;
+        // int start = _index;
 
         while (true) {
             Span<char> dest = _buffer.AsSpan(_index);
@@ -316,34 +325,51 @@ public struct PrettyConsoleInterpolatedStringHandler {
             Grow(_capacity * 2);
         }
 
+        AlignLastSection(alignment, charsWritten);
+    }
+
+    /// <summary>
+	/// Align the last written section.
+	/// </summary>
+	/// <param name="alignment"></param>
+	/// <param name="length">Section length</param>
+    private void AlignLastSection(int alignment, int length) {
         if (alignment == 0) return;
 
         if (alignment > 0) { // shift forward and prefix whitespaces
-            int padding = alignment - charsWritten;
+            int padding = alignment - length;
             if (padding <= 0) return;
 
             EnsureCapacity(padding);
-            var written = _buffer.AsSpan(start, charsWritten);
-            written.CopyTo(_buffer.AsSpan(start + padding, charsWritten));
+            var start = _index - length;
+            var written = _buffer.AsSpan(start, length);
+            written.CopyTo(_buffer.AsSpan(start + padding, length));
             _buffer.AsSpan(start, padding).Fill(' ');
             _index += padding;
             CharsWritten += padding;
         } else { // suffix whitespaces
             int targetWidth = -alignment;
-            int trailing = targetWidth - charsWritten;
+            int trailing = targetWidth - length;
             if (trailing > 0) {
                 WritePadding(trailing);
-                CharsWritten += trailing;
             }
         }
     }
 
-    private void AppendString(string? value, int alignment) {
-        // AppendSpan handles null and empty spans
-        AppendSpan(value.AsSpan(), alignment);
-    }
+    /// <summary>
+	/// Append <paramref name="value"/> with <paramref name="alignment"/>.
+	/// </summary>
+	/// <param name="value"></param>
+	/// <param name="alignment"></param>
+    private void AppendString(string? value, int alignment)
+        => AppendSpan(value, alignment);
 
-    private void AppendSpan(scoped ReadOnlySpan<char> span, int alignment) {
+    /// <summary>
+	/// Appends <paramref name="span"/> with <paramref name="alignment"/> to the internal buffer.
+	/// </summary>
+	/// <param name="span"></param>
+	/// <param name="alignment"></param>
+    public void AppendSpan(scoped ReadOnlySpan<char> span, int alignment = 0) {
         ThrowIfFlushed();
 
         if (alignment == 0) {
@@ -355,23 +381,23 @@ public struct PrettyConsoleInterpolatedStringHandler {
         int width = Math.Abs(alignment);
         int visibleLength = span.Length > 0 && span[0] == '\e' ? 0 : span.Length;
         int padding = width - visibleLength;
-        int required = span.Length + padding;
-        EnsureCapacity(required);
 
         if (padding > 0 && !leftAlign) {
             WritePadding(padding);
-            CharsWritten += padding;
         }
 
-        AppendSpanCore(span, false);
+        AppendSpanCore(span);
 
         if (padding > 0 && leftAlign) {
             WritePadding(padding);
-            CharsWritten += padding;
         }
     }
 
-    private void AppendSpanCore(scoped ReadOnlySpan<char> span, bool ensureCapacity = true) {
+    /// <summary>
+	/// Appends <paramref name="span"/> to the internal buffer.
+	/// </summary>
+	/// <param name="span"></param>
+    private void AppendSpanCore(scoped ReadOnlySpan<char> span) {
         int length = span.Length;
 
         if (length == 0) return;
@@ -380,16 +406,39 @@ public struct PrettyConsoleInterpolatedStringHandler {
 
         if (isEscapeSequence && _isRedirected) return;
 
-        if (ensureCapacity) EnsureCapacity(length);
+        EnsureCapacity(length);
         span.CopyTo(_buffer.AsSpan(_index, length));
         _index += length;
 
         if (!isEscapeSequence) CharsWritten += length;
     }
 
+    /// <summary>
+	/// Writes padding according to <paramref name="count"/> and advances _index and CharsWritten
+	/// </summary>
+	/// <param name="count"></param>
     private void WritePadding(int count) {
+        EnsureCapacity(count);
         _buffer.AsSpan(_index, count).Fill(' ');
         _index += count;
+        CharsWritten += count;
+    }
+
+    /// <summary>
+    /// Appends the contents of another <see cref="PrettyConsoleInterpolatedStringHandler"/> to this one.
+    /// </summary>
+    /// <param name="pipe"></param>
+    /// <param name="handler"></param>
+    /// <remarks>After copying the content, <see cref="FlushWithoutWrite"/> is called on the incoming handler.</remarks>
+    public void AppendInline(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] ref PrettyConsoleInterpolatedStringHandler handler) {
+        ThrowIfFlushed();
+        handler.ResetColors();
+        ReadOnlySpan<char> other = handler.WrittenSpan;
+        EnsureCapacity(other.Length);
+        other.CopyTo(_buffer.AsSpan(_index, other.Length));
+        _index += other.Length;
+        CharsWritten += handler.CharsWritten;
+        handler.FlushWithoutWrite();
     }
 
     /// <summary>
@@ -402,6 +451,10 @@ public struct PrettyConsoleInterpolatedStringHandler {
         CharsWritten -= newline.Length;
     }
 
+    /// <summary>
+	/// Ensures that the unwritten portion of the buffer is at least as long as <paramref name="capacity"/>.
+	/// </summary>
+	/// <param name="capacity"></param>
     private void EnsureCapacity(int capacity) {
         int available = _buffer.Length - _index;
         if (capacity <= available) return;
@@ -415,6 +468,10 @@ public struct PrettyConsoleInterpolatedStringHandler {
         Grow(targetCapacity);
     }
 
+    /// <summary>
+	/// Grows the internal buffer to be at least <paramref name="targetCapacity"/>.
+	/// </summary>
+	/// <param name="targetCapacity"></param>
     private void Grow(int targetCapacity) {
         char[] temp = _buffer;
 
@@ -426,6 +483,10 @@ public struct PrettyConsoleInterpolatedStringHandler {
         BufferPool.Return(temp, false);
     }
 
+    /// <summary>
+	/// Throws an <see cref="InvalidOperationException"/> if the buffer was already returned to the backing array pool.
+	/// </summary>
+	/// <exception cref="InvalidOperationException"></exception>
     private readonly void ThrowIfFlushed() {
         if (!_flushed) return;
 
@@ -433,12 +494,32 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
-	/// Writes the underline buffer to the held <see cref="TextWriter"/>.
+	/// Resets the colors of the contents if they were overwritten.
 	/// </summary>
-    public void Flush() {
-        ThrowIfFlushed();
+    public void ResetColors() {
         AppendFormatted(ConsoleColor.DefaultForeground);
         AppendFormattedBackground(ConsoleColor.DefaultBackground);
+    }
+
+    /// <summary>
+	/// Clears the internal buffer and returns it to the underlying array pool without writing to the to the held <see cref="TextWriter"/>.
+	/// </summary>
+    /// <remarks>This overload does not reset colors.</remarks>
+    public void FlushWithoutWrite() {
+        ThrowIfFlushed();
+        var written = Written;
+        written.Clear();
+        BufferPool.Return(_buffer, false);
+        _flushed = true;
+    }
+
+    /// <summary>
+	/// Writes the underline buffer to the held <see cref="TextWriter"/> and clears and returns the underlying buffer to the underlying array pool.
+	/// </summary>
+    /// <param name="resetColors">Whether to reset colors before flushing</param>
+    public void Flush(bool resetColors = true) {
+        ThrowIfFlushed();
+        if (resetColors) ResetColors();
         Span<char> written = new(_buffer, 0, _index);
         _writer.Write(written);
         written.Clear();

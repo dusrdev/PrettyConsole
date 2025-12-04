@@ -1,8 +1,18 @@
 namespace PrettyConsole;
 
-internal static class AnsiColors {
-    internal const string ForegroundResetSequence = "\e[39m";
-    internal const string BackgroundResetSequence = "\e[49m";
+/// <summary>
+/// Provides ANSI sequences for the common <see cref="ConsoleColor"/>s.
+/// </summary>
+public static class AnsiColors {
+    /// <summary>
+	/// A sequence to reset foreground color.
+	/// </summary>
+    public const string ForegroundResetSequence = "\e[39m";
+
+    /// <summary>
+	/// A sequence to reset background color.
+	/// </summary>
+    public const string BackgroundResetSequence = "\e[49m";
 
     private static readonly string[] ForegroundCodes;
     private static readonly string[] BackgroundCodes;
@@ -18,7 +28,7 @@ internal static class AnsiColors {
     }
 
     /// <summary>
-    /// Gets the ANSI sequence for the specified foreground color or an empty string when disabled.
+    /// Gets the ANSI sequence for the specified foreground color.
     /// </summary>
     public static string Foreground(ConsoleColor color) {
         int index = (int)color;
@@ -28,7 +38,7 @@ internal static class AnsiColors {
 
 
     /// <summary>
-    /// Gets the ANSI sequence for the specified background color or an empty string when disabled.
+    /// Gets the ANSI sequence for the specified background color.
     /// </summary>
     public static string Background(ConsoleColor color) {
         int index = (int)color;

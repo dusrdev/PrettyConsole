@@ -24,7 +24,7 @@ public static class InputRequestExtensions {
         /// Used to wait for user input
         /// </summary>
         /// <param name="handler"/>
-        public static void RequestAnyInput([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
+        public static void RequestAnyInput([InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler) {
             handler.Flush();
             _ = s_readKey();
         }
@@ -36,7 +36,7 @@ public static class InputRequestExtensions {
         /// <remarks>
         /// It does not display a question mark or any other prompt, only the message
         /// </remarks>
-        public static bool Confirm([InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) => Confirm(DefaultConfirmValues, true, handler);
+        public static bool Confirm([InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler) => Confirm(DefaultConfirmValues, ref handler, true);
 
         /// <summary>
         /// Used to get user confirmation
@@ -47,7 +47,7 @@ public static class InputRequestExtensions {
         /// <remarks>
         /// It does not display a question mark or any other prompt, only the message
         /// </remarks>
-        public static bool Confirm(ReadOnlySpan<string> trueValues, bool emptyIsTrue = true, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) {
+        public static bool Confirm(ReadOnlySpan<string> trueValues, [InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler, bool emptyIsTrue = true) {
             handler.Flush();
             var input = ConsoleContext.In.ReadLine();
             if (input is null or { Length: 0 }) {

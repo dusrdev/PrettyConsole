@@ -1,5 +1,18 @@
 # Versions
 
+## v5.3.0
+
+- `PrettyConsoleInterpolatedStringHandler`:
+  - Turned more of the methods to be `public` to enhance the usability of it in an advance usage (unrolling its creation). To further aid in this.
+  - Added `AppendInline` which can inline the contents of an another `PrettyConsoleInterpolatedStringHandler` to the source instance and enable nested use cases.
+  - Added another constructor that accepts just `OutputPipe` and an optional `IFormatProvider`.
+  - Is now passed by `ref` to accepting methods.
+- Added `SkipLines` which can be used to move the cursor `n` amount of lines forward. This can be used to keep the output of overwritten lines, like progress bars, spinners, `OverWrite` and so on and forth.
+- `Confirm(trueValues, ref handler, bool emptyIsTrue = true)` parameters were reordered, `emptyIsTrue` is now the last parameter.
+- `IndeterminateProgressBar` overloads with the `Func` now use `PrettyConsoleInterpolatedStringHandlerFactory` instead, and usage is now `(builder, out handler) => handler = PrettyConsoleInterpolatedStringHandler.Build(...)`. This was required to reduce compiler created struct copies and increase safety.
+  - Building custom handlers is now done with `PrettyConsoleInterpolatedStringHandlerBuilder` which contains a thread-safe singleton; `PrettyConsoleInterpolatedStringHandler.Build` was removed in favor of using the builder.
+- `AnsiColors` which provides static utilities to convert `ConsoleColor` to `ANSI` sequences is now public (was previously internal)
+
 ## v5.2.0
 
 - `PrettyConsoleInterpolatedStringHandler` was re-written to buffers interpolated content before emitting it (instead of streaming), along with other optimizations.

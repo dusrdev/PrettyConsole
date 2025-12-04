@@ -16,7 +16,7 @@ public static class MenuExtensions {
         /// <remarks>
         /// This validates the input for you.
         /// </remarks>
-        public static string Selection<TList>(TList choices, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default)
+        public static string Selection<TList>(TList choices, [InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler)
             where TList : IList<string> {
             handler.AppendNewLine();
             handler.Flush();
@@ -49,7 +49,7 @@ public static class MenuExtensions {
         /// <remarks>
         /// This validates the input for you.
         /// </remarks>
-        public static string[] MultiSelection<TList>(TList choices, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default)
+        public static string[] MultiSelection<TList>(TList choices, [InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler)
             where TList : IList<string> {
             handler.AppendNewLine();
             handler.Flush();
@@ -98,7 +98,7 @@ public static class MenuExtensions {
         /// <remarks>
         /// This validates the input for you.
         /// </remarks>
-        public static (string option, string subOption) TreeMenu<TList>(Dictionary<string, TList> menu, [InterpolatedStringHandlerArgument] PrettyConsoleInterpolatedStringHandler handler = default) where TList : IList<string> {
+        public static (string option, string subOption) TreeMenu<TList>(Dictionary<string, TList> menu, [InterpolatedStringHandlerArgument] ref PrettyConsoleInterpolatedStringHandler handler) where TList : IList<string> {
             handler.AppendNewLine();
             handler.Flush();
 

@@ -81,7 +81,7 @@ public class PrettyConsoleExtensionsTests {
         Console.SetOut(new StringWriter());
 
 
-        int width = ConsoleContext.GetWidthOrDefault(77);
+        int width = GetWidthOrDefault(77);
         Console.SetOut(originalOut);
 
         await Assert.That(width).IsEqualTo(77);

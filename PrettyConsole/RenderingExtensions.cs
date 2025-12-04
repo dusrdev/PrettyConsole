@@ -50,6 +50,18 @@ public static class RenderingExtensions {
         }
 
         /// <summary>
+        /// Moves the cursor forward by <paramref name="lines"/>.
+        /// </summary>
+        /// <param name="lines">Amount of lines to skip</param>
+        /// <remarks>
+        /// Useful for keeping overwritten lines, like progress bar or dashboards after the task is done.
+        /// </remarks>
+        public static void SkipLines(int lines) {
+            var currentLine = GetCurrentLine();
+            GoToLine(currentLine + lines);
+        }
+
+        /// <summary>
         /// Used to end current line or write an empty one, depends whether the current line has any text.
         /// </summary>
         public static void NewLine(OutputPipe pipe = OutputPipe.Out) {

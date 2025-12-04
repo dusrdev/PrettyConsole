@@ -26,7 +26,7 @@
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>5.2.0</Version>
+		<Version>5.3.0</Version>
 		<Nullable>enable</Nullable>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -43,9 +43,11 @@
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
-			- `PrettyConsoleInterpolatedStringHandler` was re-written to buffers interpolated content before emitting it (instead of streaming), along with other optimizations.
-			- Added a `WhiteSpace` struct to declare padding regions; the handler recognizes it as a special argument and writes that many spaces directly into the buffer.
-			- `IndeterminateProgressBar` gains overloads that take a `Func{PrettyConsoleInterpolatedStringHandler}`, letting each frame build status text with captured locals. Use `PrettyConsoleInterpolatedStringHandler.Build` to bind the handler to the correct `OutputPipe` inside the factory.
+			- Exposed more of `PrettyConsoleInterpolatedStringHandler`, including a ctor that takes only `OutputPipe` with optional `IFormatProvider`, public helpers, and `AppendInline`; handlers are now passed by `ref`.
+			- Added `Console.SkipLines(int)` to advance the cursor while preserving overwritten UIs such as progress bars and spinners.
+			- Reordered `Confirm(ReadOnlySpan&lt;string&gt; trueValues, ref PrettyConsoleInterpolatedStringHandler handler, bool emptyIsTrue = true)` so `emptyIsTrue` is the last parameter.
+			- `IndeterminateProgressBar` header factories now use `PrettyConsoleInterpolatedStringHandlerFactory` with the `PrettyConsoleInterpolatedStringHandlerBuilder` singleton to avoid extra struct copies; the old `Build` helper was removed.
+			- `AnsiColors` is now public for converting `ConsoleColor` to ANSI sequences.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

@@ -231,7 +231,7 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
 
             Console.WriteInterpolated($"{ts,10:duration}");
 
-            await Assert.That(writer.ToString()).IsEqualTo("0h 0m 5s");
+            await Assert.That(writer.ToString()).IsEqualTo("  0h 0m 5s");
         } finally {
             Out = originalOut;
         }
@@ -293,4 +293,52 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
     }
 
     private static ReadOnlySpan<string> FileSizeSuffix => new[] { "B", "KB", "MB", "GB", "TB", "PB" };
+
+    [Test]
+    public async Task AppendWhiteSpace() {
+        var originalOut = Out;
+        try {
+            Out = Utilities.GetWriter(out var writer);
+
+            Console.WriteInterpolated($"{new WhiteSpace(5)}");
+
+            await Assert.That(writer.ToString()).IsEqualTo(new string(' ', 5));
+        } finally {
+            Out = originalOut;
+        }
+    }
+
+    [Test]
+    public async Task ManualCtor() {
+        (_, var isRedirected) = GetPipeTargetAndState(OutputPipe.Out);
+
+        var handler = new PrettyConsoleInterpolatedStringHandler(OutputPipe.Out);
+        handler.AppendFormatted(Green);
+        handler.AppendSpan("Hello");
+        handler.ResetColors();
+
+        if (isRedirected) {
+            await Assert.That(new string(handler.WrittenSpan)).IsEqualTo("Hello");
+        } else {
+            await Assert.That(new string(handler.WrittenSpan)).IsEqualTo($"{AnsiColors.Foreground(Green)}Hello{AnsiColors.ForegroundResetSequence}");
+        }
+
+        handler.FlushWithoutWrite();
+    }
+
+    [Test]
+    public async Task NestedHandler() {
+        (_, var isRedirected) = GetPipeTargetAndState(OutputPipe.Out);
+
+        var handler = new PrettyConsoleInterpolatedStringHandler(OutputPipe.Out);
+        handler.AppendInline(OutputPipe.Out, $"{Green}Hello");
+
+        if (isRedirected) {
+            await Assert.That(new string(handler.WrittenSpan)).IsEqualTo("Hello");
+        } else {
+            await Assert.That(new string(handler.WrittenSpan)).IsEqualTo($"{AnsiColors.Foreground(Green)}Hello{AnsiColors.ForegroundResetSequence}");
+        }
+
+        handler.FlushWithoutWrite();
+    }
 }
