@@ -305,6 +305,14 @@ internal sealed class SkipWhenConsoleUnavailableAttribute : SkipAttribute {
     public override Task<bool> ShouldSkip(TestRegisteredContext testContext) => Task.FromResult(!ConsoleAvailability.IsAvailable());
 }
 
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+internal sealed class SkipWhenConsoleColorsUnavailableAttribute : SkipAttribute {
+    public SkipWhenConsoleColorsUnavailableAttribute() : base("Console color APIs unavailable for this environment.") {
+    }
+
+    public override Task<bool> ShouldSkip(TestRegisteredContext testContext) => Task.FromResult(!ConsoleAvailability.ColorsSupported());
+}
+
 internal static class ConsoleAvailability {
     public static bool IsAvailable() {
         try {
@@ -313,6 +321,26 @@ internal static class ConsoleAvailability {
             return true;
         } catch (IOException) {
             return false;
+        }
+    }
+
+    public static bool ColorsSupported() {
+        var originalForeground = Console.ForegroundColor;
+        var originalBackground = Console.BackgroundColor;
+
+        try {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.BackgroundColor = ConsoleColor.DarkRed;
+
+            return Console.ForegroundColor == ConsoleColor.Cyan
+                && Console.BackgroundColor == ConsoleColor.DarkRed;
+        } catch (IOException) {
+            return false;
+        } catch (PlatformNotSupportedException) {
+            return false;
+        } finally {
+            Console.ForegroundColor = originalForeground;
+            Console.BackgroundColor = originalBackground;
         }
     }
 }

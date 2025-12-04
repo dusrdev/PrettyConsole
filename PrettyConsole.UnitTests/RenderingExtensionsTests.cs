@@ -30,6 +30,7 @@ public class RenderingExtensionsTests {
     }
 
     [Test]
+    [SkipWhenConsoleColorsUnavailable]
     public async Task SetColors_UpdatesConsoleColors() {
         var originalForeground = Console.ForegroundColor;
         var originalBackground = Console.BackgroundColor;
