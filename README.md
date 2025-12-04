@@ -10,8 +10,8 @@ PrettyConsole is a high-performance, ultra-low-latency, allocation-free extensio
 ## Features
 
 - 🚀 Zero-allocation interpolated string handler (`PrettyConsoleInterpolatedStringHandler`) for inline colors and formatting
-- 🎨 Inline color composition with `ConsoleColor` tuples and helpers (`DefaultForeground`, `DefaultBackground`, `Default`)
-- 🔁 Advanced rendering primitives (`Overwrite`, `ClearNextLines`, `GoToLine`, progress bars) that respect console pipes
+- 🎨 Inline color composition with `ConsoleColor` tuples and helpers (`DefaultForeground`, `DefaultBackground`, `Default`) plus `AnsiColors` utilities when you need raw ANSI sequences
+- 🔁 Advanced rendering primitives (`Overwrite`, `ClearNextLines`, `GoToLine`, `SkipLines`, progress bars) that respect console pipes
 - 🧱 Handler-aware `WhiteSpace` struct for zero-allocation padding directly inside interpolated strings
 - 🧰 Rich input helpers (`TryReadLine`, `Confirm`, `RequestAnyInput`) with `IParsable<T>` and enum support
 - ⚙️ Allocation-conscious span-first APIs (`ISpanFormattable`, `ReadOnlySpan<char>`, `Console.WriteWhiteSpaces` / `TextWriter.WriteWhiteSpaces`)
@@ -48,7 +48,7 @@ This setup lets you call `Console.WriteInterpolated`, `Console.Overwrite`, `Cons
 
 ### Interpolated strings & inline colors
 
-`PrettyConsoleInterpolatedStringHandler` now buffers interpolated content in a pooled buffer before flushing to the selected pipe—a v5.2.0 rewrite that delivered a big perf jump while staying allocation-free. Colors auto-reset at the end of each call. `Console.WriteInterpolated` and `Console.WriteLineInterpolated` return the number of visible characters written (handler-emitted escape sequences are excluded) so you can drive padding/width calculations from the same call sites.
+`PrettyConsoleInterpolatedStringHandler` now buffers interpolated content in a pooled buffer before flushing to the selected pipe. Colors auto-reset at the end of each call. `Console.WriteInterpolated` and `Console.WriteLineInterpolated` return the number of visible characters written (handler-emitted escape sequences are excluded) so you can drive padding/width calculations from the same call sites.
 
 ```csharp
 Console.WriteInterpolated($"Hello {ConsoleColor.Green / ConsoleColor.DefaultBackground}world{ConsoleColor.Default}!");
@@ -155,7 +155,7 @@ if (!Console.Confirm($"Deploy to production? ({ConsoleColor.Green}y{ConsoleColor
 }
 
 var customTruths = new[] { "sure", "do it" };
-bool overwrite = Console.Confirm(customTruths, emptyIsTrue: false, $"Overwrite existing files? ");
+bool overwrite = Console.Confirm(customTruths, $"Overwrite existing files? ", emptyIsTrue: false);
 ```
 
 ### Rendering helpers
@@ -167,9 +167,10 @@ int line = Console.GetCurrentLine();
 Console.GoToLine(line);
 Console.SetColors(ConsoleColor.White, ConsoleColor.DarkBlue);
 Console.ResetColors();
+Console.SkipLines(2); // keep multi-line UIs (progress bars, dashboards) and continue writing below them
 ```
 
-`ConsoleContext.Out`/`Error` expose the live writers (both are settable if you need to swap in test doubles). Use `Console.WriteWhiteSpaces(int length, OutputPipe pipe)` for convenient padding from call sites, or call `WriteWhiteSpaces(int)` on an existing writer:
+`ConsoleContext.Out`/`Error` expose the live writers (both are settable if you need to swap in test doubles). Use `Console.WriteWhiteSpaces(int length, OutputPipe pipe)` for convenient padding from call sites, or call `WriteWhiteSpaces(int)` on an existing writer. `Console.SkipLines(n)` advances the cursor without clearing so you can keep overwritten UI (progress bars, spinners, dashboards) visible after completion:
 
 ```csharp
 Console.WriteWhiteSpaces(8, OutputPipe.Error); // pad status blocks
@@ -241,14 +242,15 @@ ProgressBar.WriteProgressBar(OutputPipe.Error, 75, ConsoleColor.Magenta, '*', ma
 
 #### Indeterminate progress
 
-`IndeterminateProgressBar` renders animated frames on the error pipe. v5.2.0 adds overloads that accept a `Func<PrettyConsoleInterpolatedStringHandler>` so you can generate per-frame headers with captured locals. Bind the handler to the right pipe via `PrettyConsoleInterpolatedStringHandler.Build`:
+`IndeterminateProgressBar` renders animated frames on the error pipe. `PrettyConsoleInterpolatedStringHandlerFactory` overloads all use of a lambda to create a `PrettyConsoleInterpolatedStringHandler` with a builder for a header that will be created when the spinner is re-rendered.:
 
 ```csharp
 var spinner = new IndeterminateProgressBar();
-await spinner.RunAsync(workTask, () => PrettyConsoleInterpolatedStringHandler.Build(OutputPipe.Error, $"Syncing {DateTime.Now:T}"));
+await spinner.RunAsync(workTask, (builder, out handler) =>
+    handler = builder.Build(OutputPipe.Error, $"Syncing {DateTime.Now:T}"));
 ```
 
-The factory runs each frame, letting you inject dynamic status text without allocations.
+The factory runs each frame, letting you inject dynamic status text without allocations while avoiding extra struct copies.
 
 #### Multiple progress bars with tasks + channels
 
