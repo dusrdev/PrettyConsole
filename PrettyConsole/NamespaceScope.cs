@@ -1,8 +1,9 @@
 namespace PrettyConsole;
 
 /// <summary>
-/// An action that set a local reference of <paramref name="value"/>.
+/// A factory function that returns a reference to a PrettyConsoleInterpolatedStringHandler
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <param name="builder"></param>
+/// <param name="handler"></param>
 /// <returns></returns>
-public delegate void RefAction<T>(out T value) where T : allows ref struct;
+public delegate void PrettyConsoleInterpolatedStringHandlerFactory(PrettyConsoleInterpolatedStringHandlerBuilder builder, out PrettyConsoleInterpolatedStringHandler handler);

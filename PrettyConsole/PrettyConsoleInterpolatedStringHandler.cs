@@ -84,14 +84,6 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
-	/// Creates a <see cref="PrettyConsoleInterpolatedStringHandler"/> instance attached to <paramref name="pipe"/>.
-	/// </summary>
-	/// <param name="pipe"></param>
-	/// <param name="handler"></param>
-	/// <returns></returns>
-    public static ref PrettyConsoleInterpolatedStringHandler Build(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] ref PrettyConsoleInterpolatedStringHandler handler) => ref handler;
-
-    /// <summary>
     /// Appends a literal segment supplied by the compiler.
     /// </summary>
     public void AppendLiteral(string value) {

@@ -9,7 +9,8 @@
   - Is now passed by `ref` to accepting methods.
 - Added `SkipLines` which can be used to move the cursor `n` amount of lines forward. This can be used to keep the output of overwritten lines, like progress bars, spinners, `OverWrite` and so on and forth.
 - `Confirm(trueValues, ref handler, bool emptyIsTrue = true)` parameters were reordered, `emptyIsTrue` is now the last parameter.
-- `IndeterminateProgressBar` overloads with the `Func` now use `RefAction` instead, and usage is now `(out value) => value = PrettyConsoleInterpolatedStringHandler.Build(...)`. This was required to reduce compiler created struct copies and increase safety.
+- `IndeterminateProgressBar` overloads with the `Func` now use `PrettyConsoleInterpolatedStringHandlerFactory` instead, and usage is now `(builder, out handler) => handler = PrettyConsoleInterpolatedStringHandler.Build(...)`. This was required to reduce compiler created struct copies and increase safety.
+  - Building custom handlers is now done with `PrettyConsoleInterpolatedStringHandlerBuilder` which contains a thread-safe singleton; `PrettyConsoleInterpolatedStringHandler.Build` was removed in favor of using the builder.
 
 ## v5.2.0
 
