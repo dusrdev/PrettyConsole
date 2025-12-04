@@ -1,5 +1,9 @@
 # Versions
 
+## v5.2.1
+
+- Turned more of the methods of `PrettyConsoleInterpolatedStringHandler` to be `public` to enhance the usability of it in an advance usage (unrolling its creation). To further aid in this, there is now a new overload of `AppendHandlerContent` which can inline the contents of an another `PrettyConsoleInterpolatedStringHandler` to the source instance, enabling further nesting to improve this scenario.
+
 ## v5.2.0
 
 - `PrettyConsoleInterpolatedStringHandler` was re-written to buffers interpolated content before emitting it (instead of streaming), along with other optimizations.
