@@ -10,17 +10,12 @@ public struct PrettyConsoleInterpolatedStringHandler {
     private static readonly ArrayPool<char> BufferPool = ArrayPool<char>.Shared;
 
     private bool _flushed;
-
     private char[] _buffer;
-
     private int _index;
-
     private int _capacity = 4096;
-
     private readonly TextWriter _writer;
     private readonly bool _isRedirected;
     private readonly IFormatProvider? _provider;
-
     private ConsoleColor _currentForeground;
     private ConsoleColor _currentBackground;
 
@@ -38,6 +33,15 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// The number of characters written in this instance of <see cref="PrettyConsoleInterpolatedStringHandler"/>.
     /// </summary>
     public int CharsWritten { get; private set; }
+
+    /// <summary>
+    /// Creates a new handler that writes to <paramref name="pipe"/>.
+    /// </summary>
+    /// <param name="pipe">The pipe to stream the output to.</param>
+    /// <param name="provider">Optional format provider used when formatting values.</param>
+    public PrettyConsoleInterpolatedStringHandler(OutputPipe pipe, IFormatProvider? provider = null)
+        : this(0, 0, OutputPipe.Out, provider: provider, out _) {
+    }
 
     /// <summary>
     /// Creates a new handler that writes to <see cref="OutputPipe.Out"/> .
