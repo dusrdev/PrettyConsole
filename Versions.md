@@ -1,6 +1,6 @@
 # Versions
 
-## v5.3.1
+## v5.4.0
 
 - **BREAKING**: `IndeterminateProgressBar` was renamed to `Spinner`
   - Internal line reset is now triggered at the start of each frame render, this keeps the output after the last render. You can choose whether to override or keep the output by using `Console.ClearNextLines` or `Console.SkipLines`.
