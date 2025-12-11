@@ -1,4 +1,4 @@
-#:package PrettyConsole@5.3.0
+#:package PrettyConsole@5.4.0
 
 using PrettyConsole;
 
@@ -7,7 +7,7 @@ bool keepProgressOutput = true;
 var downloads = BrewStyleDownloads.CreateDownloadTasks();
 var count = downloads.Count;
 
-var spinner = IndeterminateProgressBar.Patterns.Braille;
+var spinner = Spinner.Patterns.Braille;
 var spinnerLength = spinner.Count;
 int spinnerIndex = 0;
 

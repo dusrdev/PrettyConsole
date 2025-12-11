@@ -1,4 +1,4 @@
-#:package PrettyConsole@5.3.0
+#:package PrettyConsole@5.4.0
 
 using System.Diagnostics;
 using PrettyConsole;
@@ -20,14 +20,14 @@ var build = Task.Run(async () => {
 	}
 });
 
-var progressBar = new IndeterminateProgressBar {
-	AnimationSequence = IndeterminateProgressBar.Patterns.Braille,
+var spinner = new Spinner {
+	Pattern = Spinner.Patterns.Braille,
 	ForegroundColor = ConsoleColor.Green,
 	DisplayElapsedTime = true,
 	UpdateRate = 100,
 };
 
-await progressBar.RunAsync(build, (builder, out handler) => {
+await spinner.RunAsync(build, (builder, out handler) => {
 	var current = Volatile.Read(ref step);
 	handler = builder.Build(OutputPipe.Error, $"Current step: {ConsoleColor.Green}{steps[current]}");
 }, CancellationToken.None);

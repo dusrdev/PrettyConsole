@@ -1,4 +1,4 @@
-#:package PrettyConsole@5.3.0
+#:package PrettyConsole@5.4.0
 
 using PrettyConsole;
 
