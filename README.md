@@ -35,6 +35,10 @@ PrettyConsole is **the go-to choice for ultra-low-latency, allocation-free conso
 dotnet add package PrettyConsole
 ```
 
+## Examples
+
+Standalone samples made with .NET 10 file-based apps with preview clips are available in [Examples](Examples/README.md).
+
 ## Usage
 
 ### Bring PrettyConsole APIs into scope

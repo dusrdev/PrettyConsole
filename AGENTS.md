@@ -9,6 +9,7 @@ Summary
   - PrettyConsole/ — main library
   - PrettyConsole.Tests/ — interactive/demo runner (manually selects visual feature demos)
   - PrettyConsole.Tests.Unit/ — xUnit v3 unit tests using Microsoft Testing Platform
+  - Examples/ — standalone `.cs` sample apps plus `assets/` previews; documented in `Examples/README.md` and excluded from automated builds/tests
 - v5.3.0 (current) makes more `PrettyConsoleInterpolatedStringHandler` members public, adds `AppendInline` for nesting handlers, introduces a ctor that takes only `OutputPipe` + optional `IFormatProvider`, and passes handlers by `ref` to callers. It adds `SkipLines` to advance the cursor while keeping overwritten UIs, reorders `Confirm(trueValues, ref handler, bool emptyIsTrue = true)` arguments (the boolean is now last), switches `IndeterminateProgressBar` header factories to `PrettyConsoleInterpolatedStringHandlerFactory` with the singleton `PrettyConsoleInterpolatedStringHandlerBuilder`, and makes `AnsiColors` public. v5.2.0 rewrote the handler to buffer before writing and added `WhiteSpace`; v5.1.0 renamed `PrettyConsoleExtensions` to `ConsoleContext`, added `Console.WriteWhiteSpaces(length, pipe)`, and made `Out`/`Error`/`In` settable; v5.0.0 removed the legacy `ColoredOutput`/`Color` types in favor of `ConsoleColor` helpers and tuples.
 
 Commands you’ll use often
