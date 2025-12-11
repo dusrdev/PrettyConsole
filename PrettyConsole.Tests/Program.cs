@@ -15,7 +15,7 @@ var tests = new IPrettyConsoleTest[] {
     new MultiSelectionTest(),
     new TableTest(),
     new TreeMenuTest(),
-    new IndeterminateProgressBarTest(),
+    new SpinnerTest(),
     new ProgressBarDefaultTest(),
     new ProgressBarMultiLineTest(),
     new MultiProgressBarTest(),

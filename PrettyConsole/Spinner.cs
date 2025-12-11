@@ -14,17 +14,17 @@ namespace PrettyConsole;
 /// The cancellation token parameter on the RunAsync methods is to cancel the progress bar (not necessarily the task) and end it any time.
 /// </para>
 /// </remarks>
-public class IndeterminateProgressBar {
+public class Spinner {
     /// <summary>
     /// Contains the characters that will be iterated through while running
     /// </summary>
     /// <remarks>
     /// You can also choose from some defaults in <see cref="Patterns"/>
     /// </remarks>
-    public ReadOnlyCollection<string> AnimationSequence { get; init; } = Patterns.Twirl;
+    public ReadOnlyCollection<string> Pattern { get; init; } = Patterns.Twirl;
 
     /// <summary>
-    /// Gets or sets the foreground color of the progress bar.
+    /// Gets or sets the foreground color of the spinner.
     /// </summary>
     public ConsoleColor ForegroundColor { get; set; } = ConsoleColor.DefaultForeground;
 
@@ -57,7 +57,7 @@ public class IndeterminateProgressBar {
     /// <param name="task"></param>
     /// <param name="header"></param>
     /// <param name="token"></param>
-    public async Task<T> RunAsync<T>(Task<T> task, string header, CancellationToken token) {
+    public async Task<T> RunAsync<T>(Task<T> task, string header, CancellationToken token = default) {
         await RunAsyncNonGeneric(task, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"{header}"), token);
 
         return task.IsCompleted ? task.Result : await task;
@@ -90,7 +90,7 @@ public class IndeterminateProgressBar {
     /// <param name="task"></param>
     /// <param name="header"></param>
     /// <param name="token"></param>
-    public Task RunAsync(Task task, string header, CancellationToken token) {
+    public Task RunAsync(Task task, string header, CancellationToken token = default) {
         return RunAsyncNonGeneric(task, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"{header}"), token);
     }
 
@@ -100,7 +100,7 @@ public class IndeterminateProgressBar {
     /// <param name="task"></param>
     /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>
     /// <param name="token"></param>
-    public Task RunAsync(Task task, PrettyConsoleInterpolatedStringHandlerFactory? headerFactory, CancellationToken token) => RunAsyncNonGeneric(task, headerFactory, token);
+    public Task RunAsync(Task task, PrettyConsoleInterpolatedStringHandlerFactory? headerFactory, CancellationToken token = default) => RunAsyncNonGeneric(task, headerFactory, token);
 
     /// <summary>
     /// Runs the indeterminate progress bar while the specified task is running, using a dynamic header factory.
@@ -131,7 +131,9 @@ public class IndeterminateProgressBar {
             CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
         while (!task.IsCompleted && !token.IsCancellationRequested) {
-            Console.WriteInterpolated(OutputPipe.Error, $"{ForegroundColor}{AnimationSequence[seqIndex]}{ConsoleColor.DefaultForeground}");
+            Console.ClearNextLines(1, OutputPipe.Error); // Clear at start to prevent auto-delete after last write
+
+            Console.WriteInterpolated(OutputPipe.Error, $"{ForegroundColor}{Pattern[seqIndex]}{ConsoleColor.DefaultForeground}");
 
             if (headerFactory is not null) {
                 ConsoleContext.Error.WriteWhiteSpaces(1);
@@ -171,23 +173,20 @@ public class IndeterminateProgressBar {
                 }
             }
 
-            // Always clear once per frame
-            Console.ClearNextLines(1);
-
             if (token.IsCancellationRequested || task.IsCompleted) {
                 break;
             }
 
             // Advance animation sequence index without allocations
             seqIndex++;
-            if (seqIndex == AnimationSequence.Count) {
+            if (seqIndex == Pattern.Count) {
                 seqIndex = 0;
             }
         }
     }
 
     /// <summary>
-    /// Provides constant animation sequences that can be used for <see cref="AnimationSequence"/>
+    /// Provides constant animation sequences that can be used for <see cref="Pattern"/>
     /// </summary>
     public static class Patterns {
         /// <summary>
