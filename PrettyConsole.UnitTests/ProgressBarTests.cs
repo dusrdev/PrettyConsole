@@ -75,6 +75,50 @@ public class ProgressBarTests {
     }
 
     [Test]
+    public async Task ProgressBar_Update_WithFactory_SameLine_WritesHeaderAndBar() {
+        var originalError = Error;
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            Error = Utilities.GetWriter(out var errorWriter);
+
+            var bar = new ProgressBar { ProgressColor = Cyan };
+
+            bar.Update(40, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"hdr"), sameLine: true);
+
+            var output = Utilities.StripAnsiSequences(errorWriter.ToString());
+            await Assert.That(output).Contains("hdr");
+            await Assert.That(output).Contains("[");
+            await Assert.That(output).Contains("40%");
+        } finally {
+            Error = originalError;
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+    }
+
+    [Test]
+    public async Task ProgressBar_Update_WithFactory_TwoLines_AppendsNewLine() {
+        var originalError = Error;
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            Error = Utilities.GetWriter(out var errorWriter);
+
+            var bar = new ProgressBar { ProgressColor = Cyan };
+
+            bar.Update(55, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"status"), sameLine: false);
+
+            var output = Utilities.StripAnsiSequences(errorWriter.ToString());
+            await Assert.That(output).Contains("status");
+            await Assert.That(output).Contains(Environment.NewLine);
+            await Assert.That(output).Contains("55%");
+        } finally {
+            Error = originalError;
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+    }
+
+    [Test]
     public async Task ProgressBar_Render_WritesFormattedOutput() {
         var originalOut = Out;
         try {
