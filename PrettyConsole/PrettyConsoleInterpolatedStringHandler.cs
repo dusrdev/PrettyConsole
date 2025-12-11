@@ -490,7 +490,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     private readonly void ThrowIfFlushed() {
         if (!_flushed) return;
 
-        throw new InvalidOperationException("The handler was consumed and its buffer have been freed.");
+        throw new InvalidOperationException("The handler was consumed and its buffer has been freed.");
     }
 
     /// <summary>
@@ -502,7 +502,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
-	/// Clears the internal buffer and returns it to the underlying array pool without writing to the to the held <see cref="TextWriter"/>.
+    /// Clears the internal buffer and returns it to the underlying array pool without writing to the held <see cref="TextWriter"/>.
 	/// </summary>
     /// <remarks>This overload does not reset colors.</remarks>
     public void FlushWithoutWrite() {
@@ -514,7 +514,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
-	/// Writes the underline buffer to the held <see cref="TextWriter"/> and clears and returns the underlying buffer to the underlying array pool.
+	/// Writes the underlying buffer to the held <see cref="TextWriter"/>, then clears it and returns it to the underlying array pool.
 	/// </summary>
     /// <param name="resetColors">Whether to reset colors before flushing</param>
     public void Flush(bool resetColors = true) {

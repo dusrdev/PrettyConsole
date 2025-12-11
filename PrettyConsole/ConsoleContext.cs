@@ -3,7 +3,7 @@
 namespace PrettyConsole;
 
 /// <summary>
-/// The static class the provides the abstraction over <see cref="Console"/> and other extensions.
+/// The static class that provides the abstraction over <see cref="Console"/> and other extensions.
 /// </summary>
 [UnsupportedOSPlatform("android")]
 [UnsupportedOSPlatform("browser")]
@@ -61,7 +61,7 @@ public static class ConsoleContext {
 
     extension(TextWriter @this) {
         /// <summary>
-        /// Writes whitespace to this <see cref="TextWriter"/> up to length by chucks
+        /// Writes whitespace to this <see cref="TextWriter"/> in chunks up to the requested length.
         /// </summary>
         /// <param name="length"></param>
         public void WriteWhiteSpaces(int length) {

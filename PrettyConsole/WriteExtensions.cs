@@ -35,7 +35,7 @@ public static class WriteExtensions {
         /// <param name="pipe">The output pipe to use</param>
         /// <typeparam name="T"></typeparam>
         /// <remarks>
-        /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 256, to ensure the fastest execution speed, it is recommend that <typeparamref name="T"/> would be able to format to a smaller length string than that.
+        /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 4096. For best performance, it is recommended that <typeparamref name="T"/> formats to fewer characters than this initial size.
         /// </remarks>
         public static void Write<T>(T item, OutputPipe pipe = OutputPipe.Out)
         where T : ISpanFormattable, allows ref struct {
@@ -50,7 +50,7 @@ public static class WriteExtensions {
         /// <param name="foreground">foreground color</param>
         /// <typeparam name="T"></typeparam>
         /// <remarks>
-        /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 256, to ensure the fastest execution speed, it is recommend that <typeparamref name="T"/> would be able to format to a smaller length string than that.
+        /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 4096. For best performance, it is recommended that <typeparamref name="T"/> formats to fewer characters than this initial size.
         /// </remarks>
         public static void Write<T>(T item, OutputPipe pipe, ConsoleColor foreground)
         where T : ISpanFormattable, allows ref struct {
@@ -66,7 +66,7 @@ public static class WriteExtensions {
         /// <param name="background">background color</param>
         /// <typeparam name="T"></typeparam>
         /// <remarks>
-        /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 256, to ensure the fastest execution speed, it is recommend that <typeparamref name="T"/> would be able to format to a smaller length string than that.
+        /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 4096. For best performance, it is recommended that <typeparamref name="T"/> formats to fewer characters than this initial size.
         /// </remarks>
         public static void Write<T>(T item, OutputPipe pipe, ConsoleColor foreground, ConsoleColor background)
         where T : ISpanFormattable, allows ref struct {
@@ -84,7 +84,7 @@ public static class WriteExtensions {
         /// <param name="formatProvider">format provider</param>
         /// <typeparam name="T"></typeparam>
         /// <remarks>
-        /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 256, to ensure the fastest execution speed, it is recommend that <typeparamref name="T"/> would be able to format to a smaller length string than that.
+        /// This function iteratively grows a rented span until formatting is successful, starting at capacity = 4096. For best performance, it is recommended that <typeparamref name="T"/> formats to fewer characters than this initial size.
         /// </remarks>
         public static void Write<T>(T item, OutputPipe pipe, ConsoleColor foreground,
             ConsoleColor background, ReadOnlySpan<char> format, IFormatProvider? formatProvider)

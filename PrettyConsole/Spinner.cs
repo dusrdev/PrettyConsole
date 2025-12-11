@@ -38,7 +38,7 @@ public class Spinner {
     public int UpdateRate { get; init; } = 200;
 
     /// <summary>
-    /// Runs the indeterminate progress bar while the specified task is running.
+    /// Runs the spinner while the specified task is running.
     /// </summary>
     /// <param name="task"></param>
     /// <param name="token"></param>
@@ -50,7 +50,7 @@ public class Spinner {
     }
 
     /// <summary>
-    /// Runs the indeterminate progress bar while the specified task is running.
+    /// Runs the spinner while the specified task is running.
     /// </summary>
     /// <param name="task"></param>
     /// <param name="header"></param>
@@ -62,7 +62,7 @@ public class Spinner {
     }
 
     /// <summary>
-    /// Runs the indeterminate progress bar while the specified task is running, using a dynamic header factory.
+    /// Runs the spinner while the specified task is running, using a dynamic header factory.
     /// </summary>
     /// <param name="task"></param>
     /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>
@@ -75,7 +75,7 @@ public class Spinner {
     }
 
     /// <summary>
-    /// Runs the indeterminate progress bar while the specified task is running.
+    /// Runs the spinner while the specified task is running.
     /// </summary>
     /// <param name="task"></param>
     /// <param name="token"></param>
@@ -83,7 +83,7 @@ public class Spinner {
     public Task RunAsync(Task task, CancellationToken token = default) => RunAsyncNonGeneric(task, null, token);
 
     /// <summary>
-    /// Runs the indeterminate progress bar while the specified task is running.
+    /// Runs the spinner while the specified task is running.
     /// </summary>
     /// <param name="task"></param>
     /// <param name="header"></param>
@@ -93,7 +93,7 @@ public class Spinner {
     }
 
     /// <summary>
-    /// Runs the indeterminate progress bar while the specified task is running, using a dynamic header factory.
+    /// Runs the spinner while the specified task is running, using a dynamic header factory.
     /// </summary>
     /// <param name="task"></param>
     /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>
@@ -101,7 +101,7 @@ public class Spinner {
     public Task RunAsync(Task task, PrettyConsoleInterpolatedStringHandlerFactory? headerFactory, CancellationToken token = default) => RunAsyncNonGeneric(task, headerFactory, token);
 
     /// <summary>
-    /// Runs the indeterminate progress bar while the specified task is running, using a dynamic header factory.
+    /// Runs the spinner while the specified task is running, using a dynamic header factory.
     /// </summary>
     /// <param name="task"></param>
     /// <param name="headerFactory">Factory invoked every frame to render a header with <see cref="PrettyConsoleInterpolatedStringHandler"/>.</param>

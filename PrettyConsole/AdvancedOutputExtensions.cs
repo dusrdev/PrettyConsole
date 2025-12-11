@@ -8,13 +8,13 @@ public static class AdvancedOutputExtensions {
 
     extension(Console) {
         /// <summary>
-        /// Runs <paramref name="action"/> that should involve some form of outputting to the console. Set <paramref name="lines"/> according to the outputs you use in <paramref name="action"/> and configure the appropriate <paramref name="pipe"/>
+        /// Runs <paramref name="action"/> that should involve some form of outputting to the console. Set <paramref name="lines"/> to the number of lines your output consumes and choose the appropriate <paramref name="pipe"/>.
         /// </summary>
         /// <param name="action">The output action.</param>
-        /// <param name="lines">The amount of lines to clear.</param>
+        /// <param name="lines">The number of lines to clear.</param>
         /// <param name="pipe">The output pipe to use.</param>
         /// <remarks>
-        /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines
+        /// Remember to clear the used lines after the last call to this method (for example with Console.ClearNextLines).
         /// </remarks>
         public static void Overwrite(Action action, int lines = 1, OutputPipe pipe = OutputPipe.Error) {
             var currentLine = Console.GetCurrentLine();
@@ -24,15 +24,15 @@ public static class AdvancedOutputExtensions {
         }
 
         /// <summary>
-        /// Runs <paramref name="action"/> that should involve some form of outputting to the console and use <paramref name="state"/> to prevent closure allocation. Set <paramref name="lines"/> according to the outputs you use in <paramref name="action"/> and configure the appropriate <paramref name="pipe"/>
+        /// Runs <paramref name="action"/> that should involve some form of outputting to the console and uses <paramref name="state"/> to prevent closure allocation. Set <paramref name="lines"/> to the number of lines your output consumes and choose the appropriate <paramref name="pipe"/>.
         /// </summary>
         /// <typeparam name="TState"></typeparam>
         /// <param name="state">The parameters that <paramref name="action"/> needs to use.</param>
         /// <param name="action">The output action.</param>
-        /// <param name="lines">The amount of lines to clear.</param>
+        /// <param name="lines">The number of lines to clear.</param>
         /// <param name="pipe">The output pipe to use.</param>
         /// <remarks>
-        /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines
+        /// Remember to clear the used lines after the last call to this method (for example with Console.ClearNextLines).
         /// </remarks>
         public static void Overwrite<TState>(TState state, Action<TState> action, int lines = 1, OutputPipe pipe = OutputPipe.Error) where TState : allows ref struct {
             var currentLine = Console.GetCurrentLine();

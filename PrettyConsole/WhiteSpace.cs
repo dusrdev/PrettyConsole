@@ -1,7 +1,7 @@
 namespace PrettyConsole;
 
 /// <summary>
-/// Declares a <paramref name="Length"/> of whitespaces
+/// Declares a count of whitespace characters to emit.
 /// </summary>
 /// <param name="Length"></param>
 public readonly record struct WhiteSpace(int Length);

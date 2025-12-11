@@ -2,13 +2,13 @@ namespace PrettyConsole;
 
 #pragma warning disable CA1822 // Mark members as static
 /// <summary>
-/// Provides an api to build a string handler.
+/// Provides an API to build a string handler.
 /// </summary>
 public sealed class PrettyConsoleInterpolatedStringHandlerBuilder {
     /// <summary>
     /// A singleton instance of <see cref="PrettyConsoleInterpolatedStringHandlerBuilder"/>.
     /// </summary>
-    /// <remarks>This instance is stateless and thread-safe</remarks>
+    /// <remarks>This instance is stateless and thread-safe.</remarks>
     public static readonly PrettyConsoleInterpolatedStringHandlerBuilder Singleton = new();
 
     /// <summary>
