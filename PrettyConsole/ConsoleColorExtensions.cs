@@ -1,7 +1,7 @@
 namespace PrettyConsole;
 
 /// <summary>
-/// Provides methods extending <see cref="ConsoleColor"/>;
+/// Provides methods extending <see cref="ConsoleColor"/>.
 /// </summary>
 public static class ConsoleColorExtensions {
     /// <summary>

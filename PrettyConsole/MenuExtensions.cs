@@ -41,7 +41,7 @@ public static class MenuExtensions {
         }
 
         /// <summary>
-        /// Enumerates a list of strings and allows the user to select multiple strings by any order, and uses the default index color (White)
+        /// Enumerates a list of strings and allows the user to select multiple strings in any order, using the default index color (White).
         /// </summary>
         /// <param name="choices">Any collection of strings</param>
         /// <param name="handler">title</param>

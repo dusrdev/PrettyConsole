@@ -33,10 +33,10 @@ public static class RenderingExtensions {
         /// <summary>
         /// Clears the next <paramref name="lines"/>.
         /// </summary>
-        /// <param name="lines">Amount of lines to clear</param>
+        /// <param name="lines">Number of lines to clear.</param>
         /// <param name="pipe">The output pipe to use</param>
         /// <remarks>
-        /// Useful for clearing output of overriding functions, like the ProgressBar
+        /// Useful for clearing output from overwriting functions like the progress bar.
         /// </remarks>
         public static void ClearNextLines(int lines, OutputPipe pipe = OutputPipe.Error) {
             var textWriter = ConsoleContext.GetPipeTarget(pipe);
@@ -52,7 +52,7 @@ public static class RenderingExtensions {
         /// <summary>
         /// Moves the cursor forward by <paramref name="lines"/>.
         /// </summary>
-        /// <param name="lines">Amount of lines to skip</param>
+        /// <param name="lines">Number of lines to skip.</param>
         /// <remarks>
         /// Useful for keeping overwritten lines, like progress bar or dashboards after the task is done.
         /// </remarks>

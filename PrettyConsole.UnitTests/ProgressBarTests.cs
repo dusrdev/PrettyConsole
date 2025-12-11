@@ -75,12 +75,56 @@ public class ProgressBarTests {
     }
 
     [Test]
-    public async Task ProgressBar_WriteProgressBar_WritesFormattedOutput() {
+    public async Task ProgressBar_Update_WithFactory_SameLine_WritesHeaderAndBar() {
+        var originalError = Error;
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            Error = Utilities.GetWriter(out var errorWriter);
+
+            var bar = new ProgressBar { ProgressColor = Cyan };
+
+            bar.Update(40, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"hdr"), sameLine: true);
+
+            var output = Utilities.StripAnsiSequences(errorWriter.ToString());
+            await Assert.That(output).Contains("hdr");
+            await Assert.That(output).Contains("[");
+            await Assert.That(output).Contains("40%");
+        } finally {
+            Error = originalError;
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+    }
+
+    [Test]
+    public async Task ProgressBar_Update_WithFactory_TwoLines_AppendsNewLine() {
+        var originalError = Error;
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            Error = Utilities.GetWriter(out var errorWriter);
+
+            var bar = new ProgressBar { ProgressColor = Cyan };
+
+            bar.Update(55, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"status"), sameLine: false);
+
+            var output = Utilities.StripAnsiSequences(errorWriter.ToString());
+            await Assert.That(output).Contains("status");
+            await Assert.That(output).Contains(Environment.NewLine);
+            await Assert.That(output).Contains("55%");
+        } finally {
+            Error = originalError;
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+    }
+
+    [Test]
+    public async Task ProgressBar_Render_WritesFormattedOutput() {
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var outWriter);
 
-            ProgressBar.WriteProgressBar(OutputPipe.Out, 75, Cyan, '*');
+            ProgressBar.Render(OutputPipe.Out, 75, Cyan, '*');
 
             var output = outWriter.ToString();
             await Assert.That(output).Contains("[");
@@ -92,12 +136,12 @@ public class ProgressBarTests {
     }
 
     [Test]
-    public async Task ProgressBar_WriteProgressBar_RespectsMaxLineWidth() {
+    public async Task ProgressBar_Render_RespectsMaxLineWidth() {
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var outWriter);
 
-            ProgressBar.WriteProgressBar(OutputPipe.Out, 50, Cyan, '*', maxLineWidth: 24);
+            ProgressBar.Render(OutputPipe.Out, 50, Cyan, '*', maxLineWidth: 24);
 
             var output = outWriter.ToString();
             await Assert.That(output.Length).IsEqualTo(24);
@@ -155,12 +199,12 @@ public class ProgressBarTests {
     }
 
     [Test]
-    public async Task ProgressBar_WriteProgressBar_DoubleOverload_WritesOutput() {
+    public async Task ProgressBar_Render_DoubleOverload_WritesOutput() {
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var writer);
 
-            ProgressBar.WriteProgressBar(OutputPipe.Out, 33.3, Blue, '*');
+            ProgressBar.Render(OutputPipe.Out, 33.3, Blue, '*');
 
             await Assert.That(writer.ToString()).Contains("33%");
         } finally {
@@ -190,9 +234,8 @@ public class ProgressBarTests {
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
             var bar = new ProgressBar { ProgressColor = Green };
-            ReadOnlySpan<char> status = "span-status".AsSpan();
 
-            bar.Update(30, status, sameLine: false);
+            bar.Update(30, "span-status", sameLine: false);
         } finally {
             RenderingExtensions.ConfigureCursorAccessors(null, null);
         }
@@ -201,19 +244,19 @@ public class ProgressBarTests {
     }
 
     [Test]
-    public async Task IndeterminateProgressBar_RunAsync_CompletesAndReturnsResult() {
+    public async Task Spinner_RunAsync_CompletesAndReturnsResult() {
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
-            var bar = new IndeterminateProgressBar {
-                AnimationSequence = new(["|", "/"]),
+            var spinner = new Spinner {
+                Pattern = new(["|", "/"]),
                 DisplayElapsedTime = false,
                 UpdateRate = 5
             };
 
             var cancellation = CancellationToken.None;
-            int result = await bar.RunAsync(Task.Run(async () => {
+            int result = await spinner.RunAsync(Task.Run(async () => {
                 await Task.Delay(20, cancellation);
                 return 42;
             }, cancellation), (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"Working"), cancellation);
@@ -226,20 +269,20 @@ public class ProgressBarTests {
     }
 
     [Test]
-    public async Task IndeterminateProgressBar_RunAsync_OverloadsAndForegroundSetter() {
+    public async Task Spinner_RunAsync_OverloadsAndForegroundSetter() {
         var originalError = Error;
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
-            var bar = new IndeterminateProgressBar {
+            var spinner = new Spinner {
                 DisplayElapsedTime = false,
-                UpdateRate = 5
+                UpdateRate = 5,
+                ForegroundColor = Cyan
             };
-            bar.ForegroundColor = Cyan;
 
-            var genericResult = await bar.RunAsync(Task.Run(async () => { await Task.Delay(10); return 7; }));
-            await bar.RunAsync(Task.Run(async () => await Task.Delay(10)));
+            var genericResult = await spinner.RunAsync(Task.Run(async () => { await Task.Delay(10); return 7; }));
+            await spinner.RunAsync(Task.Run(async () => await Task.Delay(10)));
 
             await Assert.That(genericResult).IsEqualTo(7);
             await Assert.That(errorWriter.ToString()).IsNotEqualTo(string.Empty);
@@ -250,18 +293,18 @@ public class ProgressBarTests {
     }
 
     [Test]
-    public async Task IndeterminateProgressBar_RunAsync_Generic_TaskAlreadyCompleted() {
+    public async Task Spinner_RunAsync_Generic_TaskAlreadyCompleted() {
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
-            var bar = new IndeterminateProgressBar {
+            var spinner = new Spinner {
                 DisplayElapsedTime = false,
                 UpdateRate = 5
             };
 
             var completed = Task.FromResult(5);
-            var result = await bar.RunAsync(completed, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"done"));
+            var result = await spinner.RunAsync(completed, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"done"));
 
             await Assert.That(result).IsEqualTo(5);
         } finally {
@@ -270,13 +313,13 @@ public class ProgressBarTests {
     }
 
     [Test]
-    public async Task IndeterminateProgressBar_RunAsync_CancelsQuickly() {
+    public async Task Spinner_RunAsync_CancelsQuickly() {
         Error = Utilities.GetWriter(out var errorWriter);
         int cursorLine = 0;
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         using var cts = new CancellationTokenSource();
         try {
-            var bar = new IndeterminateProgressBar {
+            var spinner = new Spinner {
                 DisplayElapsedTime = false,
                 UpdateRate = 100
             };
@@ -286,7 +329,7 @@ public class ProgressBarTests {
             }, cts.Token);
 
             cts.CancelAfter(200);
-            await bar.RunAsync(task, "cancelled", cts.Token);
+            await spinner.RunAsync(task, "cancelled", cts.Token);
         } catch (OperationCanceledException) {
             // expected in this path
         } finally {

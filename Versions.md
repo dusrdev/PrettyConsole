@@ -1,5 +1,16 @@
 # Versions
 
+## v5.4.0
+
+- **BREAKING**: `IndeterminateProgressBar` was renamed to `Spinner`
+  - Internal line reset is now triggered at the start of each frame render, this keeps the output after the last render. You can choose whether to override or keep the output by using `Console.ClearNextLines` or `Console.SkipLines`.
+  - All overloads of `RunAsync` now have a default value for the `CancellationToken`.
+  - `AnimationSequence` was renamed to `Pattern` to fit `Spinner.Patterns`.
+- Changes in `ProgressBar`
+  - **BREAKING**: the static `WriteProgressBar` methods have been renamed to `Render`.
+  - Added overloads that accept a `PrettyConsoleInterpolatedStringHandlerFactory` like the overloads in `Spinner` to allow more complex outputs at lower costs.
+  - **BREAKING**: `ReadOnlySpan<char>` parameters of header, now use `string` instead due to language limitation that caused incorrect escape analysis with the `PrettyConsoleInterpolatedStringHandlerFactory`
+
 ## v5.3.0
 
 - `PrettyConsoleInterpolatedStringHandler`:
