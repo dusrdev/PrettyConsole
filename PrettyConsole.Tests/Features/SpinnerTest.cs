@@ -1,7 +1,7 @@
 namespace PrettyConsole.Tests.Features;
 
 public sealed class SpinnerTest : IPrettyConsoleTest {
-    public string FeatureName => "IndeterminateProgressBar";
+    public string FeatureName => "Spinner";
 
     public async ValueTask Implementation() {
         var spinner = new Spinner {

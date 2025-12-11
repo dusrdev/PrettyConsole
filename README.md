@@ -244,17 +244,17 @@ ProgressBar.WriteProgressBar(OutputPipe.Error, 75, ConsoleColor.Magenta, '*', ma
 
 `ProgressBar.Update` always re-renders (even if the percentage didn't change) so you can refresh status text. You can also set `ProgressBar.MaxLineWidth` on the instance to limit the rendered `[=====]  42%` line width before each update, mirroring the `maxLineWidth` option on `ProgressBar.WriteProgressBar`. The helper `ProgressBar.WriteProgressBar` keeps the cursor on the same line, which is ideal inside `Console.Overwrite`, and accepts an optional `maxLineWidth` so the entire `[=====]  42%` line can be constrained for left-column layouts.
 
-#### Indeterminate progress
+#### Spinner (indeterminate progress)
 
-`IndeterminateProgressBar` renders animated frames on the error pipe. `PrettyConsoleInterpolatedStringHandlerFactory` overloads all use of a lambda to create a `PrettyConsoleInterpolatedStringHandler` with a builder for a header that will be created when the spinner is re-rendered.:
+`Spinner` renders animated frames on the error pipe. `PrettyConsoleInterpolatedStringHandlerFactory` overloads take a lambda that creates a `PrettyConsoleInterpolatedStringHandler` via the builder for per-frame headers:
 
 ```csharp
-var spinner = new IndeterminateProgressBar();
+var spinner = new Spinner();
 await spinner.RunAsync(workTask, (builder, out handler) =>
     handler = builder.Build(OutputPipe.Error, $"Syncing {DateTime.Now:T}"));
 ```
 
-The factory runs each frame, letting you inject dynamic status text without allocations while avoiding extra struct copies.
+The factory runs each frame so you can inject dynamic status text without allocations while avoiding extra struct copies.
 
 #### Multiple progress bars with tasks + channels
 

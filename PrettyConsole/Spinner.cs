@@ -4,23 +4,21 @@ using System.Diagnostics;
 namespace PrettyConsole;
 
 /// <summary>
-/// Represents an indeterminate progress bar that visually indicates the progress of a time-consuming task.
+/// Represents a spinner that visually indicates the progress of a time-consuming task.
 /// </summary>
 /// <remarks>
 /// <para>
-/// After the time-consuming task is completed, the progress bar is removed from the console. and the next output will take its place.
+/// After the time-consuming task is completed, the spinner output is not cleared, use <see cref="RenderingExtensions.ClearNextLines(int, OutputPipe)"/> or <see cref="RenderingExtensions.SkipLines(int)"/> to handle the final output.
 /// </para>
 /// <para>
-/// The cancellation token parameter on the RunAsync methods is to cancel the progress bar (not necessarily the task) and end it any time.
+/// The cancellation token parameter on the RunAsync methods cancels the spinner itself (not necessarily the task) and ends it at any time.
 /// </para>
 /// </remarks>
 public class Spinner {
     /// <summary>
-    /// Contains the characters that will be iterated through while running
+    /// Contains the characters that will be iterated through while running.
     /// </summary>
-    /// <remarks>
-    /// You can also choose from some defaults in <see cref="Patterns"/>
-    /// </remarks>
+    /// <remarks>Choose from the defaults in <see cref="Patterns"/></remarks>
     public ReadOnlyCollection<string> Pattern { get; init; } = Patterns.Twirl;
 
     /// <summary>
@@ -29,12 +27,12 @@ public class Spinner {
     public ConsoleColor ForegroundColor { get; set; } = ConsoleColor.DefaultForeground;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display the elapsed time in the progress bar.
+    /// Gets or sets a value indicating whether to display the elapsed time next to the spinner.
     /// </summary>
     public bool DisplayElapsedTime { get; init; } = true;
 
     /// <summary>
-    /// Gets or sets the update rate (in ms) of the indeterminate progress bar.
+    /// Gets or sets the update rate (in ms) of the spinner frames.
     /// </summary>
     /// <remarks>Default = 200</remarks>
     public int UpdateRate { get; init; } = 200;
@@ -225,13 +223,13 @@ public class Spinner {
         public static readonly ReadOnlyCollection<string> PingPong
             = new([
                 "|•    |",
-                    "| •   |",
-                    "|  •  |",
-                    "|   • |",
-                    "|    •|",
-                    "|   • |",
-                    "|  •  |",
-                    "| •   |",
+                "| •   |",
+                "|  •  |",
+                "|   • |",
+                "|    •|",
+                "|   • |",
+                "|  •  |",
+                "| •   |",
             ]);
     }
 }
