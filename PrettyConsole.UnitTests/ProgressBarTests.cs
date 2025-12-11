@@ -80,7 +80,7 @@ public class ProgressBarTests {
         try {
             Out = Utilities.GetWriter(out var outWriter);
 
-            ProgressBar.WriteProgressBar(OutputPipe.Out, 75, Cyan, '*');
+            ProgressBar.Render(OutputPipe.Out, 75, Cyan, '*');
 
             var output = outWriter.ToString();
             await Assert.That(output).Contains("[");
@@ -97,7 +97,7 @@ public class ProgressBarTests {
         try {
             Out = Utilities.GetWriter(out var outWriter);
 
-            ProgressBar.WriteProgressBar(OutputPipe.Out, 50, Cyan, '*', maxLineWidth: 24);
+            ProgressBar.Render(OutputPipe.Out, 50, Cyan, '*', maxLineWidth: 24);
 
             var output = outWriter.ToString();
             await Assert.That(output.Length).IsEqualTo(24);
@@ -160,7 +160,7 @@ public class ProgressBarTests {
         try {
             Out = Utilities.GetWriter(out var writer);
 
-            ProgressBar.WriteProgressBar(OutputPipe.Out, 33.3, Blue, '*');
+            ProgressBar.Render(OutputPipe.Out, 33.3, Blue, '*');
 
             await Assert.That(writer.ToString()).Contains("33%");
         } finally {
@@ -190,9 +190,8 @@ public class ProgressBarTests {
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
             var bar = new ProgressBar { ProgressColor = Green };
-            ReadOnlySpan<char> status = "span-status".AsSpan();
 
-            bar.Update(30, status, sameLine: false);
+            bar.Update(30, "span-status", sameLine: false);
         } finally {
             RenderingExtensions.ConfigureCursorAccessors(null, null);
         }

@@ -46,7 +46,7 @@ public class ProgressBar {
     /// <remarks>
     /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
     /// </remarks>
-    public void Update(int percentage) => Update(percentage, ReadOnlySpan<char>.Empty);
+    public void Update(int percentage) => Update(percentage, string.Empty);
 
     /// <summary>
     /// Updates the progress bar with the specified percentage.
@@ -55,7 +55,7 @@ public class ProgressBar {
     /// <remarks>
     /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
     /// </remarks>
-    public void Update(double percentage) => Update((int)percentage, ReadOnlySpan<char>.Empty);
+    public void Update(double percentage) => Update((int)percentage, string.Empty);
 
     /// <summary>
     /// Updates the progress bar with the specified percentage and header text.
@@ -66,7 +66,7 @@ public class ProgressBar {
     /// <remarks>
     /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
     /// </remarks>
-    public void Update(double percentage, ReadOnlySpan<char> status, bool sameLine = true)
+    public void Update(double percentage, string status, bool sameLine = true)
         => Update((int)percentage, status, sameLine);
 
     /// <summary>
@@ -78,22 +78,55 @@ public class ProgressBar {
     /// <remarks>
     /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
     /// </remarks>
-    public void Update(int percentage, ReadOnlySpan<char> status, bool sameLine = true) {
+    public void Update(int percentage, string status, bool sameLine = true) {
+        if (status.Length == 0) Update(percentage, null, sameLine);
+        else Update(percentage, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"{status}"), sameLine);
+    }
+
+    /// <summary>
+    /// Updates the progress bar with the specified percentage and header text.
+    /// </summary>
+    /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
+    /// <param name="factory"></param>
+    /// <param name="sameLine">Whether to display the status before the progress bar on the same line. If not it will be displayed above the progress bar, if set to false, the progress bar will use 2 lines.</param>
+    /// <remarks>
+    /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
+    /// </remarks>
+    public void Update(double percentage, PrettyConsoleInterpolatedStringHandlerFactory? factory = null, bool sameLine = true)
+        => Update((int)percentage, factory, sameLine);
+
+    /// <summary>
+    /// Updates the progress bar with the specified percentage and header text.
+    /// </summary>
+    /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
+    /// <param name="factory"></param>
+    /// <param name="sameLine">Whether to display the status before the progress bar on the same line. If not it will be displayed above the progress bar, if set to false, the progress bar will use 2 lines.</param>
+    /// <remarks>
+    /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
+    /// </remarks>
+    [OverloadResolutionPriority(int.MaxValue)]
+    public void Update(int percentage, PrettyConsoleInterpolatedStringHandlerFactory? factory = null, bool sameLine = true) {
         lock (_lock) {
             var currentLine = Console.GetCurrentLine();
             if (sameLine) {
                 Console.ClearNextLines(1);
-                if (status.Length > 0) {
-                    Console.Write(status, OutputPipe.Error, ForegroundColor);
+                if (factory is not null) {
+                    factory(PrettyConsoleInterpolatedStringHandlerBuilder.Singleton, out var handler);
+                    handler.Flush();
                     ConsoleContext.GetPipeTarget(OutputPipe.Error).WriteWhiteSpaces(1);
-                    WriteProgressBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar, MaxLineWidth);
+                    Render(OutputPipe.Error, percentage, ProgressColor, ProgressChar, MaxLineWidth);
                 }
             } else {
-                bool hasStatus = status.Length > 0;
-                int lines = hasStatus ? 2 : 1;
-                Console.ClearNextLines(lines);
-                if (hasStatus) Console.WriteLine(status, OutputPipe.Error, ForegroundColor);
-                WriteProgressBar(OutputPipe.Error, percentage, ProgressColor, ProgressChar, MaxLineWidth);
+                if (factory is not null) {
+                    Console.ClearNextLines(2);
+                    factory(PrettyConsoleInterpolatedStringHandlerBuilder.Singleton, out var handler);
+                    handler.AppendNewLine();
+                    handler.Flush();
+                    Render(OutputPipe.Error, percentage, ProgressColor, ProgressChar, MaxLineWidth);
+                } else {
+                    Console.ClearNextLines(1);
+                    Render(OutputPipe.Error, percentage, ProgressColor, ProgressChar, MaxLineWidth);
+                }
             }
             Console.GoToLine(currentLine);
         }
@@ -107,8 +140,8 @@ public class ProgressBar {
     /// <param name="progressColor">The color used for the filled segment of the bar.</param>
     /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
     /// <param name="maxLineWidth">Optional total line length (including brackets and percentage). When provided, the rendered output will not exceed this width unless the decorations already require more characters.</param>
-    public static void WriteProgressBar(OutputPipe pipe, double percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null)
-        => WriteProgressBar(pipe, (int)percentage, progressColor, progressChar, maxLineWidth);
+    public static void Render(OutputPipe pipe, double percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null)
+        => Render(pipe, (int)percentage, progressColor, progressChar, maxLineWidth);
 
     /// <summary>
     /// Writes a single progress bar segment without tracking state.
@@ -118,7 +151,7 @@ public class ProgressBar {
     /// <param name="progressColor">The color used for the filled segment of the bar.</param>
     /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
     /// <param name="maxLineWidth">Optional total line length (including brackets and percentage). When provided, the rendered output will not exceed this width unless the decorations already require more characters.</param>
-    public static void WriteProgressBar(OutputPipe pipe, int percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null) {
+    public static void Render(OutputPipe pipe, int percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null) {
         Console.ResetColor();
 
         int p = Math.Clamp(percentage, 0, 100);
