@@ -239,10 +239,10 @@ for (int i = 0; i <= 100; i += 5) {
 progress.Update(42.5, "Syncing", sameLine: false);
 
 // One-off render without state
-ProgressBar.WriteProgressBar(OutputPipe.Error, 75, ConsoleColor.Magenta, '*', maxLineWidth: 32);
+ProgressBar.Render(OutputPipe.Error, 75, ConsoleColor.Magenta, '*', maxLineWidth: 32);
 ```
 
-`ProgressBar.Update` always re-renders (even if the percentage didn't change) so you can refresh status text. You can also set `ProgressBar.MaxLineWidth` on the instance to limit the rendered `[=====]  42%` line width before each update, mirroring the `maxLineWidth` option on `ProgressBar.WriteProgressBar`. The helper `ProgressBar.WriteProgressBar` keeps the cursor on the same line, which is ideal inside `Console.Overwrite`, and accepts an optional `maxLineWidth` so the entire `[=====]  42%` line can be constrained for left-column layouts.
+`ProgressBar.Update` always re-renders (even if the percentage didn't change) so you can refresh status text. You can also set `ProgressBar.MaxLineWidth` on the instance to limit the rendered `[=====]  42%` line width before each update, mirroring the `maxLineWidth` option on `ProgressBar.Render`. The helper `ProgressBar.Render` keeps the cursor on the same line, which is ideal inside `Console.Overwrite`, and accepts an optional `maxLineWidth` so the entire `[=====]  42%` line can be constrained for left-column layouts. For dynamic headers, use the overload that accepts a `PrettyConsoleInterpolatedStringHandlerFactory`, mirroring the spinner pattern.
 
 #### Spinner (indeterminate progress)
 
@@ -284,7 +284,7 @@ var consumer = Task.Run(async () => {
         Console.Overwrite(progress, state => {
             for (int i = 0; i < state.Length; i++) {
                 Console.WriteInterpolated(OutputPipe.Error, $"Task {i + 1} ({downloads[i]}): ");
-                ProgressBar.WriteProgressBar(OutputPipe.Error, state[i], ConsoleColor.Cyan);
+                ProgressBar.Render(OutputPipe.Error, state[i], ConsoleColor.Cyan);
             }
         }, lines: downloads.Length, pipe: OutputPipe.Error);
     }

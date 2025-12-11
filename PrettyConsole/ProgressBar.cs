@@ -63,9 +63,7 @@ public class ProgressBar {
     /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
     /// <param name="status">The status text to be displayed after the progress bar.</param>
     /// <param name="sameLine">Whether to display the status before the progress bar on the same line. If not it will be displayed above the progress bar, if set to false, the progress bar will use 2 lines.</param>
-    /// <remarks>
-    /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
-    /// </remarks>
+    /// <remarks>Remember to clear the used lines after the last call (e.g., with Console.ClearNextLines).</remarks>
     public void Update(double percentage, string status, bool sameLine = true)
         => Update((int)percentage, status, sameLine);
 
@@ -87,7 +85,7 @@ public class ProgressBar {
     /// Updates the progress bar with the specified percentage and header text.
     /// </summary>
     /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
-    /// <param name="factory"></param>
+    /// <param name="factory">Optional header factory invoked on each render; use it to emit dynamic status text with <see cref="PrettyConsoleInterpolatedStringHandler"/> (same pattern as <see cref="Spinner"/>).</param>
     /// <param name="sameLine">Whether to display the status before the progress bar on the same line. If not it will be displayed above the progress bar, if set to false, the progress bar will use 2 lines.</param>
     /// <remarks>
     /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.
@@ -99,7 +97,7 @@ public class ProgressBar {
     /// Updates the progress bar with the specified percentage and header text.
     /// </summary>
     /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
-    /// <param name="factory"></param>
+    /// <param name="factory">Optional header factory invoked on each render; use it to emit dynamic status text with <see cref="PrettyConsoleInterpolatedStringHandler"/> (same pattern as <see cref="Spinner"/>).</param>
     /// <param name="sameLine">Whether to display the status before the progress bar on the same line. If not it will be displayed above the progress bar, if set to false, the progress bar will use 2 lines.</param>
     /// <remarks>
     /// Please remember to clear the used lines after the last call to this method, you can use Console.ClearNextLines.

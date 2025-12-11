@@ -75,7 +75,7 @@ public class ProgressBarTests {
     }
 
     [Test]
-    public async Task ProgressBar_WriteProgressBar_WritesFormattedOutput() {
+    public async Task ProgressBar_Render_WritesFormattedOutput() {
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var outWriter);
@@ -92,7 +92,7 @@ public class ProgressBarTests {
     }
 
     [Test]
-    public async Task ProgressBar_WriteProgressBar_RespectsMaxLineWidth() {
+    public async Task ProgressBar_Render_RespectsMaxLineWidth() {
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var outWriter);
@@ -155,7 +155,7 @@ public class ProgressBarTests {
     }
 
     [Test]
-    public async Task ProgressBar_WriteProgressBar_DoubleOverload_WritesOutput() {
+    public async Task ProgressBar_Render_DoubleOverload_WritesOutput() {
         var originalOut = Out;
         try {
             Out = Utilities.GetWriter(out var writer);
