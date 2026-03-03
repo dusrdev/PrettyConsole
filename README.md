@@ -47,6 +47,15 @@ curl -Ls https://codeload.github.com/dusrdev/PrettyConsole/tar.gz/refs/heads/sta
 
 This extracts `.agents/skills/prettyconsole-expert` from the repository archive directly into your local `.agents/skills` folder.
 
+The skill is versioned via `.agents/skills/prettyconsole-expert/VERSION` (current: `5.4.0`) and should match your installed `PrettyConsole` package version. Before using the skill:
+
+```bash
+cat .agents/skills/prettyconsole-expert/VERSION
+dotnet list package | rg PrettyConsole
+```
+
+If versions differ, upgrade the package when available (`dotnet list package --outdated | rg PrettyConsole`) or refresh the skill folder from GitHub.
+
 ## Examples
 
 Standalone samples made with .NET 10 file-based apps with preview clips are available in [Examples](Examples/README.md).
