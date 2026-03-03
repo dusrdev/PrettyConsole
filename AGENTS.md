@@ -10,7 +10,7 @@ Summary
   - PrettyConsole.Tests/ — interactive/demo runner (manually selects visual feature demos)
   - PrettyConsole.Tests.Unit/ — xUnit v3 unit tests using Microsoft Testing Platform
   - Examples/ — standalone `.cs` sample apps plus `assets/` previews; documented in `Examples/README.md` and excluded from automated builds/tests
-- v5.3.1 (current) renames `IndeterminateProgressBar` to `Spinner` (and `AnimationSequence` to `Pattern`), triggers the line reset at the start of each spinner frame, gives all `RunAsync` overloads default cancellation tokens, and renames `ProgressBar.WriteProgressBar` to `Render` while adding handler-factory overloads and switching header parameters to `string`. It still passes handlers by `ref`, adds `AppendInline`, and introduces the ctor that takes only `OutputPipe` + optional `IFormatProvider`; `SkipLines` advances the cursor while keeping overwritten UIs; `Confirm(trueValues, ref handler, bool emptyIsTrue = true)` has the boolean last; spinner header factories use `PrettyConsoleInterpolatedStringHandlerFactory` with the singleton builder; `AnsiColors` is public. v5.2.0 rewrote the handler to buffer before writing and added `WhiteSpace`; v5.1.0 renamed `PrettyConsoleExtensions` to `ConsoleContext`, added `Console.WriteWhiteSpaces(length, pipe)`, and made `Out`/`Error`/`In` settable; v5.0.0 removed the legacy `ColoredOutput`/`Color` types in favor of `ConsoleColor` helpers and tuples.
+- v5.4.0 (current) renames `IndeterminateProgressBar` to `Spinner` (and `AnimationSequence` to `Pattern`), triggers the line reset at the start of each spinner frame, gives all `RunAsync` overloads default cancellation tokens, and renames `ProgressBar.WriteProgressBar` to `Render` while adding handler-factory overloads and switching header parameters to `string`. It still passes handlers by `ref`, adds `AppendInline`, and introduces the ctor that takes only `OutputPipe` + optional `IFormatProvider`; `SkipLines` advances the cursor while keeping overwritten UIs; `Confirm(trueValues, ref handler, bool emptyIsTrue = true)` has the boolean last; spinner header factories use `PrettyConsoleInterpolatedStringHandlerFactory` with the singleton builder; `AnsiColors` is public. v5.2.0 rewrote the handler to buffer before writing and added `WhiteSpace`; v5.1.0 renamed `PrettyConsoleExtensions` to `ConsoleContext`, added `Console.WriteWhiteSpaces(length, pipe)`, and made `Out`/`Error`/`In` settable; v5.0.0 removed the legacy `ColoredOutput`/`Color` types in favor of `ConsoleColor` helpers and tuples.
 
 Commands you’ll use often
 
@@ -56,9 +56,9 @@ High-level architecture and key concepts
 - Markup decorations
   - The `Markup` static class exposes ANSI sequences for underline, bold, italic, and strikethrough. Fields expand to escape codes only when output/error aren’t redirected; otherwise they collapse to empty strings so callers can safely interpolate them without extra checks.
 - Write APIs
-  - `WriteInterpolated`/`WriteLineInterpolated` host the interpolated-string handler; `Write`/`WriteLine` overloads target `ISpanFormattable` values (including `ref struct`s) and raw `ReadOnlySpan<char>` spans with optional foreground/background overrides. Implementations rent buffers from `ArrayPool<char>.Shared` to avoid allocation spikes and always reset colors.
+  - `WriteInterpolated`/`WriteLineInterpolated` are the default output APIs and host the interpolated-string handler; this path already covers high-performance formatting and coloring. Keep `Write`/`WriteLine` overloads (`ISpanFormattable`/`ReadOnlySpan<char>`) for rare low-level scenarios where callers intentionally bypass the handler with custom formatting pipelines. Those overloads still rent buffers from `ArrayPool<char>.Shared` and reset colors.
 - TextWriter helpers
-  - `ConsoleContext` surfaces the live `Out`/`Error` writers (now with public setters for test doubles) and keeps helpers like `GetWidthOrDefault`. Use `Console.WriteWhiteSpaces(int length, OutputPipe pipe = OutputPipe.Out)` for direct padding from call sites; `TextWriter.WriteWhiteSpaces(int)` remains available on the writers if you already have them on hand.
+  - `ConsoleContext` surfaces the live `Out`/`Error` writers (now with public setters for test doubles) and keeps helpers like `GetWidthOrDefault`. Use `Console.WriteWhiteSpaces(int length)` for the default output path and specify `OutputPipe.Error` only when needed; `TextWriter.WriteWhiteSpaces(int)` remains available on the writers if you already have them on hand.
 - Inputs
   - `ReadLine`/`TryReadLine` support `IParsable<T>` types, optional defaults, enum parsing with `ignoreCase`, and interpolated prompts. `Confirm` exposes `DefaultConfirmValues`, overloads for custom truthy tokens, and interpolated prompts; `RequestAnyInput` blocks on `ReadKey` with colored prompts if desired.
 - Rendering controls
@@ -83,7 +83,7 @@ Testing structure and workflows
 
 Notes and gotchas
 
-- The library aims to minimize allocations; prefer span-based overloads (`ReadOnlySpan<char>`, `ISpanFormattable`) plus the inline `ConsoleColor` tuples instead of recreating strings or structs.
+- The library aims to minimize allocations; for normal app-level output prefer interpolated-handler APIs (`WriteInterpolated`/`WriteLineInterpolated`) plus inline `ConsoleColor` tuples. Use span-based `Write`/`WriteLine` overloads only for rare low-level formatting bypass scenarios.
 - When authoring new features, pick the appropriate OutputPipe to keep CLI piping behavior intact.
 - On macOS terminals, ANSI is supported; Windows legacy terminals are handled via ANSI-compatible rendering in the library.
 - `ProgressBar.Update` re-renders on every call (even when the percentage is unchanged) and accepts `sameLine` to place the status above the bar; the static `ProgressBar.Render` renders one-off bars without writing a trailing newline, so rely on `Console.Overwrite`/`lines` to stack multiple bars cleanly.

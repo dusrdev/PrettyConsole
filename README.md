@@ -14,8 +14,8 @@ PrettyConsole is a high-performance, ultra-low-latency, allocation-free extensio
 - 🔁 Advanced rendering primitives (`Overwrite`, `ClearNextLines`, `GoToLine`, `SkipLines`, progress bars) that respect console pipes
 - 🧱 Handler-aware `WhiteSpace` struct for zero-allocation padding directly inside interpolated strings
 - 🧰 Rich input helpers (`TryReadLine`, `Confirm`, `RequestAnyInput`) with `IParsable<T>` and enum support
-- ⚙️ Allocation-conscious span-first APIs (`ISpanFormattable`, `ReadOnlySpan<char>`, `Console.WriteWhiteSpaces` / `TextWriter.WriteWhiteSpaces`)
-- ⛓ Output routing through `OutputPipe.Out` and `OutputPipe.Error` so piping/redirects continue to work
+- ⚙️ Low-level output escape hatches (`Console.Write/WriteLine` span and `ISpanFormattable` overloads) for advanced custom formatting pipelines
+- ⛓ Output routing through `OutputPipe.Out` (default) and `OutputPipe.Error` so piping/redirects continue to work
 
 ## Performance
 
@@ -34,6 +34,18 @@ PrettyConsole is **the go-to choice for ultra-low-latency, allocation-free conso
 ```bash
 dotnet add package PrettyConsole
 ```
+
+## Agent Skill
+
+If you use coding agents, install the bundled `prettyconsole-expert` skill into your project so agents immediately use valid, current PrettyConsole APIs:
+
+```bash
+mkdir -p .agents/skills
+curl -Ls https://codeload.github.com/dusrdev/PrettyConsole/tar.gz/refs/heads/stable \
+  | tar -xz -C .agents/skills --strip-components=3 PrettyConsole-stable/.agents/skills/prettyconsole-expert
+```
+
+This extracts `.agents/skills/prettyconsole-expert` from the repository archive directly into your local `.agents/skills` folder.
 
 ## Examples
 
@@ -120,17 +132,26 @@ Avoid embedding the escape directly in the literal (`"\u001b[38;5;213maccent tex
 // Interpolated text
 Console.WriteInterpolated($"Processed {items} items in {elapsed:duration}"); // Processed 42 items in 3h 44m 9s
 Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Magenta}debug{ConsoleColor.Default}");
-
-// Span + color overloads (no boxing)
-ReadOnlySpan<char> header = "Title";
-Console.Write(header, OutputPipe.Out, ConsoleColor.White, ConsoleColor.DarkBlue);
-Console.NewLine(); // writes newline to the default output pipe
-
-// ISpanFormattable (works with ref structs)
-Console.Write(percentage, OutputPipe.Out, ConsoleColor.Cyan, ConsoleColor.DefaultBackground, format: "F2", formatProvider: null);
 ```
 
-Behind the scenes these overloads rent buffers from the shared `ArrayPool<char>` and route output to the correct pipe through `ConsoleContext.GetWriter`.
+`WriteInterpolated` / `WriteLineInterpolated` should be your default output path. The handler already applies the high-performance formatting path internally and supports inline colors/alignment/specifiers.
+
+### Low-level output escape hatch (rare)
+
+Use these only when you intentionally bypass the interpolated handler and own formatting end-to-end (advanced/manual pipelines):
+
+```csharp
+// Span + color overloads (no boxing)
+ReadOnlySpan<char> header = "Title";
+Console.Write(header, OutputPipe.Error, ConsoleColor.White, ConsoleColor.DarkBlue);
+Console.NewLine(OutputPipe.Error);
+
+// ISpanFormattable (works with ref structs)
+Console.Write(percentage); // uses the default output pipe
+Console.Write(percentage, OutputPipe.Error, ConsoleColor.Cyan, ConsoleColor.DefaultBackground, format: "F2", formatProvider: null);
+```
+
+These overloads stay public mainly for compatibility and niche scenarios; for normal app code, prefer interpolated handler calls.
 
 ### Basic inputs
 
@@ -158,7 +179,7 @@ if (!Console.Confirm($"Deploy to production? ({ConsoleColor.Green}y{ConsoleColor
     return;
 }
 
-var customTruths = new[] { "sure", "do it" };
+string[] customTruths = ["sure", "do it"];
 bool overwrite = Console.Confirm(customTruths, $"Overwrite existing files? ", emptyIsTrue: false);
 ```
 
@@ -203,19 +224,19 @@ Always call `Console.ClearNextLines(totalLines, pipe)` once after the last `Over
 ### Menus and tables
 
 ```csharp
-var choice = Console.Selection("Pick an environment:", new[] { "Dev", "QA", "Prod" });
-var multi = Console.MultiSelection("Services to restart:", new[] { "API", "Worker", "Scheduler" });
+var choice = Console.Selection("Pick an environment:", ["Dev", "QA", "Prod"]);
+var multi = Console.MultiSelection("Services to restart:", ["API", "Worker", "Scheduler"]);
 var (area, action) = Console.TreeMenu("Actions", new Dictionary<string, IList<string>> {
-    ["Users"] = new[] { "List", "Create", "Disable" },
-    ["Jobs"] = new[] { "Queue", "Retry" }
+    ["Users"] = ["List", "Create", "Disable"],
+    ["Jobs"] = ["Queue", "Retry"]
 });
 
 Console.Table(
-    headers: new[] { "Name", "Status" },
-    columns: new[] {
-        new[] { "API", "Worker" },
-        new[] { "Running", "Stopped" }
-    }
+    headers: ["Name", "Status"],
+    columns: [
+        ["API", "Worker"],
+        ["Running", "Stopped"]
+    ]
 );
 ```
 
@@ -224,7 +245,7 @@ Menus validate user input (throwing `ArgumentException` on invalid selections) a
 ### Progress bars
 
 ```csharp
-using var progress = new ProgressBar {
+var progress = new ProgressBar {
     ProgressChar = '■',
     ForegroundColor = ConsoleColor.DarkGray,
     ProgressColor = ConsoleColor.Green,
@@ -262,7 +283,7 @@ The factory runs each frame so you can inject dynamic status text without alloca
 using System.Linq;
 using System.Threading.Channels;
 
-var downloads = new[] { "Video.mp4", "Archive.zip", "Assets.pak" };
+string[] downloads = ["Video.mp4", "Archive.zip", "Assets.pak"];
 var progress = new double[downloads.Length];
 var updates = Channel.CreateUnbounded<(int index, double percent)>();
 
