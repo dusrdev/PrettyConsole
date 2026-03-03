@@ -26,6 +26,14 @@ using static System.Console; // optional
 - Menus/tables: `Console.Selection`, `Console.MultiSelection`, `Console.TreeMenu`, `Console.Table`.
 - Low-level override only: use `Console.Write(...)` / `Console.WriteLine(...)` span+`ISpanFormattable` overloads only when you intentionally bypass the handler for a custom formatting pipeline.
 
+## Handler Special Formats
+
+- Use `:duration` with `TimeSpan` to render compact elapsed time text from the handler:
+  `Console.WriteInterpolated($"Elapsed {elapsed:duration}")` -> `Elapsed 12h 5m 33s`
+- Use `:bytes` with `double` to render human-readable file sizes from the handler:
+  `Console.WriteInterpolated($"Transferred {bytes:bytes}")` -> `Transferred 12.3 MB`
+- Prefer these formats in status/progress output instead of manual formatting logic.
+
 ## Performance Rules
 
 - Prefer interpolated-handler APIs over manually concatenated strings.

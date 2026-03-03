@@ -48,6 +48,15 @@ PrettyConsole methods are extension members on `System.Console`.
   - `Console.TreeMenu(...)`
   - `Console.Table(...)`
 
+### Interpolated-handler special formats
+
+- `TimeSpan` with `:duration`:
+  - `Console.WriteInterpolated($"Elapsed {elapsed:duration}")`
+  - Example output: `Elapsed 5h 32m 12s`
+- `double` with `:bytes`:
+  - `Console.WriteInterpolated($"Downloaded {size:bytes}")`
+  - Example output: `Downloaded 12.3 MB`
+
 ### Low-level escape hatch (rare)
 
 Use these only when intentionally bypassing the interpolated handler for a custom formatting pipeline:

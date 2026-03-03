@@ -311,7 +311,6 @@ public struct PrettyConsoleInterpolatedStringHandler {
         ReadOnlySpan<char> formatSpan = format.AsSpan();
 
         int charsWritten;
-        // int start = _index;
 
         while (true) {
             Span<char> dest = _buffer.AsSpan(_index);
