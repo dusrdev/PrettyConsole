@@ -1,4 +1,4 @@
 interface:
   display_name: "PrettyConsole Expert"
   short_description: "Use PrettyConsole APIs correctly for fast console UIs"
-  default_prompt: "Start by syncing skill version with installed PrettyConsole package version, then implement with current APIs and allocation-conscious patterns."
+  default_prompt: "Implement PrettyConsole features with current APIs, migration-safe names, and allocation-conscious patterns."

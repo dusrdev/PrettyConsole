@@ -2,34 +2,18 @@
 
 Use this file when implementing or reviewing PrettyConsole usage so code compiles against modern APIs and keeps allocation-conscious patterns.
 
-## 1. Version Sync (Required)
+## 1. Version First
 
-Compare skill and package versions before coding:
+Read installed version before coding:
 
 ```bash
-cat .agents/skills/prettyconsole-expert/VERSION
 dotnet list package
 rg -n "PrettyConsole" --glob "*.csproj" .
 # optionally also check central package management if present:
 # rg -n "PrettyConsole" Directory.Packages.props
 ```
 
-Resolve mismatches before implementation:
-
-- If package is missing, install `PrettyConsole` using the skill version.
-- If package version > skill version, update the skill folder from GitHub:
-  ```bash
-  mkdir -p .agents/skills
-  curl -Ls https://codeload.github.com/dusrdev/PrettyConsole/tar.gz/refs/heads/stable \
-    | tar -xz -C .agents/skills --strip-components=3 PrettyConsole-stable/.agents/skills/prettyconsole-expert
-  ```
-- If skill version > package version, check upgrade availability:
-  ```bash
-  dotnet list package --outdated | rg PrettyConsole
-  dotnet add package PrettyConsole
-  ```
-  Upgrade package when available.
-- Proceed only when skill and package versions match, or when the user explicitly accepts a mismatch.
+If version and request conflict, keep the installed version and adapt code accordingly.
 
 ## 2. Namespace and Setup
 

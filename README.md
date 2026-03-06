@@ -35,27 +35,6 @@ PrettyConsole is **the go-to choice for ultra-low-latency, allocation-free conso
 dotnet add package PrettyConsole
 ```
 
-## Agent Skill
-
-If you use coding agents, install the bundled `prettyconsole-expert` skill into your project so agents immediately use valid, current PrettyConsole APIs:
-
-```bash
-mkdir -p .agents/skills
-curl -Ls https://codeload.github.com/dusrdev/PrettyConsole/tar.gz/refs/heads/stable \
-  | tar -xz -C .agents/skills --strip-components=3 PrettyConsole-stable/.agents/skills/prettyconsole-expert
-```
-
-This extracts `.agents/skills/prettyconsole-expert` from the repository archive directly into your local `.agents/skills` folder.
-
-The skill is versioned via `.agents/skills/prettyconsole-expert/VERSION` (current: `5.4.0`) and should match your installed `PrettyConsole` package version. Before using the skill:
-
-```bash
-cat .agents/skills/prettyconsole-expert/VERSION
-dotnet list package | rg PrettyConsole
-```
-
-If versions differ, upgrade the package when available (`dotnet list package --outdated | rg PrettyConsole`) or refresh the skill folder from GitHub.
-
 ## Examples
 
 Standalone samples made with .NET 10 file-based apps with preview clips are available in [Examples](Examples/README.md).

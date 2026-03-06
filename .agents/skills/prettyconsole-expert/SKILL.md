@@ -5,25 +5,11 @@ description: Expert workflow for using PrettyConsole correctly and efficiently i
 
 # PrettyConsole Expert
 
-## Skill Version
-
-- Skill version: `5.4.0` (stored in `.agents/skills/prettyconsole-expert/VERSION`).
-- The skill version must match the installed `PrettyConsole` package version before implementing code changes.
-
 ## Core Workflow
 
-1. Run a version-sync preflight before coding.
-- Read the skill version from `.agents/skills/prettyconsole-expert/VERSION`.
-- Read the installed package version via `dotnet list package | rg PrettyConsole`.
-- If `PrettyConsole` is not installed, install the skill version (`dotnet add package PrettyConsole --version <skillVersion>`).
-- If package version is newer than skill version, refresh the skill from GitHub:
-  ```bash
-  mkdir -p .agents/skills
-  curl -Ls https://codeload.github.com/dusrdev/PrettyConsole/tar.gz/refs/heads/stable \
-    | tar -xz -C .agents/skills --strip-components=3 PrettyConsole-stable/.agents/skills/prettyconsole-expert
-  ```
-- If skill version is newer than package version, check availability with `dotnet list package --outdated | rg PrettyConsole` and upgrade the package when available (`dotnet add package PrettyConsole`).
-- Continue only after versions match, or after the user explicitly confirms an intentional mismatch.
+1. Verify the installed PrettyConsole version before coding.
+- Read `Directory.Packages.props`, `*.csproj`, and/or run `dotnet list package`.
+- Keep implementation compatible with the installed version; do not "fix" compilation by downgrading unless the user explicitly requests downgrading.
 
 2. Bring extension APIs into scope:
 
