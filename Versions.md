@@ -1,5 +1,10 @@
 # Versions
 
+## v5.4.1
+
+- This version now ships with a specialized AI agent skill `PrettyConsoleExpert` that will be copied to consumers on build.
+  - This can be opt-out of - instructions are in the main `README.md`
+
 ## v5.4.0
 
 - **BREAKING**: `IndeterminateProgressBar` was renamed to `Spinner`

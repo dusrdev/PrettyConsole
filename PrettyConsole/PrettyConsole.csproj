@@ -43,13 +43,6 @@
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
-			- **BREAKING**: `IndeterminateProgressBar` was renamed to `Spinner`; `AnimationSequence` was renamed to `Pattern`; all `RunAsync` overloads now default the `CancellationToken`; the line reset happens at the start of each frame so the last render stays visible unless cleared.
-			- **BREAKING**: `ProgressBar.WriteProgressBar` was renamed to `Render`; added `PrettyConsoleInterpolatedStringHandlerFactory` overloads for dynamic headers and switched header parameters to `string` to avoid incorrect escape analysis.
-			- Exposed more of `PrettyConsoleInterpolatedStringHandler`, including a ctor that takes only `OutputPipe` with optional `IFormatProvider`, public helpers, and `AppendInline`; handlers are passed by `ref`.
-			- Added `Console.SkipLines(int)` to advance the cursor while preserving overwritten UIs such as progress bars and spinners.
-			- Reordered `Confirm(ReadOnlySpan&lt;string&gt; trueValues, ref PrettyConsoleInterpolatedStringHandler handler, bool emptyIsTrue = true)` so `emptyIsTrue` is the last parameter.
-			- Spinner header factories use `PrettyConsoleInterpolatedStringHandlerFactory` with the `PrettyConsoleInterpolatedStringHandlerBuilder` singleton to avoid extra struct copies; the old `Build` helper was removed.
-			- `AnsiColors` is now public for converting `ConsoleColor` to ANSI sequences.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
