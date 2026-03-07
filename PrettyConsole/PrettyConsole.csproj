@@ -13,7 +13,7 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<IncludeSource>true</IncludeSource>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<PublishRespositoryUrl>true</PublishRespositoryUrl>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 
 		<Authors>David Shnayder</Authors>
@@ -26,7 +26,7 @@
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>5.4.0</Version>
+		<Version>5.4.1</Version>
 		<Nullable>enable</Nullable>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -34,7 +34,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Using Include="System.Runtime.CompilerServices"/>
+		<Using Include="System.Runtime.CompilerServices" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -55,6 +55,14 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+		<PackageReference Include="Payload" Version="1.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PayloadContent Include="../.agents/skills/pretty-console-expert">
+			<Tag>PrettyConsoleExpert</Tag>
+			<TargetPath>.agents/skills/pretty-console-expert</TargetPath>
+		</PayloadContent>
 	</ItemGroup>
 
 	<PropertyGroup>
