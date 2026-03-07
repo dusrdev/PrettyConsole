@@ -32,6 +32,7 @@ using static System.Console; // optional
   `Console.WriteInterpolated($"Elapsed {elapsed:duration}")` -> `Elapsed 12h 5m 33s`
 - Use `:bytes` with `double` to render human-readable file sizes from the handler:
   `Console.WriteInterpolated($"Transferred {bytes:bytes}")` -> `Transferred 12.3 MB`
+- Interpolation holes accept `ReadOnlySpan<char>` directly and prefer `ISpanFormattable`, so slices and span-format-capable values stay on the high-performance handler path without dropping to low-level `Write(ReadOnlySpan<char>)` APIs.
 - Prefer these formats in status/progress output instead of manual formatting logic.
 
 ## Performance Rules

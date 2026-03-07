@@ -56,6 +56,15 @@ PrettyConsole methods are extension members on `System.Console`.
 - `double` with `:bytes`:
   - `Console.WriteInterpolated($"Downloaded {size:bytes}")`
   - Example output: `Downloaded 12.3 MB`
+- `ReadOnlySpan<char>` and `ISpanFormattable` values work directly in interpolation holes:
+
+  ```csharp
+  ReadOnlySpan<char> prefix = "artifact:".AsSpan()[..8];
+  int count = 42;
+  Console.WriteInterpolated($"{prefix} {count:D4}");
+  ```
+
+  Prefer this over dropping to low-level span `Write(...)` APIs when you still want normal interpolated output composition.
 
 ### Low-level escape hatch (rare)
 
