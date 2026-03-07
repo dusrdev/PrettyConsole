@@ -95,25 +95,57 @@ if (!Console.TryReadLine(out int port, $"Port ({ConsoleColor.Green}5000{ConsoleC
 bool yes = Console.Confirm(["y", "yes"], $"Continue? ", emptyIsTrue: false);
 ```
 
-### Spinner with dynamic header
+### Wizard-style menus
 
 ```csharp
+static string PromptSelection(string title, string[] options) {
+    string selection = string.Empty;
+
+    while (selection.Length == 0) {
+        Console.Overwrite(() => {
+            selection = Console.Selection(options, $"{ConsoleColor.Cyan}{title}{ConsoleColor.DefaultForeground}:");
+            if (selection.Length == 0)
+                Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Red}Invalid choice.");
+        }, lines: options.Length + 3, pipe: OutputPipe.Out);
+    }
+
+    return selection;
+}
+```
+
+Use this when you want multi-step prompts to behave like page transitions instead of adding scrollback on each retry.
+
+### Spinner with shared progress state
+
+```csharp
+string[] steps = ["Restore", "Compile", "Pack"];
+var step = 0;
+
+var workTask = Task.Run(async () => {
+    for (; step < steps.Length; Interlocked.Increment(ref step))
+        await Task.Delay(500);
+});
+
 var spinner = new Spinner();
-await spinner.RunAsync(workTask, (builder, out handler) =>
-    handler = builder.Build(OutputPipe.Error, $"Processing {DateTime.Now:T}"));
+await spinner.RunAsync(workTask, (builder, out handler) => {
+    var current = Math.Min(Volatile.Read(ref step), steps.Length - 1);
+    handler = builder.Build(OutputPipe.Error, $"Current step: {ConsoleColor.Green}{steps[current]}");
+});
 ```
 
-### Progress bar
+Use this when the spinner header should reflect concurrently changing state without locking around the render path.
+
+### Stateful overwrite rendering
 
 ```csharp
-var progress = new ProgressBar {
-    ProgressColor = ConsoleColor.Green,
-    ForegroundColor = ConsoleColor.DarkGray
-};
-
-progress.Update(40, "Downloading", sameLine: true);
-ProgressBar.Render(OutputPipe.Error, 40, ConsoleColor.Green);
+Console.Overwrite(percent, static current => {
+    ProgressBar.Render(OutputPipe.Error, current, ConsoleColor.Cyan, maxLineWidth: 40);
+    Console.NewLine(OutputPipe.Error);
+    Console.WriteInterpolated(OutputPipe.Error, $"Downloading assets... {ConsoleColor.Cyan}{current}");
+}, lines: 2, pipe: OutputPipe.Error);
 ```
+
+Prefer this shape for live `status + progress` regions. It keeps the state explicit, avoids closure allocations, and makes the rendered height obvious.
 
 ### Overwrite loop cleanup
 
@@ -125,6 +157,39 @@ Console.Overwrite(() => {
 
 Console.ClearNextLines(2, OutputPipe.Error);
 ```
+
+### High-frequency concurrent status updates
+
+Use one reader task to own all `Console.Overwrite(...)` calls and let concurrent workers publish snapshots through a bounded channel:
+
+```csharp
+using System.Threading.Channels;
+
+var channel = Channel.CreateBounded<Stats>(new BoundedChannelOptions(1) {
+    SingleWriter = false,
+    SingleReader = true,
+    FullMode = BoundedChannelFullMode.DropWrite
+});
+
+_ = Task.Run(async () => {
+    await foreach (var stats in channel.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false)) {
+        Console.Overwrite(stats, static current => {
+            PrintMetrics(current);
+        }, lines: 2, pipe: OutputPipe.Error);
+    }
+
+    Console.ClearNextLines(2, OutputPipe.Error);
+}, cancellationToken);
+
+// Workers stay non-blocking and may skip intermediate frames when the UI is busy.
+channel.Writer.TryWrite(latestStats);
+```
+
+Why this works:
+
+- only one reader ever renders, so `Overwrite` calls do not race each other
+- capacity `1` + `DropWrite` avoids backpressure on workers during high-frequency updates
+- this pattern is best when dropped intermediate states are acceptable and only recent snapshots matter
 
 ## 6. Performance Checklist
 

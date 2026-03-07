@@ -1,5 +1,5 @@
 ---
-name: prettyconsole-expert
+name: pretty-console-expert
 description: Expert workflow for using PrettyConsole correctly and efficiently in C# console apps. Use when tasks involve console styling, colored output, regular prints, prompts, typed input parsing, confirmation prompts, menu/table rendering, overwrite-based rendering, progress bars, spinners, OutputPipe routing, or migration from Spectre.Console/manual ANSI/older PrettyConsole APIs.
 ---
 
@@ -40,7 +40,14 @@ using static System.Console; // optional
 - Avoid span/formattable `Write`/`WriteLine` overloads in normal app code; reserve them for rare advanced/manual formatting scenarios.
 - Keep ANSI/decorations inside interpolation holes (for example, `$"{Markup.Bold}..."`) instead of literal escape codes inside string literals.
 - Route transient UI (spinner/progress/overwrite loops) to `OutputPipe.Error` to keep stdout pipe-friendly.
+- For very frequent concurrent status updates, prefer a single-reader bounded `Channel<T>` that owns `Console.Overwrite(...)`; let workers `TryWrite` snapshots into a capacity-1 channel with `FullMode = DropWrite` so producers stay non-blocking and intermediate frames can be skipped.
 - After the last overwrite/progress frame, clear the UI region once with `Console.ClearNextLines(totalLines, pipe)` or intentionally keep it with `Console.SkipLines`.
+
+## Practical Patterns
+
+- For wizard-like flows, wrap `Console.Selection(...)` / `Console.MultiSelection(...)` in retrying `Console.Overwrite(...)` loops so each step reuses one screen region instead of scrolling.
+- Prefer `Console.Overwrite(state, static ...)` for fixed-height live regions such as `status + progress`; it avoids closure captures and keeps the rendered surface explicit through `lines`.
+- For dynamic spinner headers tied to concurrent work, keep the mutable step/progress state outside the spinner and read it with `Volatile.Read` / `Interlocked` inside the handler factory.
 
 ## API Guardrails (Current Surface)
 

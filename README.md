@@ -35,6 +35,29 @@ PrettyConsole is **the go-to choice for ultra-low-latency, allocation-free conso
 dotnet add package PrettyConsole
 ```
 
+## Included Skill
+
+`PrettyConsole` ships a universal skill named `pretty-console-expert`. The package uses `Payload` to copy it into the consuming repository during build at `.agents/skills/pretty-console-expert`, giving the repo its own PrettyConsole expert.
+
+Consumers can control that payload with `PayloadPolicy`:
+
+```xml
+<ItemGroup>
+  <PayloadPolicy Include="PrettyConsole"
+                 Tag="PrettyConsoleExpert"
+                 CopyOnBuild="true" />
+</ItemGroup>
+```
+
+- `CopyOnBuild="true"` is the default and keeps the skill synchronized on build. Set it to `false` to stop future copies.
+- `OverridePath` is optional and changes the destination base path. The package-defined `TargetPath` stays `.agents/skills/pretty-console-expert`, so `OverridePath="/custom/root"` copies the skill to `/custom/root/.agents/skills/pretty-console-expert`.
+
+For .NET 10 file-based apps, if repo-root detection is not available, set `PayloadRootDirectory` explicitly:
+
+```csharp
+#:property PayloadRootDirectory=.
+```
+
 ## Examples
 
 Standalone samples made with .NET 10 file-based apps with preview clips are available in [Examples](Examples/README.md).
