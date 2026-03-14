@@ -48,6 +48,12 @@ PrettyConsole methods are extension members on `System.Console`.
   - `Console.TreeMenu(...)`
   - `Console.Table(...)`
 
+### Output routing
+
+- Keep prompts, menus, tables, final user-facing output, and machine-readable non-error output on `OutputPipe.Out` unless you intentionally need a different split.
+- Use `OutputPipe.Error` for transient live UI and for actual errors/diagnostics/warnings so stdout remains pipe-friendly and error output stays distinct.
+- Avoid mixing a single interactive exchange across `Out` and `Error` unless the split is intentional.
+
 ### Interpolated-handler special formats
 
 - `TimeSpan` with `:duration`:
@@ -88,7 +94,7 @@ Use these only when intentionally bypassing the interpolated handler for a custo
 
 ```csharp
 Console.WriteInterpolated($"[{ConsoleColor.Cyan}info{ConsoleColor.Default}] {message}");
-Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Yellow}warn{ConsoleColor.Default}");
+Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Red}error{ConsoleColor.Default}: {message}");
 ```
 
 ### Typed input
@@ -167,9 +173,14 @@ Console.Overwrite(() => {
 Console.ClearNextLines(2, OutputPipe.Error);
 ```
 
+`Spinner.RunAsync(...)`, `ProgressBar.Update(...)`, and overwrite-based regions do not clean up the final area for you. Choose one of these explicitly after the last frame:
+
+- `Console.ClearNextLines(totalLines, pipe)` to remove the live UI
+- `Console.SkipLines(totalLines)` to keep the final rendered rows and continue below them
+
 ### High-frequency concurrent status updates
 
-Use one reader task to own all `Console.Overwrite(...)` calls and let concurrent workers publish snapshots through a bounded channel:
+Use one reader task to own all `Console.Overwrite(...)` calls and let concurrent workers publish snapshots through a bounded channel only when multiple producers need to update the same live region at high frequency:
 
 ```csharp
 using System.Threading.Channels;
@@ -200,10 +211,13 @@ Why this works:
 - capacity `1` + `DropWrite` avoids backpressure on workers during high-frequency updates
 - this pattern is best when dropped intermediate states are acceptable and only recent snapshots matter
 
+For single-producer or modest-rate updates, prefer a simpler render loop without the channel.
+
 ## 6. Performance Checklist
 
 - Prefer interpolated handlers over string concatenation.
 - Treat span/formattable `Write`/`WriteLine` overloads as advanced escape hatches, not default app-level APIs.
 - Keep ANSI/decorations in interpolation holes, not raw literal spans.
-- Use `OutputPipe.Error` for transient rendering.
+- Use `OutputPipe.Error` for transient rendering and genuine errors/diagnostics, but keep ordinary non-error interaction flow on `OutputPipe.Out`.
+- Clean up live UI explicitly after the last frame with `ClearNextLines(...)` or keep it intentionally with `SkipLines(...)`.
 - Avoid introducing wrapper abstractions when direct PrettyConsole APIs already solve the task.

@@ -26,6 +26,11 @@ using static System.Console; // optional
 - Menus/tables: `Console.Selection`, `Console.MultiSelection`, `Console.TreeMenu`, `Console.Table`.
 - Low-level override only: use `Console.Write(...)` / `Console.WriteLine(...)` span+`ISpanFormattable` overloads only when you intentionally bypass the handler for a custom formatting pipeline.
 
+4. Route output deliberately.
+- Keep normal prompts, menus, tables, durable user-facing output, and machine-readable non-error output on `OutputPipe.Out` unless there is a specific reason not to.
+- Use `OutputPipe.Error` for transient live UI and for actual errors/diagnostics/warnings so stdout stays pipe-friendly and error output remains distinguishable.
+- Do not bounce a single interaction between `Out` and `Error` unless you intentionally want that split; mixed-pipe prompts and retry messages are usually awkward in consumer CLIs.
+
 ## Handler Special Formats
 
 - Use `:duration` with `TimeSpan` to render compact elapsed time text from the handler:
@@ -40,15 +45,16 @@ using static System.Console; // optional
 - Prefer interpolated-handler APIs over manually concatenated strings.
 - Avoid span/formattable `Write`/`WriteLine` overloads in normal app code; reserve them for rare advanced/manual formatting scenarios.
 - Keep ANSI/decorations inside interpolation holes (for example, `$"{Markup.Bold}..."`) instead of literal escape codes inside string literals.
-- Route transient UI (spinner/progress/overwrite loops) to `OutputPipe.Error` to keep stdout pipe-friendly.
-- For very frequent concurrent status updates, prefer a single-reader bounded `Channel<T>` that owns `Console.Overwrite(...)`; let workers `TryWrite` snapshots into a capacity-1 channel with `FullMode = DropWrite` so producers stay non-blocking and intermediate frames can be skipped.
-- After the last overwrite/progress frame, clear the UI region once with `Console.ClearNextLines(totalLines, pipe)` or intentionally keep it with `Console.SkipLines`.
+- Route transient UI (spinner/progress/overwrite loops) to `OutputPipe.Error` to keep stdout pipe-friendly, and use `OutputPipe.Error` for genuine errors/diagnostics. Keep ordinary non-error interaction flow on `OutputPipe.Out`.
+- Spinner/progress/overwrite output is caller-owned after rendering completes. Explicitly remove it with `Console.ClearNextLines(totalLines, pipe)` or intentionally keep the region with `Console.SkipLines(totalLines)`.
+- Only use the bounded `Channel<T>` snapshot pattern when multiple producers must update the same live region at high frequency. For single-producer or modest-rate updates, keep the rendering loop simple.
 
 ## Practical Patterns
 
-- For wizard-like flows, wrap `Console.Selection(...)` / `Console.MultiSelection(...)` in retrying `Console.Overwrite(...)` loops so each step reuses one screen region instead of scrolling.
+- For wizard-like flows, wrap `Console.Selection(...)` / `Console.MultiSelection(...)` in retrying `Console.Overwrite(...)` loops so each step reuses one screen region instead of scrolling. Keep the whole prompt/retry exchange on `OutputPipe.Out` unless the message is genuinely diagnostic.
 - Prefer `Console.Overwrite(state, static ...)` for fixed-height live regions such as `status + progress`; it avoids closure captures and keeps the rendered surface explicit through `lines`.
-- For dynamic spinner headers tied to concurrent work, keep the mutable step/progress state outside the spinner and read it with `Volatile.Read` / `Interlocked` inside the handler factory.
+- For dynamic spinner/progress headers tied to concurrent work, keep the mutable step/progress state outside the renderer and read it with `Volatile.Read` / `Interlocked` inside the handler factory.
+- If a live region should disappear after completion, pair the last render with an explicit `ClearNextLines(...)`. If it should remain visible as completed output, advance past it with `SkipLines(...)`.
 
 ## API Guardrails (Current Surface)
 
@@ -78,6 +84,7 @@ bool deploy = Console.Confirm(["y", "yes", "deploy"], $"Deploy now? ", emptyIsTr
 var spinner = new Spinner();
 await spinner.RunAsync(workTask, (builder, out handler) =>
     handler = builder.Build(OutputPipe.Error, $"Syncing..."));
+Console.ClearNextLines(1, OutputPipe.Error); // or Console.SkipLines(1) to keep the final row
 
 // Progress rendering
 var bar = new ProgressBar { ProgressColor = ConsoleColor.Green };
