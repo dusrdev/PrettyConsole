@@ -114,7 +114,7 @@ public static class WriteExtensions {
         /// <param name="span"></param>
         /// <param name="pipe">The output pipe to use</param>
         public static void Write(ReadOnlySpan<char> span, OutputPipe pipe) {
-            Write(span, pipe, ConsoleColor.DefaultForeground, ConsoleColor.DefaultBackground);
+            ConsoleContext.GetPipeTarget(pipe).Write(span);
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ public static class WriteExtensions {
         /// <param name="background">background color</param>
         public static void Write(ReadOnlySpan<char> span, OutputPipe pipe, ConsoleColor foreground, ConsoleColor background) {
             Console.SetColors(foreground, background);
-            ConsoleContext.GetPipeTarget(pipe).Write(span);
+            Write(span, pipe);
             Console.ResetColor();
         }
     }
