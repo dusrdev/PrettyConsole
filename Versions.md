@@ -3,7 +3,9 @@
 # v5.4.2
 
 - Improve perf of `ReadOnlySpan` based overloads of `Write` and `WriteLine`.
-- 
+- `SKILL` improvements
+  - Highlight some points that correct invalid API assumptions made by agents.
+  - Add testing section and teach agents to about `ConsoleContext`.
 
 ## v5.4.1
 

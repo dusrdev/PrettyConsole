@@ -26,7 +26,7 @@
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>5.4.1</Version>
+		<Version>5.4.2</Version>
 		<Nullable>enable</Nullable>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -43,6 +43,8 @@
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
+			- Improve perf of ReadOnlySpan based overloads of Write and WriteLine.
+			- Skill improvements
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
