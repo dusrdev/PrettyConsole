@@ -38,6 +38,7 @@ PrettyConsole methods are extension members on `System.Console`.
   - `Console.Overwrite(...)`
   - `Console.ClearNextLines(...)`
   - `Console.SkipLines(...)`
+  - `Console.NewLine(...)`
 - Progress:
   - `ProgressBar.Update(...)`
   - `ProgressBar.Render(...)`
@@ -80,6 +81,12 @@ Use these only when intentionally bypassing the interpolated handler for a custo
 - `Console.Write(ReadOnlySpan<char> ...)`
 - `Console.WriteLine<T>(...)`
 
+### New lines and blank lines
+
+- Use `Console.NewLine(pipe)` when the intent is only to end the current line or emit a blank line.
+- Do not use `Console.WriteLineInterpolated($"")` or payloads like `$"{ConsoleColor.Default}"` just to force a newline.
+- Use `WriteLineInterpolated(...)` when you are actually writing content and also want the trailing newline.
+
 ## 4. Old -> New Migration Table
 
 - `IndeterminateProgressBar` -> `Spinner`
@@ -95,6 +102,7 @@ Use these only when intentionally bypassing the interpolated handler for a custo
 ```csharp
 Console.WriteInterpolated($"[{ConsoleColor.Cyan}info{ConsoleColor.Default}] {message}");
 Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Red}error{ConsoleColor.Default}: {message}");
+Console.NewLine();
 ```
 
 ### Typed input
@@ -217,6 +225,7 @@ For single-producer or modest-rate updates, prefer a simpler render loop without
 
 - Prefer interpolated handlers over string concatenation.
 - Treat span/formattable `Write`/`WriteLine` overloads as advanced escape hatches, not default app-level APIs.
+- Use `Console.NewLine(pipe)` for bare line breaks instead of empty/reset-only `WriteLineInterpolated(...)` calls.
 - Keep ANSI/decorations in interpolation holes, not raw literal spans.
 - Use `OutputPipe.Error` for transient rendering and genuine errors/diagnostics, but keep ordinary non-error interaction flow on `OutputPipe.Out`.
 - Clean up live UI explicitly after the last frame with `ClearNextLines(...)` or keep it intentionally with `SkipLines(...)`.

@@ -21,7 +21,7 @@ using static System.Console; // optional
 3. Choose APIs by intent.
 - Styled output: `Console.WriteInterpolated`, `Console.WriteLineInterpolated`.
 - Inputs/prompts: `Console.TryReadLine`, `Console.ReadLine`, `Console.Confirm`, `Console.RequestAnyInput`.
-- Dynamic rendering: `Console.Overwrite`, `Console.ClearNextLines`, `Console.SkipLines`.
+- Dynamic rendering and line control: `Console.Overwrite`, `Console.ClearNextLines`, `Console.SkipLines`, `Console.NewLine`.
 - Progress UI: `ProgressBar.Update`, `ProgressBar.Render`, `Spinner.RunAsync`.
 - Menus/tables: `Console.Selection`, `Console.MultiSelection`, `Console.TreeMenu`, `Console.Table`.
 - Low-level override only: use `Console.Write(...)` / `Console.WriteLine(...)` span+`ISpanFormattable` overloads only when you intentionally bypass the handler for a custom formatting pipeline.
@@ -44,6 +44,7 @@ using static System.Console; // optional
 
 - Prefer interpolated-handler APIs over manually concatenated strings.
 - Avoid span/formattable `Write`/`WriteLine` overloads in normal app code; reserve them for rare advanced/manual formatting scenarios.
+- If the intent is only to end the current line or emit a blank line, use `Console.NewLine(pipe)` instead of `WriteLineInterpolated($"")` or reset-only interpolations such as `$"{ConsoleColor.Default}"`.
 - Keep ANSI/decorations inside interpolation holes (for example, `$"{Markup.Bold}..."`) instead of literal escape codes inside string literals.
 - Route transient UI (spinner/progress/overwrite loops) to `OutputPipe.Error` to keep stdout pipe-friendly, and use `OutputPipe.Error` for genuine errors/diagnostics. Keep ordinary non-error interaction flow on `OutputPipe.Out`.
 - Spinner/progress/overwrite output is caller-owned after rendering completes. Explicitly remove it with `Console.ClearNextLines(totalLines, pipe)` or intentionally keep the region with `Console.SkipLines(totalLines)`.
@@ -63,6 +64,7 @@ using static System.Console; // optional
 - Use `ProgressBar.Render(...)`, not `ProgressBar.WriteProgressBar(...)`.
 - Use `ConsoleContext`, not `PrettyConsoleExtensions`.
 - Use `ConsoleColor` helpers/tuples (for example `ConsoleColor.Red / ConsoleColor.White`), not removed `ColoredOutput`/`Color` types.
+- Use `Console.NewLine(pipe)` when you only need a newline or blank line; do not use `WriteLineInterpolated` with empty/reset-only payloads just to move the cursor.
 - Use `Confirm(ReadOnlySpan<string> trueValues, ref PrettyConsoleInterpolatedStringHandler handler, bool emptyIsTrue = true)` (boolean parameter is last).
 - Use handler factory overloads for dynamic spinner/progress headers:
   `(builder, out handler) => handler = builder.Build(OutputPipe.Error, $"...")`.
@@ -72,6 +74,7 @@ using static System.Console; // optional
 ```csharp
 // Colored/status output
 Console.WriteLineInterpolated($"{ConsoleColor.Green / ConsoleColor.DefaultBackground}OK{ConsoleColor.Default}");
+Console.NewLine();
 
 // Typed input
 if (!Console.TryReadLine(out int port, $"Port ({ConsoleColor.Cyan}5000{ConsoleColor.Default}): "))
