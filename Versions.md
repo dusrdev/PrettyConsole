@@ -1,5 +1,10 @@
 # Versions
 
+# v5.4.2
+
+- Improve perf of `ReadOnlySpan` based overloads of `Write` and `WriteLine`.
+- 
+
 ## v5.4.1
 
 - This version now ships with a specialized AI agent skill `PrettyConsoleExpert` that will be copied to consumers on build.
