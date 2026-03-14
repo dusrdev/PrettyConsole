@@ -57,6 +57,14 @@ using static System.Console; // optional
 - For dynamic spinner/progress headers tied to concurrent work, keep the mutable step/progress state outside the renderer and read it with `Volatile.Read` / `Interlocked` inside the handler factory.
 - If a live region should disappear after completion, pair the last render with an explicit `ClearNextLines(...)`. If it should remain visible as completed output, advance past it with `SkipLines(...)`.
 
+## Testing CLI Code
+
+- When a CLI already routes its behavior through callable command handlers or functions that use PrettyConsole directly, prefer in-process tests over spawning the whole app with `Process`.
+- Inject `ConsoleContext.Out`, `ConsoleContext.Error`, and `ConsoleContext.In` with `StringWriter`/`StringReader`, invoke the same handler the CLI entrypoint uses internally, and assert on writers plus returned exit codes/results.
+- Keep separate writers for `Out` and `Error` so pipe routing remains testable.
+- Save and restore the original `ConsoleContext` streams in `try/finally` or a scoped helper.
+- Reserve `Process` for true end-to-end coverage such as entrypoint wiring, shell integration, environment/current-directory behavior, published-binary checks, or argument parsing that is only exercised at the process boundary.
+
 ## API Guardrails (Current Surface)
 
 - Use `Spinner`, not `IndeterminateProgressBar`.
@@ -98,5 +106,6 @@ ProgressBar.Render(OutputPipe.Error, 65, ConsoleColor.Green);
 ## Reference File
 
 Read [references/v5-api-map.md](references/v5-api-map.md) when you need exact usage snippets, migration mapping from old APIs, or a compile-fix checklist.
+Read [references/testing-with-consolecontext.md](references/testing-with-consolecontext.md) when the task involves testing a PrettyConsole-based CLI or command handler.
 
 If public API usage changes in the edited project, ask whether to update `README.md` and changelog/release-notes files.
