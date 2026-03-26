@@ -151,9 +151,20 @@ public class ProgressBar {
     /// <param name="maxLineWidth">Optional total line length (including brackets and percentage). When provided, the rendered output will not exceed this width unless the decorations already require more characters.</param>
     public static void Render(OutputPipe pipe, int percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null) {
         Console.ResetColor();
+        var handler = new PrettyConsoleInterpolatedStringHandler(pipe);
+        AppendTo(ref handler, percentage, progressColor, Console.CursorLeft, progressChar, maxLineWidth);
+        handler.Flush();
+    }
 
+    internal static void AppendTo(
+        ref PrettyConsoleInterpolatedStringHandler handler,
+        int percentage,
+        ConsoleColor progressColor,
+        int cursorLeft,
+        char progressChar = DefaultProgressChar,
+        int? maxLineWidth = null) {
         int p = Math.Clamp(percentage, 0, 100);
-        int bufferWidth = Math.Max(0, ConsoleContext.GetWidthOrDefault() - Console.CursorLeft);
+        int bufferWidth = Math.Max(0, ConsoleContext.GetWidthOrDefault() - cursorLeft);
 
         const int bracketsAndSpacing = 3; // '[' + ']' + ' '
         const int percentageWidth = 3; // numeric portion width
@@ -168,12 +179,23 @@ public class ProgressBar {
         int barLength = Math.Max(0, constrainedWidth - decorationWidth);
 
         int filled = Math.Min((int)(barLength * p * 0.01), barLength);
-        Span<char> s = filled > 0
-                    ? stackalloc char[filled]
-                    : Span<char>.Empty;
-        s.Fill(progressChar);
+        Span<char> progress = filled > 0
+            ? stackalloc char[filled]
+            : Span<char>.Empty;
+        progress.Fill(progressChar);
         int remaining = barLength - filled;
 
-        Console.WriteInterpolated(pipe, $"[{progressColor}{s}{ConsoleColor.DefaultForeground}{new WhiteSpace(remaining)}] {p,3}%");
+        handler.AppendLiteral("[");
+        handler.AppendFormatted(progressColor);
+        if (filled > 0) {
+            handler.AppendFormatted(progress);
+        }
+        handler.AppendFormatted(ConsoleColor.DefaultForeground);
+        if (remaining > 0) {
+            handler.AppendFormatted(new WhiteSpace(remaining));
+        }
+        handler.AppendLiteral("] ");
+        handler.AppendFormatted(p, 3);
+        handler.AppendFormatted('%');
     }
 }

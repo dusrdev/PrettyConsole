@@ -71,6 +71,70 @@ public class TransientConsoleRegionTests {
     }
 
     [Test]
+    public async Task Render_SameVisibleSnapshot_DoesNotRewriteOutput() {
+        var originalError = Error;
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            Error = Utilities.GetWriter(out var errorWriter);
+            using var region = new TransientConsoleRegion();
+
+            region.Render($"Loading");
+            errorWriter.ToStringAndFlush();
+
+            region.Render($"Loading");
+
+            await Assert.That(errorWriter.ToString()).IsEqualTo(string.Empty);
+        } finally {
+            Error = originalError;
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+    }
+
+    [Test]
+    public async Task RenderProgress_WithFactory_SameLine_WritesHeaderAndBar() {
+        var originalError = Error;
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            Error = Utilities.GetWriter(out var errorWriter);
+            using var region = new TransientConsoleRegion();
+
+            region.RenderProgress(40, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"hdr"), sameLine: true, progressColor: Cyan);
+
+            var output = Utilities.StripAnsiSequences(errorWriter.ToString());
+            await Assert.That(output).Contains("hdr");
+            await Assert.That(output).Contains("[");
+            await Assert.That(output).Contains("40%");
+        } finally {
+            Error = originalError;
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+    }
+
+    [Test]
+    public async Task RenderProgress_WithFactory_TwoLines_WritesHeaderAboveBar() {
+        var originalError = Error;
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            Error = Utilities.GetWriter(out var errorWriter);
+            using var region = new TransientConsoleRegion();
+
+            region.RenderProgress(55, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"status"), sameLine: false, progressColor: Cyan);
+
+            var output = Utilities.StripAnsiSequences(errorWriter.ToString());
+            await Assert.That(output).Contains("status");
+            await Assert.That(output).Contains(Environment.NewLine);
+            await Assert.That(output).Contains("55%");
+            await Assert.That(region.OccupiedLines).IsEqualTo(2);
+        } finally {
+            Error = originalError;
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+    }
+
+    [Test]
     public async Task Clear_RemovesSnapshotAndMarksRegionInactive() {
         var originalError = Error;
         int cursorLine = 0;
