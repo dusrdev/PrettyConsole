@@ -73,7 +73,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="formattedCount">Formatted item count supplied by the compiler.</param>
     /// <param name="region">The transient region whose pipe should receive the output.</param>
     /// <param name="shouldAppend">Always <see langword="true"/>; reserved for future short-circuiting.</param>
-    public PrettyConsoleInterpolatedStringHandler(int literalLength, int formattedCount, TransientConsoleRegion region, out bool shouldAppend)
+    public PrettyConsoleInterpolatedStringHandler(int literalLength, int formattedCount, LiveConsoleRegion region, out bool shouldAppend)
         : this(literalLength, formattedCount, region.Pipe, provider: null, out shouldAppend) {
     }
 

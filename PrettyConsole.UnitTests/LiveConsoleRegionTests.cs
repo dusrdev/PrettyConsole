@@ -1,7 +1,7 @@
 namespace PrettyConsole.UnitTests;
 
 [SkipWhenConsoleUnavailable]
-public class TransientConsoleRegionTests {
+public class LiveConsoleRegionTests {
     [Test]
     public async Task Render_WritesSnapshotAndMarksRegionActive() {
         var originalError = Error;
@@ -9,7 +9,7 @@ public class TransientConsoleRegionTests {
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
             Error = Utilities.GetWriter(out var errorWriter);
-            using var region = new TransientConsoleRegion();
+            using var region = new LiveConsoleRegion();
 
             region.Render($"Working");
 
@@ -29,7 +29,7 @@ public class TransientConsoleRegionTests {
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
             Error = Utilities.GetWriter(out var errorWriter);
-            using var region = new TransientConsoleRegion();
+            using var region = new LiveConsoleRegion();
 
             region.Render($"Loading");
             errorWriter.ToStringAndFlush();
@@ -53,7 +53,7 @@ public class TransientConsoleRegionTests {
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
             Error = Utilities.GetWriter(out var errorWriter);
-            using var region = new TransientConsoleRegion();
+            using var region = new LiveConsoleRegion();
 
             region.Render($"Loading");
             errorWriter.ToStringAndFlush();
@@ -77,7 +77,7 @@ public class TransientConsoleRegionTests {
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
             Error = Utilities.GetWriter(out var errorWriter);
-            using var region = new TransientConsoleRegion();
+            using var region = new LiveConsoleRegion();
 
             region.Render($"Loading");
             errorWriter.ToStringAndFlush();
@@ -98,7 +98,7 @@ public class TransientConsoleRegionTests {
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
             Error = Utilities.GetWriter(out var errorWriter);
-            using var region = new TransientConsoleRegion();
+            using var region = new LiveConsoleRegion();
 
             region.RenderProgress(40, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"hdr"), sameLine: true, progressColor: Cyan);
 
@@ -119,7 +119,7 @@ public class TransientConsoleRegionTests {
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
             Error = Utilities.GetWriter(out var errorWriter);
-            using var region = new TransientConsoleRegion();
+            using var region = new LiveConsoleRegion();
 
             region.RenderProgress(55, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"status"), sameLine: false, progressColor: Cyan);
 
@@ -141,7 +141,7 @@ public class TransientConsoleRegionTests {
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
             Error = Utilities.GetWriter(out var errorWriter);
-            using var region = new TransientConsoleRegion();
+            using var region = new LiveConsoleRegion();
 
             region.Render($"Loading");
             errorWriter.ToStringAndFlush();
@@ -164,7 +164,7 @@ public class TransientConsoleRegionTests {
         RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
         try {
             Error = Utilities.GetWriter(out _);
-            var region = new TransientConsoleRegion();
+            var region = new LiveConsoleRegion();
             region.Dispose();
 
             await Assert.That(() => region.Render($"Loading")).Throws<ObjectDisposedException>();

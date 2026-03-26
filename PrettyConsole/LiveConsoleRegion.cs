@@ -5,7 +5,7 @@ namespace PrettyConsole;
 /// <summary>
 /// Owns a transient console region on a single output pipe and coordinates it with durable writes.
 /// </summary>
-public sealed class TransientConsoleRegion : IDisposable {
+public sealed class LiveConsoleRegion : IDisposable {
     private const int InitialSnapshotCapacity = 256;
 
     private readonly Lock _lock = new();
@@ -31,7 +31,7 @@ public sealed class TransientConsoleRegion : IDisposable {
     /// <summary>
     /// Creates a new region bound to <paramref name="pipe"/>.
     /// </summary>
-    public TransientConsoleRegion(OutputPipe pipe = OutputPipe.Error) {
+    public LiveConsoleRegion(OutputPipe pipe = OutputPipe.Error) {
         Pipe = pipe;
     }
 
