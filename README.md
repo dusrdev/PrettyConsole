@@ -5,13 +5,14 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](License.txt)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square)](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 
-PrettyConsole is a high-performance, ultra-low-latency, allocation-free extension layer over `System.Console`. The library uses C# extension members (`extension(Console)`) so every API lights up directly on `System.Console` once `using PrettyConsole;` is in scope. It is trimming/AOT ready, preserves SourceLink metadata, and keeps the familiar console experience while adding structured rendering, menus, progress bars, and advanced input helpers.
+PrettyConsole is a high-performance, ultra-low-latency, allocation-free extension layer over `System.Console`. The library uses C# extension members (`extension(Console)`) so every API lights up directly on `System.Console` once `using PrettyConsole;` is in scope. It is trimming/AOT ready, preserves SourceLink metadata, and keeps the familiar console experience while adding structured rendering, menus, progress bars, live console regions, and advanced input helpers.
 
 ## Features
 
 - 🚀 Zero-allocation interpolated string handler (`PrettyConsoleInterpolatedStringHandler`) for inline colors and formatting
 - 🎨 Inline color composition with `ConsoleColor` tuples and helpers (`DefaultForeground`, `DefaultBackground`, `Default`) plus `AnsiColors` utilities when you need raw ANSI sequences
 - 🔁 Advanced rendering primitives (`Overwrite`, `ClearNextLines`, `GoToLine`, `SkipLines`, progress bars) that respect console pipes
+- 📌 `LiveConsoleRegion` for a retained live line/region that stays pinned while durable status lines stream above it on the same pipe
 - 🧱 Handler-aware `WhiteSpace` struct for zero-allocation padding directly inside interpolated strings
 - 🧰 Rich input helpers (`TryReadLine`, `Confirm`, `RequestAnyInput`) with `IParsable<T>` and enum support
 - ⚙️ Low-level output escape hatches (`Console.Write/WriteLine` span and `ISpanFormattable` overloads) for advanced custom formatting pipelines
@@ -231,6 +232,26 @@ await Console.TypeWriteLine("Ready.", ConsoleColor.Default);
 ```
 
 Always call `Console.ClearNextLines(totalLines, pipe)` once after the last `Overwrite` to erase the region when you are done.
+
+### Live console regions
+
+`LiveConsoleRegion` owns one retained live region on a single `OutputPipe` and coordinates it with durable line output on that same pipe. This is the right fit where status lines stream normally while a pinned transient line keeps updating at the bottom.
+
+```csharp
+using var live = new LiveConsoleRegion(OutputPipe.Error);
+
+live.Render($"Resolving graph");
+live.WriteLine($"Updated package-a");
+live.WriteLine($"Updated package-b");
+
+live.RenderProgress(42, (builder, out handler) =>
+    handler = builder.Build(OutputPipe.Error, $"Compiling"));
+
+live.Render($"Linking {elapsed:duration}");
+live.Clear();
+```
+
+Use `WriteLine` for durable lines that should scroll above the retained region, `Render` for arbitrary transient snapshots, and `RenderProgress` when you want the built-in progress bar renderer inside the region. Keep all output that must coordinate with the live region flowing through that region instance. In interactive CLIs, `OutputPipe.Error` is usually the correct pipe so stdout remains machine-friendly.
 
 ### Menus and tables
 

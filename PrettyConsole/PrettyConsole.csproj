@@ -26,7 +26,7 @@
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>5.4.2</Version>
+		<Version>5.5.0</Version>
 		<Nullable>enable</Nullable>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -43,8 +43,9 @@
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
-			- Improve perf of ReadOnlySpan based overloads of Write and WriteLine.
-			- Skill improvements
+			- Added LiveConsoleRegion for retained live output on a single OutputPipe, enabling Cargo-style durable status lines above a pinned transient region.
+			- LiveConsoleRegion exposes WriteLine, Render, RenderProgress, Clear, and Dispose.
+			- Interpolated strings now bind directly to LiveConsoleRegion so $"..." can be passed into region methods naturally.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

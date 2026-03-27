@@ -1,6 +1,6 @@
 ---
 name: pretty-console-expert
-description: Expert workflow for using PrettyConsole correctly and efficiently in C# console apps. Use when tasks involve console styling, colored output, regular prints, prompts, typed input parsing, confirmation prompts, menu/table rendering, overwrite-based rendering, progress bars, spinners, OutputPipe routing, or migration from Spectre.Console/manual ANSI/older PrettyConsole APIs.
+description: Expert workflow for using PrettyConsole correctly and efficiently in C# console apps. Use when tasks involve console styling, colored output, regular prints, prompts, typed input parsing, confirmation prompts, menu/table rendering, overwrite-based rendering, live console regions, progress bars, spinners, OutputPipe routing, or migration from Spectre.Console/manual ANSI/older PrettyConsole APIs.
 ---
 
 # PrettyConsole Expert
@@ -22,6 +22,7 @@ using static System.Console; // optional
 - Styled output: `Console.WriteInterpolated`, `Console.WriteLineInterpolated`.
 - Inputs/prompts: `Console.TryReadLine`, `Console.ReadLine`, `Console.Confirm`, `Console.RequestAnyInput`.
 - Dynamic rendering and line control: `Console.Overwrite`, `Console.ClearNextLines`, `Console.SkipLines`, `Console.NewLine`.
+- Retained live status UI on one pipe: `LiveConsoleRegion.WriteLine`, `LiveConsoleRegion.Render`, `LiveConsoleRegion.RenderProgress`, `LiveConsoleRegion.Clear`.
 - Progress UI: `ProgressBar.Update`, `ProgressBar.Render`, `Spinner.RunAsync`.
 - Menus/tables: `Console.Selection`, `Console.MultiSelection`, `Console.TreeMenu`, `Console.Table`.
 - Low-level override only: use `Console.Write(...)` / `Console.WriteLine(...)` span+`ISpanFormattable` overloads only when you intentionally bypass the handler for a custom formatting pipeline.
@@ -29,6 +30,7 @@ using static System.Console; // optional
 4. Route output deliberately.
 - Keep normal prompts, menus, tables, durable user-facing output, and machine-readable non-error output on `OutputPipe.Out` unless there is a specific reason not to.
 - Use `OutputPipe.Error` for transient live UI and for actual errors/diagnostics/warnings so stdout stays pipe-friendly and error output remains distinguishable.
+- `LiveConsoleRegion` should usually live on `OutputPipe.Error` in interactive CLIs. Keep the durable lines that must coordinate with it flowing through the region instance instead of writing directly to the same pipe elsewhere.
 - Do not bounce a single interaction between `Out` and `Error` unless you intentionally want that split; mixed-pipe prompts and retry messages are usually awkward in consumer CLIs.
 
 ## Handler Special Formats
@@ -48,12 +50,14 @@ using static System.Console; // optional
 - Keep ANSI/decorations inside interpolation holes (for example, `$"{Markup.Bold}..."`) instead of literal escape codes inside string literals.
 - Route transient UI (spinner/progress/overwrite loops) to `OutputPipe.Error` to keep stdout pipe-friendly, and use `OutputPipe.Error` for genuine errors/diagnostics. Keep ordinary non-error interaction flow on `OutputPipe.Out`.
 - Spinner/progress/overwrite output is caller-owned after rendering completes. Explicitly remove it with `Console.ClearNextLines(totalLines, pipe)` or intentionally keep the region with `Console.SkipLines(totalLines)`.
+- `LiveConsoleRegion` is the right primitive when durable line output and transient status must interleave over time. It is line-oriented: use `WriteLine`, not inline writes, for cooperating durable output above the retained region.
 - Only use the bounded `Channel<T>` snapshot pattern when multiple producers must update the same live region at high frequency. For single-producer or modest-rate updates, keep the rendering loop simple.
 
 ## Practical Patterns
 
 - For wizard-like flows, wrap `Console.Selection(...)` / `Console.MultiSelection(...)` in retrying `Console.Overwrite(...)` loops so each step reuses one screen region instead of scrolling. Keep the whole prompt/retry exchange on `OutputPipe.Out` unless the message is genuinely diagnostic.
 - Prefer `Console.Overwrite(state, static ...)` for fixed-height live regions such as `status + progress`; it avoids closure captures and keeps the rendered surface explicit through `lines`.
+- Prefer `LiveConsoleRegion` when you need durable status lines streaming above a retained transient line on the same pipe.
 - For dynamic spinner/progress headers tied to concurrent work, keep the mutable step/progress state outside the renderer and read it with `Volatile.Read` / `Interlocked` inside the handler factory.
 - If a live region should disappear after completion, pair the last render with an explicit `ClearNextLines(...)`. If it should remain visible as completed output, advance past it with `SkipLines(...)`.
 
@@ -70,6 +74,7 @@ using static System.Console; // optional
 - Use `Spinner`, not `IndeterminateProgressBar`.
 - Use `Pattern`, not `AnimationSequence`.
 - Use `ProgressBar.Render(...)`, not `ProgressBar.WriteProgressBar(...)`.
+- Use `LiveConsoleRegion` for retained live regions; do not approximate that behavior with ad-hoc `Overwrite` loops when durable writes must keep streaming around the live output.
 - Use `ConsoleContext`, not `PrettyConsoleExtensions`.
 - Use `ConsoleColor` helpers/tuples (for example `ConsoleColor.Red / ConsoleColor.White`), not removed `ColoredOutput`/`Color` types.
 - Use `Console.NewLine(pipe)` when you only need a newline or blank line; do not use `WriteLineInterpolated` with empty/reset-only payloads just to move the cursor.
@@ -101,6 +106,14 @@ Console.ClearNextLines(1, OutputPipe.Error); // or Console.SkipLines(1) to keep 
 var bar = new ProgressBar { ProgressColor = ConsoleColor.Green };
 bar.Update(65, "Downloading", sameLine: true);
 ProgressBar.Render(OutputPipe.Error, 65, ConsoleColor.Green);
+
+// Retained live region
+using var live = new LiveConsoleRegion(OutputPipe.Error);
+live.Render($"Resolving graph");
+live.WriteLine($"Updated package-a");
+live.RenderProgress(65, (builder, out handler) =>
+    handler = builder.Build(OutputPipe.Error, $"Compiling"));
+live.Clear();
 ```
 
 ## Reference File

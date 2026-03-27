@@ -1,6 +1,12 @@
 # Versions
 
-# v5.4.2
+## v5.5.0
+
+- Added `LiveConsoleRegion` for retained live output on a single `OutputPipe`, enabling Cargo-style durable status lines above a pinned transient region.
+- `LiveConsoleRegion` exposes `WriteLine`, `Render`, `RenderProgress`, `Clear`, and `Dispose`.
+- Interpolated strings now bind directly to `LiveConsoleRegion`, so `$"..."` can be passed into `WriteLine` and `Render` naturally.
+
+## v5.4.2
 
 - Improve perf of `ReadOnlySpan` based overloads of `Write` and `WriteLine`.
 - `SKILL` improvements
