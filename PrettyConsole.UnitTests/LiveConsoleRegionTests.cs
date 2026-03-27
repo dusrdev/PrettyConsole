@@ -34,35 +34,11 @@ public class LiveConsoleRegionTests {
             region.Render($"Loading");
             errorWriter.ToStringAndFlush();
 
-            region.WriteLine($"Updated serde");
+            region.WriteLine($"Updated package-a");
 
             var output = Utilities.StripAnsiSequences(errorWriter.ToString());
-            await Assert.That(output).Contains("Updated serde");
+            await Assert.That(output).Contains("Updated package-a");
             await Assert.That(CountOccurrences(output, "Loading")).IsEqualTo(1);
-            await Assert.That(region.IsActive).IsTrue();
-        } finally {
-            Error = originalError;
-            RenderingExtensions.ConfigureCursorAccessors(null, null);
-        }
-    }
-
-    [Test]
-    public async Task Write_WhileActive_WritesDurableOutputWithoutRedrawingImmediately() {
-        var originalError = Error;
-        int cursorLine = 0;
-        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
-        try {
-            Error = Utilities.GetWriter(out var errorWriter);
-            using var region = new LiveConsoleRegion();
-
-            region.Render($"Loading");
-            errorWriter.ToStringAndFlush();
-
-            region.Write($"step ");
-
-            var output = Utilities.StripAnsiSequences(errorWriter.ToString());
-            await Assert.That(output).Contains("step ");
-            await Assert.That(output).DoesNotContain("Loading");
             await Assert.That(region.IsActive).IsTrue();
         } finally {
             Error = originalError;
@@ -128,6 +104,49 @@ public class LiveConsoleRegionTests {
             await Assert.That(output).Contains(Environment.NewLine);
             await Assert.That(output).Contains("55%");
             await Assert.That(region.OccupiedLines).IsEqualTo(2);
+        } finally {
+            Error = originalError;
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+    }
+
+    [Test]
+    public async Task Render_UsesCurrentWriter_WhenPipeTargetChangesAfterCreation() {
+        var originalError = Error;
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            using var region = new LiveConsoleRegion();
+
+            Error = Utilities.GetWriter(out var firstWriter);
+            region.Render($"First");
+            firstWriter.ToStringAndFlush();
+
+            Error = Utilities.GetWriter(out var secondWriter);
+            region.WriteLine($"Next");
+
+            var output = Utilities.StripAnsiSequences(secondWriter.ToString());
+            await Assert.That(output).Contains("Next");
+            await Assert.That(output).Contains("First");
+        } finally {
+            Error = originalError;
+            RenderingExtensions.ConfigureCursorAccessors(null, null);
+        }
+    }
+
+    [Test]
+    public async Task Render_WithLoneLineFeeds_CountsOccupiedLinesCorrectly() {
+        var originalError = Error;
+        int cursorLine = 0;
+        RenderingExtensions.ConfigureCursorAccessors(() => cursorLine, (_, line) => cursorLine = line);
+        try {
+            Error = Utilities.GetWriter(out var errorWriter);
+            using var region = new LiveConsoleRegion();
+
+            region.Render($"Line1\nLine2\nLine3");
+
+            await Assert.That(region.OccupiedLines).IsEqualTo(3);
+            await Assert.That(Utilities.StripAnsiSequences(errorWriter.ToString())).Contains("Line1");
         } finally {
             Error = originalError;
             RenderingExtensions.ConfigureCursorAccessors(null, null);

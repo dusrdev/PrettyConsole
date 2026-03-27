@@ -13,15 +13,17 @@ public sealed class LiveConsoleRegion : IDisposable {
     private bool _isVisible;
     private readonly List<char> _snapshot = new(InitialSnapshotCapacity);
 
+    private readonly OutputPipe _pipe;
+
     /// <summary>
     /// The output pipe used for both transient and durable output.
     /// </summary>
-    public OutputPipe Pipe { get; }
+    public OutputPipe Pipe => _pipe;
 
     /// <summary>
     /// Whether this region currently has retained transient content.
     /// </summary>
-    public bool IsActive => _snapshot.Count > 0;
+    public bool IsActive => _snapshot.Count != 0;
 
     /// <summary>
     /// The number of lines occupied by the retained transient content.
@@ -32,21 +34,7 @@ public sealed class LiveConsoleRegion : IDisposable {
     /// Creates a new region bound to <paramref name="pipe"/>.
     /// </summary>
     public LiveConsoleRegion(OutputPipe pipe = OutputPipe.Error) {
-        Pipe = pipe;
-    }
-
-    /// <summary>
-    /// Writes durable output to the region pipe.
-    /// </summary>
-    public void Write([InterpolatedStringHandlerArgument("")] ref PrettyConsoleInterpolatedStringHandler handler) {
-        lock (_lock) {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            if (_isVisible) {
-                ClearVisibleOnly();
-            }
-
-            handler.Flush();
-        }
+        _pipe = pipe;
     }
 
     /// <summary>
@@ -115,12 +103,12 @@ public sealed class LiveConsoleRegion : IDisposable {
         ConsoleColor? progressColor = null,
         char progressChar = ProgressBar.DefaultProgressChar,
         int? maxLineWidth = null) {
-        var handler = new PrettyConsoleInterpolatedStringHandler(Pipe);
+        var handler = new PrettyConsoleInterpolatedStringHandler(_pipe);
         int cursorLeft = 0;
 
         if (factory is not null) {
             factory(PrettyConsoleInterpolatedStringHandlerBuilder.Singleton, out var headerHandler);
-            handler.AppendInline(Pipe, ref headerHandler);
+            handler.AppendInline(_pipe, ref headerHandler);
 
             if (sameLine) {
                 handler.AppendFormatted(new WhiteSpace(1));
@@ -170,7 +158,7 @@ public sealed class LiveConsoleRegion : IDisposable {
     }
 
     private void ClearVisibleOnly() {
-        Console.ClearNextLines(OccupiedLines, Pipe);
+        Console.ClearNextLines(OccupiedLines, _pipe);
         _isVisible = false;
     }
 
@@ -180,7 +168,7 @@ public sealed class LiveConsoleRegion : IDisposable {
         }
 
         int currentLine = Console.GetCurrentLine();
-        ConsoleContext.GetPipeTarget(Pipe).Write(CollectionsMarshal.AsSpan(_snapshot));
+        ConsoleContext.GetPipeTarget(_pipe).Write(CollectionsMarshal.AsSpan(_snapshot));
         Console.GoToLine(currentLine);
         _isVisible = true;
     }
