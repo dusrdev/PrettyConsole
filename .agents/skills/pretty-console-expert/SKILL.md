@@ -48,7 +48,7 @@ using static System.Console; // optional
 - Avoid span/formattable `Write`/`WriteLine` overloads in normal app code; reserve them for rare advanced/manual formatting scenarios.
 - If the intent is only to end the current line or emit a blank line, use `Console.NewLine(pipe)` instead of `WriteLineInterpolated($"")` or reset-only interpolations such as `$"{Color.Default}"`.
 - Keep ANSI/decorations inside interpolation holes (for example, `$"{Markup.Bold}..."`) instead of literal escape codes inside string literals.
-- Prefer `Color`, `Markup`, and guarded `AnsiToken` in interpolated output. Keep `ConsoleColor` for APIs that explicitly require it (`ProgressBar`, `Spinner`, low-level span writes, `Console.SetColors`, `TypeWrite`, etc.).
+- Prefer `Color`, `Markup`, and guarded `AnsiToken` in styled output. Use `Color.*` for token-based color APIs such as `ProgressBar`, `Spinner`, `TypeWrite`, and `LiveConsoleRegion.RenderProgress`. Keep `ConsoleColor` for APIs that explicitly require it, such as low-level span writes or `Console.SetColors`.
 - Route transient UI (spinner/progress/overwrite loops) to `OutputPipe.Error` to keep stdout pipe-friendly, and use `OutputPipe.Error` for genuine errors/diagnostics. Keep ordinary non-error interaction flow on `OutputPipe.Out`.
 - Spinner/progress/overwrite output is caller-owned after rendering completes. Explicitly remove it with `Console.ClearNextLines(totalLines, pipe)` or intentionally keep the region with `Console.SkipLines(totalLines)`.
 - `LiveConsoleRegion` is the right primitive when durable line output and transient status must interleave over time. It is line-oriented: use `WriteLine`, not inline writes, for cooperating durable output above the retained region.
@@ -104,9 +104,9 @@ await spinner.RunAsync(workTask, (builder, out handler) =>
 Console.ClearNextLines(1, OutputPipe.Error); // or Console.SkipLines(1) to keep the final row
 
 // Progress rendering
-var bar = new ProgressBar { ProgressColor = ConsoleColor.Green };
+var bar = new ProgressBar { ProgressColor = Color.Green };
 bar.Update(65, "Downloading", sameLine: true);
-ProgressBar.Render(OutputPipe.Error, 65, ConsoleColor.Green);
+ProgressBar.Render(OutputPipe.Error, 65, Color.Green);
 
 // Retained live region
 using var live = new LiveConsoleRegion(OutputPipe.Error);

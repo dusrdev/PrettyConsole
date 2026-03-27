@@ -44,9 +44,11 @@
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
-			- Added LiveConsoleRegion for retained live output on a single OutputPipe, enabling Cargo-style durable status lines above a pinned transient region.
-			- LiveConsoleRegion exposes WriteLine, Render, RenderProgress, Clear, and Dispose.
-			- Interpolated strings now bind directly to LiveConsoleRegion so $"..." can be passed into region methods naturally.
+			- Added LiveConsoleRegion for retained live output on one pipe.
+			- Added Color and AnsiToken as the preferred styled-output color model.
+			- Added token-based color support across ProgressBar, Spinner, TypeWrite, and live-region progress rendering.
+			- Added Windows ANSI capability detection for styled output.
+			- BREAKING: Markup and AnsiColors now expose guarded AnsiToken values instead of raw strings.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

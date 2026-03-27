@@ -2,15 +2,19 @@
 
 ## v6.0.0
 
+### Added
+
 - Added `LiveConsoleRegion` for retained live output on a single `OutputPipe`, enabling Cargo-style durable status lines above a pinned transient region.
-- `LiveConsoleRegion` exposes `WriteLine`, `Render`, `RenderProgress`, `Clear`, and `Dispose`.
-- Interpolated strings now bind directly to `LiveConsoleRegion`, so `$"..."` can be passed into `WriteLine` and `Render` naturally.
 - Added `AnsiToken` as the guarded ANSI abstraction for interpolated output.
 - Added `Color` as the preferred interpolation-facing color surface with cached tokens such as `Color.Green`, `Color.DefaultForeground`, `Color.DefaultBackground`, and `Color.Default`.
-- **BREAKING**: `Markup` now exposes guarded `AnsiToken`s instead of raw `string` escape sequences.
-- **BREAKING**: `AnsiColors.Foreground(ConsoleColor)` and `AnsiColors.Background(ConsoleColor)` now return cached `AnsiToken`s instead of raw ANSI strings and map to the `Color` cache.
-- Added `ConsoleContext.IsAnsiSupported`, including Windows VT detection, so handler-emitted `Color`, `Markup`, `AnsiToken`, and `ConsoleColor` ANSI is suppressed when the terminal cannot safely render it.
-- `ConsoleColor` interpolation remains supported for compatibility, but `Color` is now the preferred API for handler-based styled output. `ConsoleColor` remains the native input for APIs such as `ProgressBar`, `Spinner`, and low-level span-based writes.
+- Added token-based color support across `ProgressBar`, `Spinner`, `TypeWrite`, and `LiveConsoleRegion.RenderProgress`.
+- Added Windows ANSI capability detection so PrettyConsole can avoid emitting styled ANSI output when the terminal cannot safely render it.
+- `ConsoleColor` remains supported for compatibility, but `Color` is now the preferred API for styled output.
+
+### Breaking
+
+- `Markup` now exposes guarded `AnsiToken`s instead of raw `string` escape sequences.
+- `AnsiColors.Foreground(ConsoleColor)` and `AnsiColors.Background(ConsoleColor)` now return cached `AnsiToken`s instead of raw ANSI strings and map to the `Color` cache.
 
 ## v5.4.2
 

@@ -79,7 +79,7 @@ This setup lets you call `Console.WriteInterpolated`, `Console.Overwrite`, `Cons
 
 `Console.WriteInterpolated` and `Console.WriteLineInterpolated` are the main output APIs for styled text. Colors reset automatically at the end of each call, and both methods return the number of visible characters written so you can reuse the result in padding or layout calculations.
 
-For interpolation, prefer `Color` and `Markup`. `ConsoleColor` interpolation still works, but `Color` is the primary public surface for guarded styled output.
+For interpolation, prefer `Color` and `Markup`. `ConsoleColor` interpolation still works, but `Color` is the primary public surface for styled output.
 
 ```csharp
 Console.WriteInterpolated($"Hello {Green}world{Default}!");
@@ -93,7 +93,9 @@ if (!Console.TryReadLine(out int choice, $"Pick option {Cyan}1-5{Default}: ")) {
 Console.WriteInterpolated($"Header{new WhiteSpace(6)}Value");
 ```
 
-`Color` exposes tokens for both foreground and background colors (`Green`, `GreenBackground`, `DefaultForeground`, `DefaultBackground`, `Default`). `AnsiColors` is available when you want to convert an existing `ConsoleColor` value into the same style of token, while APIs like `ProgressBar` and span-based `Write`/`WriteLine` still take `ConsoleColor` directly.
+`Color` exposes tokens for both foreground and background colors (`Green`, `GreenBackground`, `DefaultForeground`, `DefaultBackground`, `Default`). `AnsiColors` is available when you want to convert an existing `ConsoleColor` value into the same style of token.
+
+For color-specific APIs that take `AnsiToken`, prefer using `Color.*`. `ConsoleColor` still works in many foreground-only call sites through implicit conversion, but `Color` is the clearer and more expressive API.
 
 #### Inline decorations via `Markup`
 
@@ -213,8 +215,8 @@ Console.Overwrite((left, right), tuple => {
     Console.WriteInterpolated($"{tuple.left} ←→ {tuple.right}");
 }, lines: 1);
 
-await Console.TypeWrite("Booting systems…", (ConsoleColor.Green, ConsoleColor.Black));
-await Console.TypeWriteLine("Ready.", ConsoleColor.Default);
+await Console.TypeWrite("Booting systems…", (Color.Green, Color.BlackBackground));
+await Console.TypeWriteLine("Ready.", (Color.DefaultForeground, Color.DefaultBackground));
 ```
 
 Always call `Console.ClearNextLines(totalLines, pipe)` once after the last `Overwrite` to erase the region when you are done.
@@ -265,8 +267,8 @@ Menus validate user input (throwing `ArgumentException` on invalid selections) a
 ```csharp
 var progress = new ProgressBar {
     ProgressChar = '■',
-    ForegroundColor = ConsoleColor.DarkGray,
-    ProgressColor = ConsoleColor.Green,
+    ForegroundColor = Color.DarkGray,
+    ProgressColor = Color.Green,
 };
 
 for (int i = 0; i <= 100; i += 5) {
@@ -278,7 +280,7 @@ for (int i = 0; i <= 100; i += 5) {
 progress.Update(42.5, "Syncing", sameLine: false);
 
 // One-off render without state
-ProgressBar.Render(OutputPipe.Error, 75, ConsoleColor.Magenta, '*', maxLineWidth: 32);
+ProgressBar.Render(OutputPipe.Error, 75, Color.Magenta, '*', maxLineWidth: 32);
 ```
 
 `ProgressBar.Update` lets you keep refreshing status text and progress together. You can also set `ProgressBar.MaxLineWidth` on the instance to constrain the rendered line before each update, mirroring the `maxLineWidth` option on `ProgressBar.Render`. The helper `ProgressBar.Render` keeps the cursor on the same line, which is ideal inside `Console.Overwrite`. For dynamic headers, use the overload that accepts a `PrettyConsoleInterpolatedStringHandlerFactory`, mirroring the spinner pattern.
@@ -323,7 +325,7 @@ var consumer = Task.Run(async () => {
         Console.Overwrite(progress, state => {
             for (int i = 0; i < state.Length; i++) {
                 Console.WriteInterpolated(OutputPipe.Error, $"Task {i + 1} ({downloads[i]}): ");
-                ProgressBar.Render(OutputPipe.Error, state[i], ConsoleColor.Cyan);
+                ProgressBar.Render(OutputPipe.Error, state[i], Color.Cyan);
             }
         }, lines: downloads.Length, pipe: OutputPipe.Error);
     }
@@ -354,7 +356,8 @@ Use these when you need direct writer access (custom buffering, `WriteWhiteSpace
 
 - Prefer `Color` and `Markup` inside `WriteInterpolated` / `WriteLineInterpolated`.
 - Use `new AnsiToken("...")` for custom ANSI you want to interpolate like any other style token.
-- `ConsoleColor` remains supported for compatibility and for APIs that explicitly take it (`ProgressBar`, `Spinner`, low-level `Write`/`WriteLine`, `Console.SetColors`, `TypeWrite`, and similar APIs).
+- Use `Color.*` for color-specific APIs that take `AnsiToken`, including `ProgressBar`, `Spinner`, `TypeWrite`, and `LiveConsoleRegion.RenderProgress`.
+- `ConsoleColor` remains part of the API for compatibility and for members that still use explicit console colors, such as low-level `Write`/`WriteLine` overloads and `Console.SetColors`.
 - `AnsiColors` maps `ConsoleColor` values into the same token-based color model.
 - If you use raw ANSI strings directly, PrettyConsole will not manage them for you.
 
