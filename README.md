@@ -24,9 +24,9 @@ BenchmarkDotNet measures [styled output performance](Benchmarks/BenchmarkDotNet.
 
 | Method         | Mean        | Ratio         | Gen0   | Allocated | Alloc Ratio   |
 |--------------- |------------:|--------------:|-------:|----------:|--------------:|
-| PrettyConsole  |    55.96 ns | 90.23x faster |      - |         - |            NA |
-| SpectreConsole | 5,046.29 ns |      baseline | 2.1193 |   17840 B |               |
-| SystemConsole  |    71.64 ns | 70.44x faster | 0.0022 |      24 B | 743.333x less |
+| PrettyConsole  |    53.10 ns | 92.14x faster |      - |         - |            NA |
+| SpectreConsole | 4,889.25 ns |      baseline | 2.0880 |   17840 B |               |
+| SystemConsole  |    70.48 ns | 69.37x faster | 0.0022 |      24 B | 743.333x less |
 
 PrettyConsole is **the go-to choice for ultra-low-latency, allocation-free console rendering**, running 90X faster than **Spectre.Console** while allocating nothing and even beating the manual unrolling with the BCL.
 

@@ -17,8 +17,6 @@ public struct PrettyConsoleInterpolatedStringHandler {
     private readonly TextWriter _writer;
     private readonly bool _isRedirected;
     private readonly IFormatProvider? _provider;
-    private ConsoleColor _currentForeground;
-    private ConsoleColor _currentBackground;
 
     private readonly Span<char> Written => new(_buffer, 0, _index);
 
@@ -88,8 +86,6 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="shouldAppend">Always <see langword="true"/>; reserved for future short-circuiting.</param>
     public PrettyConsoleInterpolatedStringHandler(int literalLength, int formattedCount, OutputPipe pipe, IFormatProvider? provider, out bool shouldAppend) {
         _buffer = BufferPool.Rent(_capacity);
-        _currentForeground = ConsoleColor.DefaultForeground;
-        _currentBackground = ConsoleColor.DefaultBackground;
         (_writer, _isRedirected) = ConsoleContext.GetPipeTargetAndState(pipe);
         _provider = provider;
         shouldAppend = true;
@@ -131,10 +127,10 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
-    /// Appends a guarded markup token.
+    /// Appends a guarded ANSI token.
     /// </summary>
     /// <param name="token">The markup token to emit.</param>
-    public void AppendFormatted(MarkupToken token) {
+    public void AppendFormatted(AnsiToken token) {
         if (DisableAnsi || _isRedirected) return;
 
         ThrowIfFlushed();
@@ -142,21 +138,18 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ChangeForeground(ConsoleColor foreground) => AppendSpanCore(AnsiColors.Foreground(foreground));
+    private void ChangeForeground(ConsoleColor foreground) => AppendSpanCore(AnsiColors.Foreground(foreground).Value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ChangeBackground(ConsoleColor background) => AppendSpanCore(AnsiColors.Background(background));
+    private void ChangeBackground(ConsoleColor background) => AppendSpanCore(AnsiColors.Background(background).Value);
 
     /// <summary>
     /// Sets the foreground color to <paramref name="color"/>.
     /// </summary>
     public void AppendFormatted(ConsoleColor color) {
         if (DisableAnsi || _isRedirected) return;
-        if (_currentForeground != color) {
-            ThrowIfFlushed();
-            _currentForeground = color;
-            ChangeForeground(color);
-        }
+        ThrowIfFlushed();
+        ChangeForeground(color);
     }
 
     /// <summary>
@@ -164,11 +157,8 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     public void AppendFormattedBackground(ConsoleColor color) {
         if (DisableAnsi || _isRedirected) return;
-        if (_currentBackground != color) {
-            ThrowIfFlushed();
-            _currentBackground = color;
-            ChangeBackground(color);
-        }
+        ThrowIfFlushed();
+        ChangeBackground(color);
     }
 
     /// <summary>
@@ -176,8 +166,10 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     /// <param name="colors"></param>
     public void AppendFormatted((ConsoleColor Foreground, ConsoleColor Background) colors) {
-        AppendFormatted(colors.Foreground);
-        AppendFormattedBackground(colors.Background);
+        if (DisableAnsi || _isRedirected) return;
+        ThrowIfFlushed();
+        ChangeForeground(colors.Foreground);
+        ChangeBackground(colors.Background);
     }
 
     /// <summary>
@@ -518,10 +510,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// <summary>
 	/// Resets the colors of the contents if they were overwritten.
 	/// </summary>
-    public void ResetColors() {
-        AppendFormatted(ConsoleColor.DefaultForeground);
-        AppendFormattedBackground(ConsoleColor.DefaultBackground);
-    }
+    public void ResetColors() => AppendFormatted(Color.Default);
 
     /// <summary>
     /// Clears the internal buffer and returns it to the underlying array pool without writing to the held <see cref="TextWriter"/>.

@@ -136,14 +136,36 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
     }
 
     [Test]
-    public async Task CharsWritten_IgnoresCustomMarkupTokenSequences() {
-        var blink = new MarkupToken("\e[5m");
+    public async Task CharsWritten_IgnoresCustomAnsiTokenSequences() {
+        var blink = new AnsiToken("\e[5m");
         int chars = Console.WriteInterpolated($"{blink}Hi{Markup.Reset}");
 
         var written = Utilities.StripAnsiSequences(_writer.ToStringAndFlush());
 
         await Assert.That(written).IsEqualTo("Hi");
         await Assert.That(chars).IsEqualTo(2);
+    }
+
+    [Test]
+    public async Task ColorToken_Flush_UsesComposedDefaultReset() {
+        var originalOut = Out;
+        try {
+            (_, var isRedirected) = GetPipeTargetAndState(OutputPipe.Out);
+            Out = Utilities.GetWriter(out var writer);
+
+            var handler = new PrettyConsoleInterpolatedStringHandler(OutputPipe.Out);
+            handler.AppendFormatted(Color.Green);
+            handler.AppendSpan("Hello");
+            handler.Flush();
+
+            if (isRedirected) {
+                await Assert.That(writer.ToString()).IsEqualTo("Hello");
+            } else {
+                await Assert.That(writer.ToString()).IsEqualTo($"{Color.Green.Value}Hello{Color.Default.Value}");
+            }
+        } finally {
+            Out = originalOut;
+        }
     }
 
     [Test]
@@ -331,7 +353,7 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
         if (isRedirected) {
             await Assert.That(new string(handler.WrittenSpan)).IsEqualTo("Hello");
         } else {
-            await Assert.That(new string(handler.WrittenSpan)).IsEqualTo($"{AnsiColors.Foreground(Green)}Hello{AnsiColors.ForegroundResetSequence}");
+            await Assert.That(new string(handler.WrittenSpan)).IsEqualTo($"{AnsiColors.Foreground(Green).Value}Hello{Color.Default.Value}");
         }
 
         handler.FlushWithoutWrite();
@@ -347,7 +369,7 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
         if (isRedirected) {
             await Assert.That(new string(handler.WrittenSpan)).IsEqualTo("Hello");
         } else {
-            await Assert.That(new string(handler.WrittenSpan)).IsEqualTo($"{AnsiColors.Foreground(Green)}Hello{AnsiColors.ForegroundResetSequence}");
+            await Assert.That(new string(handler.WrittenSpan)).IsEqualTo($"{AnsiColors.Foreground(Green).Value}Hello{Color.Default.Value}");
         }
 
         handler.FlushWithoutWrite();

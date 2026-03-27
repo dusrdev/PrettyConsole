@@ -12,7 +12,7 @@ public class MarkupTests {
     [Arguments("\e[9m")]
     [Arguments("\e[29m")]
     public async Task Markup_BuiltInTokens_ExposeExpectedSequences(string expected) {
-        MarkupToken actual = expected switch {
+        AnsiToken actual = expected switch {
             "\e[0m" => Markup.Reset,
             "\e[4m" => Markup.Underline,
             "\e[24m" => Markup.ResetUnderline,
@@ -29,8 +29,8 @@ public class MarkupTests {
     }
 
     [Test]
-    public async Task MarkupToken_CustomValue_UsesProvidedSequence() {
-        var token = new MarkupToken("\e[5m");
+    public async Task AnsiToken_CustomValue_UsesProvidedSequence() {
+        var token = new AnsiToken("\e[5m");
 
         await Assert.That(token.Value).IsEqualTo("\e[5m");
     }

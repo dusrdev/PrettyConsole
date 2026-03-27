@@ -25,13 +25,15 @@ public class ConsoleColorTests {
     [Test]
     public async Task AnsiColors_DefaultForeground_UsesResetSequence() {
         var sequence = AnsiColors.Foreground((ConsoleColor)(-1));
-        await Assert.That(sequence).IsEqualTo("\e[39m");
+        await Assert.That(sequence.Value).IsEqualTo("\e[39m");
+        await Assert.That(sequence).IsSameReferenceAs(Color.DefaultForeground);
     }
 
     [Test]
     public async Task AnsiColors_DefaultBackground_UsesResetSequence() {
         var sequence = AnsiColors.Background((ConsoleColor)(-1));
-        await Assert.That(sequence).IsEqualTo("\e[49m");
+        await Assert.That(sequence.Value).IsEqualTo("\e[49m");
+        await Assert.That(sequence).IsSameReferenceAs(Color.DefaultBackground);
     }
 
     [Test]
@@ -53,7 +55,7 @@ public class ConsoleColorTests {
     [Arguments(White, "\e[97m")]
     public async Task AnsiColors_ForegroundSequences(ConsoleColor color, string expectedSequence) {
         var sequence = AnsiColors.Foreground(color);
-        await Assert.That(sequence).IsEqualTo(expectedSequence);
+        await Assert.That(sequence.Value).IsEqualTo(expectedSequence);
     }
 
     [Test]
@@ -75,21 +77,68 @@ public class ConsoleColorTests {
     [Arguments(White, "\e[107m")]
     public async Task AnsiColors_BackgroundSequences(ConsoleColor color, string expectedSequence) {
         var sequence = AnsiColors.Background(color);
-        await Assert.That(sequence).IsEqualTo(expectedSequence);
+        await Assert.That(sequence.Value).IsEqualTo(expectedSequence);
     }
 
     [Test]
-    public async Task AnsiColors_InternalBuilders_MatchPublicAccessors() {
+    public async Task Color_BuiltInTokens_ExposeExpectedSequences() {
+        await Assert.That(Color.Default.Value).IsEqualTo("\e[39m\e[49m");
+        await Assert.That(Color.DefaultForeground.Value).IsEqualTo("\e[39m");
+        await Assert.That(Color.DefaultBackground.Value).IsEqualTo("\e[49m");
+        await Assert.That(Color.Green.Value).IsEqualTo("\e[92m");
+        await Assert.That(Color.GreenBackground.Value).IsEqualTo("\e[102m");
+    }
+
+    [Test]
+    public async Task Color_BuiltInTokens_AliasAnsiColorsCache() {
+        await Assert.That(Color.Green).IsSameReferenceAs(AnsiColors.Foreground(Green));
+        await Assert.That(Color.GreenBackground).IsSameReferenceAs(AnsiColors.Background(Green));
+    }
+
+    [Test]
+    public async Task AnsiColors_IndexOrder_MatchesConsoleColorEnumOrder() {
+        AnsiToken[] expectedForeground = [
+            Color.Black,
+            Color.DarkBlue,
+            Color.DarkGreen,
+            Color.DarkCyan,
+            Color.DarkRed,
+            Color.DarkMagenta,
+            Color.DarkYellow,
+            Color.Gray,
+            Color.DarkGray,
+            Color.Blue,
+            Color.Green,
+            Color.Cyan,
+            Color.Red,
+            Color.Magenta,
+            Color.Yellow,
+            Color.White
+        ];
+
+        AnsiToken[] expectedBackground = [
+            Color.BlackBackground,
+            Color.DarkBlueBackground,
+            Color.DarkGreenBackground,
+            Color.DarkCyanBackground,
+            Color.DarkRedBackground,
+            Color.DarkMagentaBackground,
+            Color.DarkYellowBackground,
+            Color.GrayBackground,
+            Color.DarkGrayBackground,
+            Color.BlueBackground,
+            Color.GreenBackground,
+            Color.CyanBackground,
+            Color.RedBackground,
+            Color.MagentaBackground,
+            Color.YellowBackground,
+            Color.WhiteBackground
+        ];
+
         foreach (var color in Enum.GetValues<ConsoleColor>()) {
-            var fgBuilt = AnsiColors.BuildForegroundSequence(color);
-            var bgBuilt = AnsiColors.BuildBackgroundSequence(color);
-
-            await Assert.That(AnsiColors.Foreground(color)).IsEqualTo(fgBuilt);
-            await Assert.That(AnsiColors.Background(color)).IsEqualTo(bgBuilt);
+            int index = (int)color;
+            await Assert.That(AnsiColors.Foreground(color)).IsSameReferenceAs(expectedForeground[index]);
+            await Assert.That(AnsiColors.Background(color)).IsSameReferenceAs(expectedBackground[index]);
         }
-
-        ConsoleColor @default = (ConsoleColor)(-1);
-        await Assert.That(AnsiColors.Foreground(@default)).IsEqualTo(AnsiColors.ForegroundResetSequence);
-        await Assert.That(AnsiColors.Background(@default)).IsEqualTo(AnsiColors.BackgroundResetSequence);
     }
 }
