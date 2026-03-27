@@ -143,7 +143,7 @@ public class LiveConsoleRegionTests {
             Error = Utilities.GetWriter(out var errorWriter);
             using var region = new LiveConsoleRegion();
 
-            region.Render($"Line1\nLine2\nLine3");
+            region.Render($"Line1{Environment.NewLine}Line2{Environment.NewLine}Line3");
 
             await Assert.That(region.OccupiedLines).IsEqualTo(3);
             await Assert.That(Utilities.StripAnsiSequences(errorWriter.ToString())).Contains("Line1");
