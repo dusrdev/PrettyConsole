@@ -42,14 +42,14 @@ public class AdvancedOutputsTests {
     [Test]
     public async Task TypeWrite_Regular() {
         Out = Utilities.GetWriter(out var stringWriter);
-        await Console.TypeWrite("Hello world!", Green / Black, 10);
+        await Console.TypeWrite("Hello world!", (Color.Green, Color.BlackBackground), 10);
         await Assert.That(stringWriter.ToString()).Contains("Hello world!");
     }
 
     [Test]
     public async Task TypeWriteLine_Regular() {
         Out = Utilities.GetWriter(out var stringWriter);
-        await Console.TypeWriteLine("Hello world!", Green / ConsoleColor.Default, 10);
+        await Console.TypeWriteLine("Hello world!", (Color.Green, Color.DefaultBackground), 10);
         await Assert.That(stringWriter.ToString()).Contains("Hello world!" + Environment.NewLine);
     }
 }

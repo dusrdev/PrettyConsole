@@ -4,13 +4,13 @@ Repository: PrettyConsole
 
 Summary
 
-- PrettyConsole is a high-performance, allocation-conscious extension layer over System.Console (implemented via C# extension members) that provides structured colored output, input helpers, rendering controls, menus, and progress bars. It targets net10.0, is trimming/AOT ready, and ships SourceLink metadata for debugging.
+- PrettyConsole is a high-performance, allocation-conscious extension layer over System.Console (implemented via C# extension members) that provides structured colored output, input helpers, rendering controls, menus, progress bars, and live console regions. It targets net10.0, is trimming/AOT ready, and ships SourceLink metadata for debugging.
 - Solution layout:
   - PrettyConsole/ — main library
   - PrettyConsole.Tests/ — interactive/demo runner (manually selects visual feature demos)
-  - PrettyConsole.Tests.Unit/ — xUnit v3 unit tests using Microsoft Testing Platform
+  - PrettyConsole.UnitTests/ — TUnit-based automated tests run with `dotnet run`
   - Examples/ — standalone `.cs` sample apps plus `assets/` previews; documented in `Examples/README.md` and excluded from automated builds/tests
-- v5.4.0 (current) renames `IndeterminateProgressBar` to `Spinner` (and `AnimationSequence` to `Pattern`), triggers the line reset at the start of each spinner frame, gives all `RunAsync` overloads default cancellation tokens, and renames `ProgressBar.WriteProgressBar` to `Render` while adding handler-factory overloads and switching header parameters to `string`. It still passes handlers by `ref`, adds `AppendInline`, and introduces the ctor that takes only `OutputPipe` + optional `IFormatProvider`; `SkipLines` advances the cursor while keeping overwritten UIs; `Confirm(trueValues, ref handler, bool emptyIsTrue = true)` has the boolean last; spinner header factories use `PrettyConsoleInterpolatedStringHandlerFactory` with the singleton builder; `AnsiColors` is public. v5.2.0 rewrote the handler to buffer before writing and added `WhiteSpace`; v5.1.0 renamed `PrettyConsoleExtensions` to `ConsoleContext`, added `Console.WriteWhiteSpaces(length, pipe)`, and made `Out`/`Error`/`In` settable; v5.0.0 removed the legacy `ColoredOutput`/`Color` types in favor of `ConsoleColor` helpers and tuples.
+- v6.0.0 (current) follows released `v5.4.2` directly. It adds `LiveConsoleRegion`, introduces `Color`/`Markup`/`AnsiToken` as the preferred styled-output model, extends that model to `ProgressBar`, `Spinner`, `TypeWrite`, and `LiveConsoleRegion.RenderProgress`, and adds `ConsoleContext.IsAnsiSupported` for ANSI capability checks. `Markup` and `AnsiColors` now expose `AnsiToken` values instead of raw strings. v5.4.0 renamed `IndeterminateProgressBar` to `Spinner` (and `AnimationSequence` to `Pattern`), triggers the line reset at the start of each spinner frame, gives all `RunAsync` overloads default cancellation tokens, and renames `ProgressBar.WriteProgressBar` to `Render` while adding handler-factory overloads and switching header parameters to `string`. It still passes handlers by `ref`, adds `AppendInline`, and introduces the ctor that takes only `OutputPipe` + optional `IFormatProvider`; `SkipLines` advances the cursor while keeping overwritten UIs; `Confirm(trueValues, ref handler, bool emptyIsTrue = true)` has the boolean last; spinner header factories use `PrettyConsoleInterpolatedStringHandlerFactory` with the singleton builder; `AnsiColors` is public. v5.2.0 rewrote the handler to buffer before writing and added `WhiteSpace`; v5.1.0 renamed `PrettyConsoleExtensions` to `ConsoleContext`, added `Console.WriteWhiteSpaces(length, pipe)`, and made `Out`/`Error`/`In` settable; v5.0.0 removed the legacy `ColoredOutput`/`Color` types in favor of `ConsoleColor` helpers and tuples.
 
 Commands you’ll use often
 
@@ -18,27 +18,29 @@ Commands you’ll use often
   - Build library:
     - dotnet build PrettyConsole/PrettyConsole.csproj
   - Build unit tests:
-    - dotnet build PrettyConsole.Tests.Unit/PrettyConsole.Tests.Unit.csproj
+    - dotnet build PrettyConsole.UnitTests/PrettyConsole.UnitTests.csproj
   - The solution using .slnx format; run it as usual but prefer to build individual projects as needed.
 - Format (uses the repo’s .editorconfig conventions)
   - Check and fix code style/formatting:
     - dotnet format
 - Run
   - Never run interactive/demo tests (PrettyConsole.Tests)
-  - Run unit tests (xUnit v3 via Microsoft Testing Platform):
-    - dotnet run --project PrettyConsole.Tests.Unit
-  - Run a single unit test:
-    - dotnet run --project PrettyConsole.Tests.Unit --filter-method "*UniquePartOfMethodName*"
-    - Examples:
-      - dotnet run --project PrettyConsole.Tests.Unit --filter-method "*WritesColoredLine*"
+  - Run unit tests:
+    - dotnet run --project PrettyConsole.UnitTests -- --no-progress --disable-logo
 - Pack - DO NOT DO THIS YOURSELF!
 
 Repo-specific agent rules and conventions
 
 - Prefer dotnet CLI for making, verifying, and running changes.
 - When changing a specific project, build/run just that project to validate, not the entire solution.
-- For tests using Microsoft Testing Platform and/or xUnit v3, use dotnet run, never dotnet test.
+- For tests in `PrettyConsole.UnitTests`, use dotnet run, never dotnet test.
+- Treat `PrettyConsoleInterpolatedStringHandler` as the leading output abstraction in the library. Do not modify the handler to fit secondary APIs unless the user explicitly asks for handler changes; instead, realign other APIs to compose through the existing handler-facing APIs and semantics.
+- When unifying colored output paths, prefer composing through `WriteInterpolated`/`WriteLineInterpolated` and the existing `Color`/`Markup`/`AnsiToken` interpolation model rather than adding new handler hooks or duplicating ANSI logic elsewhere.
+- If the requested direction may already exist in the worktree, inspect staged changes before designing the implementation so you follow the repository's intended approach instead of inventing a parallel one.
 - Adhere to .editorconfig in the repo for style and analyzers.
+- When editing `README.md`, keep it user-facing: preserve strong product positioning and user-visible achievements (performance, allocation profile, ergonomics) while removing only internal mechanics that do not help someone use the library.
+- Do not downplay PrettyConsole's differentiators when cleaning docs. Performance characteristics and zero-allocation goals are part of the product story, not implementation noise.
+- In changelogs and NuGet release notes, include only user-facing changes. Separate `Added` changes from `Breaking` changes, and do not label something as breaking when the old API still works but is merely no longer the preferred path.
 - If code needs to be “removed” as part of a change, do not delete files; comment out their contents so they won’t compile.
 - Avoid reflection/dynamic assembly loading in published library code unless explicitly requested.
 
@@ -50,13 +52,18 @@ High-level architecture and key concepts
   - `OutputPipe` is a two-value enum (`Out`, `Error`). Most write APIs accept an optional pipe; internally `ConsoleContext.GetWriter` resolves the correct `TextWriter` so sequences remain redirect-friendly.
 - Interpolated string handler
   - `PrettyConsoleInterpolatedStringHandler` buffers interpolated content before emitting it, stays allocation-free, now exposes additional public helpers (including `AppendInline` for composing handlers) and is constructed/consumed by `ref`. `$"..."` calls light up `WriteInterpolated`, `WriteLineInterpolated`, `ReadLine`, `TryReadLine`, `Confirm`, and `RequestAnyInput`. Colors auto-reset, handlers respect the selected pipe/`IFormatProvider`, and `object` arguments that implement `ISpanFormattable` are emitted via the span path before falling back to `IFormattable`/string. `Console.WriteInterpolated`/`WriteLineInterpolated` return the rendered character count (handler-emitted escape sequences excluded). Passing the `WhiteSpace` struct writes padding directly from the handler without allocations.
-  - Mid-span ANSI sequences are intentionally unsupported: every ANSI sequence (from `ConsoleColor` conversions or `Markup`) is only safe when emitted via an interpolated hole, which lets the handler isolate the escape and keep width calculations consistent. Do not try to "account" for mid-span sequences or adjust character counts manually when discussing this repo.
+  - The handler has the highest optimization and stability priority in the package. Preserve its behavior and shape unless handler work is the explicit task; changes elsewhere should conform to the handler, not force the handler to accommodate them.
+  - Mid-span ANSI sequences are intentionally unsupported: every ANSI sequence (from `Color`, `Markup`, guarded `AnsiToken`, or `ConsoleColor` conversions) is only safe when emitted via an interpolated hole, which lets the handler isolate the escape and keep width calculations consistent. Do not try to "account" for mid-span sequences or adjust character counts manually when discussing this repo.
 - Coloring model
-  - `ConsoleColor` exposes `DefaultForeground`, `DefaultBackground`, and `Default` tuple properties plus `/` operator overloads so you can inline foreground/background tuples (`$"{ConsoleColor.Red / ConsoleColor.White}Error"`). These tuples play nicely with the interpolated string handler and keep color resets allocation-free. `AnsiColors` is now public if you need raw ANSI sequences from `ConsoleColor`.
+  - `Color` is the preferred handler-facing color API. It exposes cached guarded `AnsiToken`s such as `Color.Green`, `Color.GreenBackground`, `Color.DefaultForeground`, `Color.DefaultBackground`, and `Color.Default`.
+  - `AnsiToken` is the guarded ANSI abstraction used by the interpolated string handler. Use `new AnsiToken("...")` for custom guarded ANSI holes.
+  - `ConsoleColor` interpolation remains supported for compatibility, and low-level writes plus APIs like `Console.SetColors` still use explicit `ConsoleColor`.
+  - `AnsiColors` maps `ConsoleColor` values into the cached `Color` token surface (`AnsiColors.Foreground(ConsoleColor.Green)` and `Color.Green` are the same token).
 - Markup decorations
-  - The `Markup` static class exposes ANSI sequences for underline, bold, italic, and strikethrough. Fields expand to escape codes only when output/error aren’t redirected; otherwise they collapse to empty strings so callers can safely interpolate them without extra checks.
+  - The `Markup` static class exposes guarded `AnsiToken`s for underline, bold, italic, and strikethrough. These are suppressed by the handler when output is redirected or ANSI is unsupported. `Markup.Reset` resets both decorations and colors.
 - Write APIs
   - `WriteInterpolated`/`WriteLineInterpolated` are the default output APIs and host the interpolated-string handler; this path already covers high-performance formatting and coloring. Keep `Write`/`WriteLine` overloads (`ISpanFormattable`/`ReadOnlySpan<char>`) for rare low-level scenarios where callers intentionally bypass the handler with custom formatting pipelines. Those overloads still rent buffers from `ArrayPool<char>.Shared` and reset colors.
+  - If these low-level overloads need to be brought back into alignment with the main output model, prefer delegating to the existing interpolated APIs rather than changing handler internals to preserve legacy low-level behavior.
 - TextWriter helpers
   - `ConsoleContext` surfaces the live `Out`/`Error` writers (now with public setters for test doubles) and keeps helpers like `GetWidthOrDefault`. Use `Console.WriteWhiteSpaces(int length)` for the default output path and specify `OutputPipe.Error` only when needed; `TextWriter.WriteWhiteSpaces(int)` remains available on the writers if you already have them on hand.
 - Inputs
@@ -65,6 +72,8 @@ High-level architecture and key concepts
   - `ClearNextLines`, `GoToLine`, `GetCurrentLine`, and `SkipLines` coordinate bounded screen regions; `Clear` wipes the buffer when safe. `SkipLines` lets you advance the cursor to preserve overwritten UIs (progress bars, spinners) after completion. These helpers underpin progress rendering and overwrite scenarios.
 - Advanced outputs
   - `OverwriteCurrentLine`, `Overwrite`, and `Overwrite<TState>` run user actions while clearing a configurable number of lines. Set the `lines` argument to however many rows you emit during the action (e.g., the multi-progress sample uses `lines: 2`) and call `Console.ClearNextLines` once after the last overwrite to remove residual UI. `TypeWrite`/`TypeWriteLine` animate character-by-character output with adjustable delays.
+- Live regions
+  - `LiveConsoleRegion` owns one retained live region on a single `OutputPipe` and coordinates it with durable line output on that same pipe. Use `WriteLine` for durable lines that should stream above the retained region, `Render` for arbitrary transient snapshots, `RenderProgress` as the built-in progress convenience, and `Clear`/`Dispose` to remove the region. Treat it as a cooperating-writers abstraction: output that must coordinate with the live region should flow through the region instance rather than writing directly to the same pipe behind its back.
 - Menus and tables
   - `Selection` returns a single choice or empty string on invalid input; `MultiSelection` parses space-separated indices into string arrays; `TreeMenu` renders two-level hierarchies and validates input (throwing `ArgumentException` when selections are invalid); `Table` renders headers + columns with width calculations.
 - Progress bars
@@ -77,14 +86,16 @@ Testing structure and workflows
 
 - PrettyConsole.Tests (interactive)
   - `Program.cs` allows to test things that need to be verified visually and can't be tested easily or at all using unit tests. It contains tests for various things like menues, tables, progress bar, etc... and at occations new overloads and other things. It's content doesn't need to be tracked, it is more like a playground.
-- PrettyConsole.Tests.Unit (xUnit v3)
-  - Uses Microsoft.NET.Test.Sdk with the Microsoft Testing Platform runner; xunit.runner.json is included. Execute with dotnet run as shown above; pass filters after to narrow to a class or method.
-  - Progress bar coverage now includes multi-line rendering (`sameLine: false`), repeat renders at the same percentage, and the static `ProgressBar.Render` helper. Keep these behaviours in sync with docs.
+- PrettyConsole.UnitTests
+  - Execute with `dotnet run --project PrettyConsole.UnitTests -- --no-progress --disable-logo`.
+  - Coverage includes progress rendering, handler formatting behavior, and `LiveConsoleRegion` scenarios such as retained redraw, progress rendering, live-region clearing, and pipe-target changes. Keep these behaviors in sync with docs.
+  - Do not run `dotnet build` and `dotnet run` for projects that share the same outputs in parallel; serialize those commands to avoid transient file-lock failures in `obj/` and `bin/`.
 
 Notes and gotchas
 
-- The library aims to minimize allocations; for normal app-level output prefer interpolated-handler APIs (`WriteInterpolated`/`WriteLineInterpolated`) plus inline `ConsoleColor` tuples. Use span-based `Write`/`WriteLine` overloads only for rare low-level formatting bypass scenarios.
+- The library aims to minimize allocations; for normal app-level output prefer interpolated-handler APIs (`WriteInterpolated`/`WriteLineInterpolated`) plus inline `Color`/`Markup`/`AnsiToken` holes. Use span-based `Write`/`WriteLine` overloads only for rare low-level formatting bypass scenarios.
 - When authoring new features, pick the appropriate OutputPipe to keep CLI piping behavior intact.
-- On macOS terminals, ANSI is supported; Windows legacy terminals are handled via ANSI-compatible rendering in the library.
+- On macOS terminals, ANSI is supported; on Windows, handler-emitted ANSI is gated by `ConsoleContext.IsAnsiSupported` so unsupported VT environments fall back to plain text for guarded ANSI paths.
 - `ProgressBar.Update` re-renders on every call (even when the percentage is unchanged) and accepts `sameLine` to place the status above the bar; the static `ProgressBar.Render` renders one-off bars without writing a trailing newline, so rely on `Console.Overwrite`/`lines` to stack multiple bars cleanly.
+- `LiveConsoleRegion` is line-oriented by design: it restores after `WriteLine`, not after arbitrary inline text, and it owns only one pipe. Default to `OutputPipe.Error` for interactive status UI so stdout stays pipe-friendly.
 - After the final `Overwrite`/`Overwrite<TState>` call in a rendering loop, call `Console.ClearNextLines(totalLines, pipe)` once more to clear the region and prevent ghost text.

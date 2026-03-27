@@ -25,12 +25,12 @@ public class ProgressBar {
     /// <summary>
     /// Gets or sets the foreground color of the status (if rendered).
     /// </summary>
-    public ConsoleColor ForegroundColor { get; set; } = ConsoleColor.DefaultForeground;
+    public AnsiToken ForegroundColor { get; set; } = Color.DefaultForeground;
 
     /// <summary>
     /// Gets or sets the color of the progress portion of the bar.
     /// </summary>
-    public ConsoleColor ProgressColor { get; set; } = ConsoleColor.DefaultForeground;
+    public AnsiToken ProgressColor { get; set; } = Color.DefaultForeground;
 
     /// <summary>
     /// Gets or sets an optional total width for the rendered bar line (includes brackets, spacing, and percentage).
@@ -135,10 +135,10 @@ public class ProgressBar {
     /// </summary>
     /// <param name="pipe">The output pipe to write to.</param>
     /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
-    /// <param name="progressColor">The color used for the filled segment of the bar.</param>
+    /// <param name="progressColor">The color token used for the filled segment of the bar.</param>
     /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
     /// <param name="maxLineWidth">Optional total line length (including brackets and percentage). When provided, the rendered output will not exceed this width unless the decorations already require more characters.</param>
-    public static void Render(OutputPipe pipe, double percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null)
+    public static void Render(OutputPipe pipe, double percentage, AnsiToken progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null)
         => Render(pipe, (int)percentage, progressColor, progressChar, maxLineWidth);
 
     /// <summary>
@@ -146,14 +146,24 @@ public class ProgressBar {
     /// </summary>
     /// <param name="pipe">The output pipe to write to.</param>
     /// <param name="percentage">The percentage value (0-100) representing the progress.</param>
-    /// <param name="progressColor">The color used for the filled segment of the bar.</param>
+    /// <param name="progressColor">The color token used for the filled segment of the bar.</param>
     /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
     /// <param name="maxLineWidth">Optional total line length (including brackets and percentage). When provided, the rendered output will not exceed this width unless the decorations already require more characters.</param>
-    public static void Render(OutputPipe pipe, int percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null) {
-        Console.ResetColor();
+    public static void Render(OutputPipe pipe, int percentage, AnsiToken progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null) {
+        var handler = new PrettyConsoleInterpolatedStringHandler(pipe);
+        AppendTo(ref handler, percentage, progressColor, Console.CursorLeft, progressChar, maxLineWidth);
+        handler.Flush();
+    }
 
+    internal static void AppendTo(
+        ref PrettyConsoleInterpolatedStringHandler handler,
+        int percentage,
+        AnsiToken progressColor,
+        int cursorLeft,
+        char progressChar = DefaultProgressChar,
+        int? maxLineWidth = null) {
         int p = Math.Clamp(percentage, 0, 100);
-        int bufferWidth = Math.Max(0, ConsoleContext.GetWidthOrDefault() - Console.CursorLeft);
+        int bufferWidth = Math.Max(0, ConsoleContext.GetWidthOrDefault() - cursorLeft);
 
         const int bracketsAndSpacing = 3; // '[' + ']' + ' '
         const int percentageWidth = 3; // numeric portion width
@@ -168,12 +178,23 @@ public class ProgressBar {
         int barLength = Math.Max(0, constrainedWidth - decorationWidth);
 
         int filled = Math.Min((int)(barLength * p * 0.01), barLength);
-        Span<char> s = filled > 0
-                    ? stackalloc char[filled]
-                    : Span<char>.Empty;
-        s.Fill(progressChar);
+        Span<char> progress = filled > 0
+            ? stackalloc char[filled]
+            : Span<char>.Empty;
+        progress.Fill(progressChar);
         int remaining = barLength - filled;
 
-        Console.WriteInterpolated(pipe, $"[{progressColor}{s}{ConsoleColor.DefaultForeground}{new WhiteSpace(remaining)}] {p,3}%");
+        handler.AppendLiteral("[");
+        handler.AppendFormatted(progressColor);
+        if (filled > 0) {
+            handler.AppendFormatted(progress);
+        }
+        handler.AppendFormatted(Color.DefaultForeground);
+        if (remaining > 0) {
+            handler.AppendFormatted(new WhiteSpace(remaining));
+        }
+        handler.AppendLiteral("] ");
+        handler.AppendFormatted(p, 3);
+        handler.AppendFormatted('%');
     }
 }

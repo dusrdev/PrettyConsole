@@ -135,9 +135,7 @@ public static class WriteExtensions {
         /// <param name="foreground">foreground color</param>
         /// <param name="background">background color</param>
         public static void Write(ReadOnlySpan<char> span, OutputPipe pipe, ConsoleColor foreground, ConsoleColor background) {
-            Console.SetColors(foreground, background);
-            Write(span, pipe);
-            Console.ResetColor();
+            WriteInterpolated(pipe, $"{(foreground, background)}{span}");
         }
     }
 }

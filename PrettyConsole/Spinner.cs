@@ -24,7 +24,7 @@ public class Spinner {
     /// <summary>
     /// Gets or sets the foreground color of the spinner.
     /// </summary>
-    public ConsoleColor ForegroundColor { get; set; } = ConsoleColor.DefaultForeground;
+    public AnsiToken ForegroundColor { get; set; } = Color.DefaultForeground;
 
     /// <summary>
     /// Gets or sets a value indicating whether to display the elapsed time next to the spinner.
@@ -131,7 +131,7 @@ public class Spinner {
         while (!task.IsCompleted && !token.IsCancellationRequested) {
             Console.ClearNextLines(1, OutputPipe.Error); // Clear at start to prevent auto-delete after last write
 
-            Console.WriteInterpolated(OutputPipe.Error, $"{ForegroundColor}{Pattern[seqIndex]}{ConsoleColor.DefaultForeground}");
+            Console.WriteInterpolated(OutputPipe.Error, $"{ForegroundColor}{Pattern[seqIndex]}");
 
             if (headerFactory is not null) {
                 ConsoleContext.Error.WriteWhiteSpaces(1);

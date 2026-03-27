@@ -6,9 +6,9 @@ public sealed class SpinnerTest : IPrettyConsoleTest {
     public async ValueTask Implementation() {
         var spinner = new Spinner {
             Pattern = Spinner.Patterns.Braille,
-            ForegroundColor = ConsoleColor.Magenta,
+            ForegroundColor = Color.Magenta,
             DisplayElapsedTime = true
         };
-        await spinner.RunAsync(Task.Delay(5_000), (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"...{ConsoleColor.Green}Running{ConsoleColor.DefaultForeground}..."));
+        await spinner.RunAsync(Task.Delay(5_000), (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"...{Color.Green}Running{Color.DefaultForeground}..."));
     }
 }

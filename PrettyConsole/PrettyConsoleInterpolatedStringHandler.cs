@@ -8,6 +8,7 @@ namespace PrettyConsole;
 [InterpolatedStringHandler]
 public struct PrettyConsoleInterpolatedStringHandler {
     private static readonly ArrayPool<char> BufferPool = ArrayPool<char>.Shared;
+    private static readonly bool DisableAnsi = !ConsoleContext.IsAnsiSupported;
 
     private bool _flushed;
     private char[] _buffer;
@@ -16,8 +17,6 @@ public struct PrettyConsoleInterpolatedStringHandler {
     private readonly TextWriter _writer;
     private readonly bool _isRedirected;
     private readonly IFormatProvider? _provider;
-    private ConsoleColor _currentForeground;
-    private ConsoleColor _currentBackground;
 
     private readonly Span<char> Written => new(_buffer, 0, _index);
 
@@ -67,6 +66,17 @@ public struct PrettyConsoleInterpolatedStringHandler {
     }
 
     /// <summary>
+    /// Creates a new handler that writes to the output pipe owned by <paramref name="region"/>.
+    /// </summary>
+    /// <param name="literalLength">Estimated literal length supplied by the compiler.</param>
+    /// <param name="formattedCount">Formatted item count supplied by the compiler.</param>
+    /// <param name="region">The transient region whose pipe should receive the output.</param>
+    /// <param name="shouldAppend">Always <see langword="true"/>; reserved for future short-circuiting.</param>
+    public PrettyConsoleInterpolatedStringHandler(int literalLength, int formattedCount, LiveConsoleRegion region, out bool shouldAppend)
+        : this(literalLength, formattedCount, region.Pipe, provider: null, out shouldAppend) {
+    }
+
+    /// <summary>
     /// Creates a new handler that writes to <paramref name="pipe"/> using <paramref name="provider"/> for formatting.
     /// </summary>
     /// <param name="literalLength">Estimated literal length supplied by the compiler.</param>
@@ -76,8 +86,6 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// <param name="shouldAppend">Always <see langword="true"/>; reserved for future short-circuiting.</param>
     public PrettyConsoleInterpolatedStringHandler(int literalLength, int formattedCount, OutputPipe pipe, IFormatProvider? provider, out bool shouldAppend) {
         _buffer = BufferPool.Rent(_capacity);
-        _currentForeground = ConsoleColor.DefaultForeground;
-        _currentBackground = ConsoleColor.DefaultBackground;
         (_writer, _isRedirected) = ConsoleContext.GetPipeTargetAndState(pipe);
         _provider = provider;
         shouldAppend = true;
@@ -118,34 +126,39 @@ public struct PrettyConsoleInterpolatedStringHandler {
         AppendSpan(buffer, alignment);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ChangeForeground(ConsoleColor foreground) => AppendSpanCore(AnsiColors.Foreground(foreground));
+    /// <summary>
+    /// Appends a guarded ANSI token.
+    /// </summary>
+    /// <param name="token">The markup token to emit.</param>
+    public void AppendFormatted(AnsiToken token) {
+        if (DisableAnsi || _isRedirected) return;
+
+        ThrowIfFlushed();
+        AppendSpanCore(token.Value);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ChangeBackground(ConsoleColor background) => AppendSpanCore(AnsiColors.Background(background));
+    private void ChangeForeground(ConsoleColor foreground) => AppendSpanCore(AnsiColors.Foreground(foreground).Value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ChangeBackground(ConsoleColor background) => AppendSpanCore(AnsiColors.Background(background).Value);
 
     /// <summary>
     /// Sets the foreground color to <paramref name="color"/>.
     /// </summary>
     public void AppendFormatted(ConsoleColor color) {
-        if (_isRedirected) return;
-        if (_currentForeground != color) {
-            ThrowIfFlushed();
-            _currentForeground = color;
-            ChangeForeground(color);
-        }
+        if (DisableAnsi || _isRedirected) return;
+        ThrowIfFlushed();
+        ChangeForeground(color);
     }
 
     /// <summary>
     /// Sets the background color to <paramref name="color"/>.
     /// </summary>
     public void AppendFormattedBackground(ConsoleColor color) {
-        if (_isRedirected) return;
-        if (_currentBackground != color) {
-            ThrowIfFlushed();
-            _currentBackground = color;
-            ChangeBackground(color);
-        }
+        if (DisableAnsi || _isRedirected) return;
+        ThrowIfFlushed();
+        ChangeBackground(color);
     }
 
     /// <summary>
@@ -153,8 +166,10 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// </summary>
     /// <param name="colors"></param>
     public void AppendFormatted((ConsoleColor Foreground, ConsoleColor Background) colors) {
-        AppendFormatted(colors.Foreground);
-        AppendFormattedBackground(colors.Background);
+        if (DisableAnsi || _isRedirected) return;
+        ThrowIfFlushed();
+        ChangeForeground(colors.Foreground);
+        ChangeBackground(colors.Background);
     }
 
     /// <summary>
@@ -495,10 +510,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// <summary>
 	/// Resets the colors of the contents if they were overwritten.
 	/// </summary>
-    public void ResetColors() {
-        AppendFormatted(ConsoleColor.DefaultForeground);
-        AppendFormattedBackground(ConsoleColor.DefaultBackground);
-    }
+    public void ResetColors() => AppendFormatted(Color.Default);
 
     /// <summary>
     /// Clears the internal buffer and returns it to the underlying array pool without writing to the held <see cref="TextWriter"/>.
@@ -519,7 +531,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     public void Flush(bool resetColors = true) {
         ThrowIfFlushed();
         if (resetColors) ResetColors();
-        Span<char> written = new(_buffer, 0, _index);
+        var written = Written;
         _writer.Write(written);
         written.Clear();
         BufferPool.Return(_buffer, false);

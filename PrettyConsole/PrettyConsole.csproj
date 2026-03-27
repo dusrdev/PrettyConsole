@@ -18,19 +18,20 @@
 
 		<Authors>David Shnayder</Authors>
 		<Title>PrettyConsole</Title>
-		<Description>High performance, ultra-low-latency, allocation-free, feature rich and easy to use
-			wrap over System.Console</Description>
+		<Description>High performance, ultra-low-latency, allocation-free extension layer over System.Console with guarded ANSI tokens, structured rendering, and rich CLI helpers</Description>
 		<Copyright>David Shnayder</Copyright>
 		<PackageTags>Console; Output; Input; ANSI</PackageTags>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>5.4.2</Version>
+		<Version>6.0.0</Version>
 		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<NoWarn>IDE0060;CA1822</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -43,8 +44,11 @@
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
-			- Improve perf of ReadOnlySpan based overloads of Write and WriteLine.
-			- Skill improvements
+			- Added LiveConsoleRegion for retained live output on one pipe.
+			- Added Color and AnsiToken as the preferred styled-output color model.
+			- Added token-based color support across ProgressBar, Spinner, TypeWrite, and live-region progress rendering.
+			- Added Windows ANSI capability detection for styled output.
+			- BREAKING: Markup and AnsiColors now expose guarded AnsiToken values instead of raw strings.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

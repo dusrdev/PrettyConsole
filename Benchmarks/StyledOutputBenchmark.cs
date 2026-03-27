@@ -4,7 +4,7 @@ using PrettyConsole;
 
 using Spectre.Console;
 
-using static System.ConsoleColor;
+using static PrettyConsole.Color;
 
 namespace Benchmarks;
 
@@ -39,7 +39,7 @@ public class StyledOutputBenchmarks {
 
     [Benchmark]
     public int PrettyConsole() {
-        Console.WriteLineInterpolated($"Hello {Green}John{ConsoleColor.DefaultForeground}, status = {Cyan}{Percentage}{ConsoleColor.DefaultForeground}%, elapsed = {Yellow}{Elapsed:c}");
+        Console.WriteLineInterpolated($"Hello {Green}John{Default}, status = {Cyan}{Percentage}{Default}%, elapsed = {Yellow}{Elapsed:c}");
         return int.MaxValue;
     }
 
@@ -52,15 +52,15 @@ public class StyledOutputBenchmarks {
     [Benchmark]
     public int SystemConsole() {
         Console.Write("Hello ");
-        Console.ForegroundColor = Green;
+        Console.ForegroundColor = ConsoleColor.Green;
         Console.Write("John");
         Console.ResetColor();
         Console.Write(", status = ");
-        Console.ForegroundColor = Cyan;
+        Console.ForegroundColor = ConsoleColor.Cyan;
         Console.Write(Percentage);
         Console.ResetColor();
         Console.Write("%, elapsed = ");
-        Console.ForegroundColor = Yellow;
+        Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine("{0:c}", Elapsed);
         Console.ResetColor();
         return int.MaxValue;

@@ -1,6 +1,5 @@
 namespace PrettyConsole;
 
-#pragma warning disable CA1822 // Mark members as static
 /// <summary>
 /// Provides an API to build a string handler.
 /// </summary>
@@ -26,4 +25,3 @@ public sealed class PrettyConsoleInterpolatedStringHandlerBuilder {
     /// <returns></returns>
     public ref PrettyConsoleInterpolatedStringHandler Build(OutputPipe pipe, [InterpolatedStringHandlerArgument(nameof(pipe))] ref PrettyConsoleInterpolatedStringHandler handler) => ref handler;
 }
-#pragma warning restore CA1822 // Mark members as static

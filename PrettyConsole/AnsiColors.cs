@@ -1,93 +1,63 @@
 namespace PrettyConsole;
 
 /// <summary>
-/// Provides ANSI sequences for the common <see cref="ConsoleColor"/>s.
+/// Provides cached ANSI tokens for the common <see cref="ConsoleColor"/>s.
 /// </summary>
 public static class AnsiColors {
-    /// <summary>
-	/// A sequence to reset foreground color.
-	/// </summary>
-    public const string ForegroundResetSequence = "\e[39m";
+    private static readonly AnsiToken[] ForegroundCodes = [
+        Color.Black,
+        Color.DarkBlue,
+        Color.DarkGreen,
+        Color.DarkCyan,
+        Color.DarkRed,
+        Color.DarkMagenta,
+        Color.DarkYellow,
+        Color.Gray,
+        Color.DarkGray,
+        Color.Blue,
+        Color.Green,
+        Color.Cyan,
+        Color.Red,
+        Color.Magenta,
+        Color.Yellow,
+        Color.White
+    ];
+
+    private static readonly AnsiToken[] BackgroundCodes = [
+        Color.BlackBackground,
+        Color.DarkBlueBackground,
+        Color.DarkGreenBackground,
+        Color.DarkCyanBackground,
+        Color.DarkRedBackground,
+        Color.DarkMagentaBackground,
+        Color.DarkYellowBackground,
+        Color.GrayBackground,
+        Color.DarkGrayBackground,
+        Color.BlueBackground,
+        Color.GreenBackground,
+        Color.CyanBackground,
+        Color.RedBackground,
+        Color.MagentaBackground,
+        Color.YellowBackground,
+        Color.WhiteBackground
+    ];
 
     /// <summary>
-	/// A sequence to reset background color.
-	/// </summary>
-    public const string BackgroundResetSequence = "\e[49m";
-
-    private static readonly string[] ForegroundCodes;
-    private static readonly string[] BackgroundCodes;
-
-    static AnsiColors() {
-        ForegroundCodes = new string[16];
-        BackgroundCodes = new string[16];
-        foreach (var color in Enum.GetValues<ConsoleColor>()) {
-            int index = (int)color;
-            ForegroundCodes[index] = BuildForegroundSequence(color);
-            BackgroundCodes[index] = BuildBackgroundSequence(color);
-        }
-    }
-
-    /// <summary>
-    /// Gets the ANSI sequence for the specified foreground color.
+    /// Gets the cached ANSI token for the specified foreground color.
     /// </summary>
-    public static string Foreground(ConsoleColor color) {
+    public static AnsiToken Foreground(ConsoleColor color) {
         int index = (int)color;
-        if (index == -1) return ForegroundResetSequence;
+        if (index == -1) return Color.DefaultForeground;
         return ForegroundCodes[index];
     }
 
 
     /// <summary>
-    /// Gets the ANSI sequence for the specified background color.
+    /// Gets the cached ANSI token for the specified background color.
     /// </summary>
-    public static string Background(ConsoleColor color) {
+    public static AnsiToken Background(ConsoleColor color) {
         int index = (int)color;
-        if (index == -1) return BackgroundResetSequence;
+        if (index == -1) return Color.DefaultBackground;
         return BackgroundCodes[index];
-    }
-
-
-    internal static string BuildForegroundSequence(ConsoleColor color) {
-        return color switch {
-            ConsoleColor.Black => "\e[30m",
-            ConsoleColor.DarkBlue => "\e[34m",
-            ConsoleColor.DarkGreen => "\e[32m",
-            ConsoleColor.DarkCyan => "\e[36m",
-            ConsoleColor.DarkRed => "\e[31m",
-            ConsoleColor.DarkMagenta => "\e[35m",
-            ConsoleColor.DarkYellow => "\e[33m",
-            ConsoleColor.Gray => "\e[37m",
-            ConsoleColor.DarkGray => "\e[90m",
-            ConsoleColor.Blue => "\e[94m",
-            ConsoleColor.Green => "\e[92m",
-            ConsoleColor.Cyan => "\e[96m",
-            ConsoleColor.Red => "\e[91m",
-            ConsoleColor.Magenta => "\e[95m",
-            ConsoleColor.Yellow => "\e[93m",
-            ConsoleColor.White => "\e[97m",
-            _ => ForegroundResetSequence
-        };
-    }
-
-    internal static string BuildBackgroundSequence(ConsoleColor color) {
-        return color switch {
-            ConsoleColor.Black => "\e[40m",
-            ConsoleColor.DarkBlue => "\e[44m",
-            ConsoleColor.DarkGreen => "\e[42m",
-            ConsoleColor.DarkCyan => "\e[46m",
-            ConsoleColor.DarkRed => "\e[41m",
-            ConsoleColor.DarkMagenta => "\e[45m",
-            ConsoleColor.DarkYellow => "\e[43m",
-            ConsoleColor.Gray => "\e[47m",
-            ConsoleColor.DarkGray => "\e[100m",
-            ConsoleColor.Blue => "\e[104m",
-            ConsoleColor.Green => "\e[102m",
-            ConsoleColor.Cyan => "\e[106m",
-            ConsoleColor.Red => "\e[101m",
-            ConsoleColor.Magenta => "\e[105m",
-            ConsoleColor.Yellow => "\e[103m",
-            ConsoleColor.White => "\e[107m",
-            _ => BackgroundResetSequence
-        };
     }
 }

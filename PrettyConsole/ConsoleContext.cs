@@ -9,7 +9,7 @@ namespace PrettyConsole;
 [UnsupportedOSPlatform("browser")]
 [UnsupportedOSPlatform("ios")]
 [UnsupportedOSPlatform("tvos")]
-public static class ConsoleContext {
+public static partial class ConsoleContext {
     /// <summary>
     /// The standard output stream.
     /// </summary>

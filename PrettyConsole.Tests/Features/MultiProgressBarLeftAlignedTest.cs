@@ -10,9 +10,9 @@ public sealed class MultiProgressBarLeftAlignedTest : IPrettyConsoleTest {
             double percentage = 100 * (double)i / count;
 
             Console.Overwrite((int)percentage, p => {
-                ProgressBar.Render(OutputPipe.Error, p, ConsoleColor.Magenta, maxLineWidth: 50);
+                ProgressBar.Render(OutputPipe.Error, p, Color.Magenta, maxLineWidth: 50);
                 Console.WriteLineInterpolated(OutputPipe.Error, $" - Task {1}");
-                ProgressBar.Render(OutputPipe.Error, p, ConsoleColor.Magenta, maxLineWidth: 50);
+                ProgressBar.Render(OutputPipe.Error, p, Color.Magenta, maxLineWidth: 50);
                 Console.WriteInterpolated(OutputPipe.Error, $" - Task {2}");
             }, 2);
 

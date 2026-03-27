@@ -11,9 +11,9 @@ public sealed class MultiProgressBarTest : IPrettyConsoleTest {
 
             Console.Overwrite((int)percentage, p => {
                 Console.WriteInterpolated(OutputPipe.Error, $"Task {1}: ");
-                ProgressBar.Render(OutputPipe.Error, p, ConsoleColor.Magenta);
+                ProgressBar.Render(OutputPipe.Error, p, Color.Magenta);
                 Console.WriteInterpolated(OutputPipe.Error, $"Task {2}: ");
-                ProgressBar.Render(OutputPipe.Error, p, ConsoleColor.Magenta);
+                ProgressBar.Render(OutputPipe.Error, p, Color.Magenta);
             }, 2);
 
             await Task.Delay(15);
