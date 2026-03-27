@@ -8,7 +8,7 @@ public sealed class ProgressBarMultiLineTest : IPrettyConsoleTest {
 
     public async ValueTask Implementation() {
         var prg = new ProgressBar {
-            ProgressColor = ConsoleColor.Magenta,
+            ProgressColor = Color.Magenta,
         };
         const int count = 333;
         for (int i = 1; i <= count; i++) {

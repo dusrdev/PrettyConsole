@@ -531,7 +531,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     public void Flush(bool resetColors = true) {
         ThrowIfFlushed();
         if (resetColors) ResetColors();
-        Span<char> written = new(_buffer, 0, _index);
+        var written = Written;
         _writer.Write(written);
         written.Clear();
         BufferPool.Return(_buffer, false);
