@@ -34,6 +34,9 @@ Repo-specific agent rules and conventions
 - Prefer dotnet CLI for making, verifying, and running changes.
 - When changing a specific project, build/run just that project to validate, not the entire solution.
 - For tests in `PrettyConsole.UnitTests`, use dotnet run, never dotnet test.
+- Treat `PrettyConsoleInterpolatedStringHandler` as the leading output abstraction in the library. Do not modify the handler to fit secondary APIs unless the user explicitly asks for handler changes; instead, realign other APIs to compose through the existing handler-facing APIs and semantics.
+- When unifying colored output paths, prefer composing through `WriteInterpolated`/`WriteLineInterpolated` and existing `ConsoleColor` tuple interpolation rather than adding new handler hooks or duplicating ANSI/color-state logic elsewhere.
+- If the requested direction may already exist in the worktree, inspect staged changes before designing the implementation so you follow the repository's intended approach instead of inventing a parallel one.
 - Adhere to .editorconfig in the repo for style and analyzers.
 - If code needs to be “removed” as part of a change, do not delete files; comment out their contents so they won’t compile.
 - Avoid reflection/dynamic assembly loading in published library code unless explicitly requested.
@@ -46,6 +49,7 @@ High-level architecture and key concepts
   - `OutputPipe` is a two-value enum (`Out`, `Error`). Most write APIs accept an optional pipe; internally `ConsoleContext.GetWriter` resolves the correct `TextWriter` so sequences remain redirect-friendly.
 - Interpolated string handler
   - `PrettyConsoleInterpolatedStringHandler` buffers interpolated content before emitting it, stays allocation-free, now exposes additional public helpers (including `AppendInline` for composing handlers) and is constructed/consumed by `ref`. `$"..."` calls light up `WriteInterpolated`, `WriteLineInterpolated`, `ReadLine`, `TryReadLine`, `Confirm`, and `RequestAnyInput`. Colors auto-reset, handlers respect the selected pipe/`IFormatProvider`, and `object` arguments that implement `ISpanFormattable` are emitted via the span path before falling back to `IFormattable`/string. `Console.WriteInterpolated`/`WriteLineInterpolated` return the rendered character count (handler-emitted escape sequences excluded). Passing the `WhiteSpace` struct writes padding directly from the handler without allocations.
+  - The handler has the highest optimization and stability priority in the package. Preserve its behavior and shape unless handler work is the explicit task; changes elsewhere should conform to the handler, not force the handler to accommodate them.
   - Mid-span ANSI sequences are intentionally unsupported: every ANSI sequence (from `ConsoleColor` conversions or `Markup`) is only safe when emitted via an interpolated hole, which lets the handler isolate the escape and keep width calculations consistent. Do not try to "account" for mid-span sequences or adjust character counts manually when discussing this repo.
 - Coloring model
   - `ConsoleColor` exposes `DefaultForeground`, `DefaultBackground`, and `Default` tuple properties plus `/` operator overloads so you can inline foreground/background tuples (`$"{ConsoleColor.Red / ConsoleColor.White}Error"`). These tuples play nicely with the interpolated string handler and keep color resets allocation-free. `AnsiColors` is now public if you need raw ANSI sequences from `ConsoleColor`.
@@ -53,6 +57,7 @@ High-level architecture and key concepts
   - The `Markup` static class exposes ANSI sequences for underline, bold, italic, and strikethrough. Fields expand to escape codes only when output/error aren’t redirected; otherwise they collapse to empty strings so callers can safely interpolate them without extra checks.
 - Write APIs
   - `WriteInterpolated`/`WriteLineInterpolated` are the default output APIs and host the interpolated-string handler; this path already covers high-performance formatting and coloring. Keep `Write`/`WriteLine` overloads (`ISpanFormattable`/`ReadOnlySpan<char>`) for rare low-level scenarios where callers intentionally bypass the handler with custom formatting pipelines. Those overloads still rent buffers from `ArrayPool<char>.Shared` and reset colors.
+  - If these low-level overloads need to be brought back into alignment with the main output model, prefer delegating to the existing interpolated APIs rather than changing handler internals to preserve legacy low-level behavior.
 - TextWriter helpers
   - `ConsoleContext` surfaces the live `Out`/`Error` writers (now with public setters for test doubles) and keeps helpers like `GetWidthOrDefault`. Use `Console.WriteWhiteSpaces(int length)` for the default output path and specify `OutputPipe.Error` only when needed; `TextWriter.WriteWhiteSpaces(int)` remains available on the writers if you already have them on hand.
 - Inputs
@@ -78,6 +83,7 @@ Testing structure and workflows
 - PrettyConsole.UnitTests
   - Execute with `dotnet run --project PrettyConsole.UnitTests -- --no-progress --disable-logo`.
   - Coverage includes progress rendering, handler formatting behavior, and `LiveConsoleRegion` scenarios such as retained redraw, progress rendering, live-region clearing, and pipe-target changes. Keep these behaviors in sync with docs.
+  - Do not run `dotnet build` and `dotnet run` for projects that share the same outputs in parallel; serialize those commands to avoid transient file-lock failures in `obj/` and `bin/`.
 
 Notes and gotchas
 
