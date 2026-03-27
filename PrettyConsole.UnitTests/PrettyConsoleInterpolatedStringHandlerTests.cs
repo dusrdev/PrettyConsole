@@ -136,6 +136,17 @@ public class PrettyConsoleInterpolatedStringHandlerTests {
     }
 
     [Test]
+    public async Task CharsWritten_IgnoresCustomMarkupTokenSequences() {
+        var blink = new MarkupToken("\e[5m");
+        int chars = Console.WriteInterpolated($"{blink}Hi{Markup.Reset}");
+
+        var written = Utilities.StripAnsiSequences(_writer.ToStringAndFlush());
+
+        await Assert.That(written).IsEqualTo("Hi");
+        await Assert.That(chars).IsEqualTo(2);
+    }
+
+    [Test]
     [Arguments(5, "   OK")]
     [Arguments(-5, "OK   ")]
     public async Task Alignment_UsesVisibleLengthWhenMarkupPresent(int alignment, string expected) {

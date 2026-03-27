@@ -8,6 +8,7 @@ namespace PrettyConsole;
 [InterpolatedStringHandler]
 public struct PrettyConsoleInterpolatedStringHandler {
     private static readonly ArrayPool<char> BufferPool = ArrayPool<char>.Shared;
+    private static readonly bool DisableAnsi = !ConsoleContext.IsAnsiSupported;
 
     private bool _flushed;
     private char[] _buffer;
@@ -129,6 +130,17 @@ public struct PrettyConsoleInterpolatedStringHandler {
         AppendSpan(buffer, alignment);
     }
 
+    /// <summary>
+    /// Appends a guarded markup token.
+    /// </summary>
+    /// <param name="token">The markup token to emit.</param>
+    public void AppendFormatted(MarkupToken token) {
+        if (DisableAnsi || _isRedirected) return;
+
+        ThrowIfFlushed();
+        AppendSpanCore(token.Value);
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ChangeForeground(ConsoleColor foreground) => AppendSpanCore(AnsiColors.Foreground(foreground));
 
@@ -139,7 +151,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// Sets the foreground color to <paramref name="color"/>.
     /// </summary>
     public void AppendFormatted(ConsoleColor color) {
-        if (_isRedirected) return;
+        if (DisableAnsi || _isRedirected) return;
         if (_currentForeground != color) {
             ThrowIfFlushed();
             _currentForeground = color;
@@ -151,7 +163,7 @@ public struct PrettyConsoleInterpolatedStringHandler {
     /// Sets the background color to <paramref name="color"/>.
     /// </summary>
     public void AppendFormattedBackground(ConsoleColor color) {
-        if (_isRedirected) return;
+        if (DisableAnsi || _isRedirected) return;
         if (_currentBackground != color) {
             ThrowIfFlushed();
             _currentBackground = color;
