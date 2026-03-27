@@ -1,10 +1,16 @@
 # Versions
 
-## v5.5.0
+## v6.0.0
 
 - Added `LiveConsoleRegion` for retained live output on a single `OutputPipe`, enabling Cargo-style durable status lines above a pinned transient region.
 - `LiveConsoleRegion` exposes `WriteLine`, `Render`, `RenderProgress`, `Clear`, and `Dispose`.
 - Interpolated strings now bind directly to `LiveConsoleRegion`, so `$"..."` can be passed into `WriteLine` and `Render` naturally.
+- Added `AnsiToken` as the guarded ANSI abstraction for interpolated output.
+- Added `Color` as the preferred interpolation-facing color surface with cached tokens such as `Color.Green`, `Color.DefaultForeground`, `Color.DefaultBackground`, and `Color.Default`.
+- **BREAKING**: `Markup` now exposes guarded `AnsiToken`s instead of raw `string` escape sequences.
+- **BREAKING**: `AnsiColors.Foreground(ConsoleColor)` and `AnsiColors.Background(ConsoleColor)` now return cached `AnsiToken`s instead of raw ANSI strings and map to the `Color` cache.
+- Added `ConsoleContext.IsAnsiSupported`, including Windows VT detection, so handler-emitted `Color`, `Markup`, `AnsiToken`, and `ConsoleColor` ANSI is suppressed when the terminal cannot safely render it.
+- `ConsoleColor` interpolation remains supported for compatibility, but `Color` is now the preferred API for handler-based styled output. `ConsoleColor` remains the native input for APIs such as `ProgressBar`, `Spinner`, and low-level span-based writes.
 
 ## v5.4.2
 
@@ -51,7 +57,7 @@
 ## v5.1.0
 
 - `Console.WriteInterpolated` and `Console.WriteLineInterpolated` now return a `int` that contains the number of characters written using the handler. This could be used to help calculate paddings or other things when creating structured output.
-  - It will ignore escape sequences that were added using the handler like `ConsoleColor` or `Markup` but if you hardcode your own they might be taken into account. As such, if you do this, I recommend first checking the length without using `ConsoleColor` or `Markup`, then using this result for the calculation.
+  - It will ignore escape sequences that were added using the handler like `ConsoleColor`, `Color`, `Markup`, or any guarded `AnsiToken`, but if you hardcode your own they might be taken into account. As such, if you do this, I recommend first checking the length without using those helpers, then using this result for the calculation.
 - `PrettyConsoleExtensions` that contains the `Out`, `Err`, `In`, etc... was renamed to `ConsoleContext`.
 - The standard `Out`, `Err`, `In` streams now have a public setter, so end users could mock it in their own tests.
 - `Console.WriteWhiteSpaces(length, OutputPipe)` was added to reduce the complexity of using the `TextWriter` extension.

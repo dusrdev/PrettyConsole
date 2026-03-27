@@ -46,8 +46,9 @@ using static System.Console; // optional
 
 - Prefer interpolated-handler APIs over manually concatenated strings.
 - Avoid span/formattable `Write`/`WriteLine` overloads in normal app code; reserve them for rare advanced/manual formatting scenarios.
-- If the intent is only to end the current line or emit a blank line, use `Console.NewLine(pipe)` instead of `WriteLineInterpolated($"")` or reset-only interpolations such as `$"{ConsoleColor.Default}"`.
+- If the intent is only to end the current line or emit a blank line, use `Console.NewLine(pipe)` instead of `WriteLineInterpolated($"")` or reset-only interpolations such as `$"{Color.Default}"`.
 - Keep ANSI/decorations inside interpolation holes (for example, `$"{Markup.Bold}..."`) instead of literal escape codes inside string literals.
+- Prefer `Color`, `Markup`, and guarded `AnsiToken` in interpolated output. Keep `ConsoleColor` for APIs that explicitly require it (`ProgressBar`, `Spinner`, low-level span writes, `Console.SetColors`, `TypeWrite`, etc.).
 - Route transient UI (spinner/progress/overwrite loops) to `OutputPipe.Error` to keep stdout pipe-friendly, and use `OutputPipe.Error` for genuine errors/diagnostics. Keep ordinary non-error interaction flow on `OutputPipe.Out`.
 - Spinner/progress/overwrite output is caller-owned after rendering completes. Explicitly remove it with `Console.ClearNextLines(totalLines, pipe)` or intentionally keep the region with `Console.SkipLines(totalLines)`.
 - `LiveConsoleRegion` is the right primitive when durable line output and transient status must interleave over time. It is line-oriented: use `WriteLine`, not inline writes, for cooperating durable output above the retained region.
@@ -76,7 +77,7 @@ using static System.Console; // optional
 - Use `ProgressBar.Render(...)`, not `ProgressBar.WriteProgressBar(...)`.
 - Use `LiveConsoleRegion` for retained live regions; do not approximate that behavior with ad-hoc `Overwrite` loops when durable writes must keep streaming around the live output.
 - Use `ConsoleContext`, not `PrettyConsoleExtensions`.
-- Use `ConsoleColor` helpers/tuples (for example `ConsoleColor.Red / ConsoleColor.White`), not removed `ColoredOutput`/`Color` types.
+- Use `Color`/`Markup`/`AnsiToken` for interpolated styling. Use `ConsoleColor` only when the API explicitly requires it.
 - Use `Console.NewLine(pipe)` when you only need a newline or blank line; do not use `WriteLineInterpolated` with empty/reset-only payloads just to move the cursor.
 - Use `Confirm(ReadOnlySpan<string> trueValues, ref PrettyConsoleInterpolatedStringHandler handler, bool emptyIsTrue = true)` (boolean parameter is last).
 - Use handler factory overloads for dynamic spinner/progress headers:
@@ -86,11 +87,11 @@ using static System.Console; // optional
 
 ```csharp
 // Colored/status output
-Console.WriteLineInterpolated($"{ConsoleColor.Green / ConsoleColor.DefaultBackground}OK{ConsoleColor.Default}");
+Console.WriteLineInterpolated($"{Color.Green}OK{Color.Default}");
 Console.NewLine();
 
 // Typed input
-if (!Console.TryReadLine(out int port, $"Port ({ConsoleColor.Cyan}5000{ConsoleColor.Default}): "))
+if (!Console.TryReadLine(out int port, $"Port ({Color.Cyan}5000{Color.Default}): "))
     port = 5000;
 
 // Confirm with custom truthy tokens

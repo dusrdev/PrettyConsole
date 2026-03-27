@@ -10,8 +10,8 @@ public class ProgressBarTests {
         try {
             var bar = new ProgressBar {
                 ProgressChar = '#',
-                ForegroundColor = White,
-                ProgressColor = Green
+                ForegroundColor = Color.White,
+                ProgressColor = Color.Green
             };
 
             bar.Update(50, "Loading");
@@ -33,8 +33,8 @@ public class ProgressBarTests {
         try {
             var bar = new ProgressBar {
                 ProgressChar = '#',
-                ForegroundColor = White,
-                ProgressColor = Green
+                ForegroundColor = Color.White,
+                ProgressColor = Color.Green
             };
 
             bar.Update(25, "Loading");
@@ -124,7 +124,7 @@ public class ProgressBarTests {
         try {
             Out = Utilities.GetWriter(out var outWriter);
 
-            ProgressBar.Render(OutputPipe.Out, 75, Cyan, '*');
+            ProgressBar.Render(OutputPipe.Out, 75, Color.Cyan, '*');
 
             var output = outWriter.ToString();
             await Assert.That(output).Contains("[");
@@ -141,7 +141,7 @@ public class ProgressBarTests {
         try {
             Out = Utilities.GetWriter(out var outWriter);
 
-            ProgressBar.Render(OutputPipe.Out, 50, Cyan, '*', maxLineWidth: 24);
+            ProgressBar.Render(OutputPipe.Out, 50, Color.Cyan, '*', maxLineWidth: 24);
 
             var output = outWriter.ToString();
             await Assert.That(output.Length).IsEqualTo(24);
@@ -278,7 +278,7 @@ public class ProgressBarTests {
             var spinner = new Spinner {
                 DisplayElapsedTime = false,
                 UpdateRate = 5,
-                ForegroundColor = Cyan
+                ForegroundColor = Color.Cyan
             };
 
             var genericResult = await spinner.RunAsync(Task.Run(async () => { await Task.Delay(10); return 7; }));

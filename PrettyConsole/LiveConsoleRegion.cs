@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace PrettyConsole;
 
 /// <summary>
-/// Owns a transient console region on a single output pipe and coordinates it with durable writes.
+/// Manages a retained transient console region on a single output pipe while coordinating durable writes above it.
 /// </summary>
 public sealed class LiveConsoleRegion : IDisposable {
     private const int InitialSnapshotCapacity = 256;
@@ -31,15 +31,17 @@ public sealed class LiveConsoleRegion : IDisposable {
     public int OccupiedLines { get; private set; }
 
     /// <summary>
-    /// Creates a new region bound to <paramref name="pipe"/>.
+    /// Creates a new live region bound to the specified output pipe.
     /// </summary>
+    /// <param name="pipe">The output pipe used for both retained transient content and durable writes.</param>
     public LiveConsoleRegion(OutputPipe pipe = OutputPipe.Error) {
         _pipe = pipe;
     }
 
     /// <summary>
-    /// Writes durable output followed by a newline and restores the transient region afterwards.
+    /// Writes a durable line above the retained region and then restores the region beneath it.
     /// </summary>
+    /// <param name="handler">The interpolated content to write as a durable line.</param>
     public void WriteLine([InterpolatedStringHandlerArgument("")] ref PrettyConsoleInterpolatedStringHandler handler) {
         lock (_lock) {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -59,8 +61,9 @@ public sealed class LiveConsoleRegion : IDisposable {
     }
 
     /// <summary>
-    /// Replaces the transient region contents with the rendered handler output.
+    /// Replaces the current retained region contents with the rendered handler output.
     /// </summary>
+    /// <param name="handler">The interpolated content to retain as the region snapshot.</param>
     public void Render([InterpolatedStringHandlerArgument("")] ref PrettyConsoleInterpolatedStringHandler handler) {
         lock (_lock) {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -94,13 +97,19 @@ public sealed class LiveConsoleRegion : IDisposable {
     }
 
     /// <summary>
-    /// Renders a progress bar snapshot into this region, optionally prefixed with handler-built content.
+    /// Renders a retained progress-bar snapshot into the live region, optionally prefixed with header content.
     /// </summary>
+    /// <param name="percentage">The progress percentage to render.</param>
+    /// <param name="factory">Optional header factory that renders content before the progress bar.</param>
+    /// <param name="sameLine">Whether the optional header should share the same line as the progress bar.</param>
+    /// <param name="progressColor">Optional color token for the filled progress segment.</param>
+    /// <param name="progressChar">The character used for the filled portion of the progress bar.</param>
+    /// <param name="maxLineWidth">Optional total width constraint for the rendered progress line.</param>
     public void RenderProgress(
         double percentage,
         PrettyConsoleInterpolatedStringHandlerFactory? factory = null,
         bool sameLine = true,
-        ConsoleColor? progressColor = null,
+        AnsiToken? progressColor = null,
         char progressChar = ProgressBar.DefaultProgressChar,
         int? maxLineWidth = null) {
         var handler = new PrettyConsoleInterpolatedStringHandler(_pipe);
@@ -118,12 +127,12 @@ public sealed class LiveConsoleRegion : IDisposable {
             }
         }
 
-        ProgressBar.AppendTo(ref handler, (int)percentage, progressColor ?? ConsoleColor.DefaultForeground, cursorLeft, progressChar, maxLineWidth);
+        ProgressBar.AppendTo(ref handler, (int)percentage, progressColor ?? Color.DefaultForeground, cursorLeft, progressChar, maxLineWidth);
         Render(ref handler);
     }
 
     /// <summary>
-    /// Clears the transient region and forgets any retained snapshot.
+    /// Clears the retained region from the console and discards the current snapshot.
     /// </summary>
     public void Clear() {
         lock (_lock) {

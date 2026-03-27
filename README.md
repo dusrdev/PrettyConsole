@@ -10,7 +10,7 @@ PrettyConsole is a high-performance, ultra-low-latency, allocation-free extensio
 ## Features
 
 - 🚀 Zero-allocation interpolated string handler (`PrettyConsoleInterpolatedStringHandler`) for inline colors and formatting
-- 🎨 Inline color composition with `ConsoleColor` tuples and helpers (`DefaultForeground`, `DefaultBackground`, `Default`) plus `AnsiColors` utilities when you need raw ANSI sequences
+- 🎨 Guarded ANSI tokens for interpolation via `Color`, `Markup`, and custom `AnsiToken`, with `ConsoleColor` compatibility for APIs that explicitly require it
 - 🔁 Advanced rendering primitives (`Overwrite`, `ClearNextLines`, `GoToLine`, `SkipLines`, progress bars) that respect console pipes
 - 📌 `LiveConsoleRegion` for a retained live line/region that stays pinned while durable status lines stream above it on the same pipe
 - 🧱 Handler-aware `WhiteSpace` struct for zero-allocation padding directly inside interpolated strings
@@ -70,41 +70,44 @@ Standalone samples made with .NET 10 file-based apps with preview clips are avai
 ```csharp
 using PrettyConsole;          // Extension members + OutputPipe
 using static System.Console;  // Optional for terser call sites
+using static PrettyConsole.Color; // Optional for terser color tokens
 ```
 
 This setup lets you call `Console.WriteInterpolated`, `Console.Overwrite`, `Console.TryReadLine`, etc. The original `System.Console` APIs remain available—call `System.Console.ReadKey()` or `System.Console.SetCursorPosition()` directly whenever you need something the extensions do not provide.
 
 ### Interpolated strings & inline colors
 
-`PrettyConsoleInterpolatedStringHandler` now buffers interpolated content in a pooled buffer before flushing to the selected pipe. Colors auto-reset at the end of each call. `Console.WriteInterpolated` and `Console.WriteLineInterpolated` return the number of visible characters written (handler-emitted escape sequences are excluded) so you can drive padding/width calculations from the same call sites.
+`Console.WriteInterpolated` and `Console.WriteLineInterpolated` are the main output APIs for styled text. Colors reset automatically at the end of each call, and both methods return the number of visible characters written so you can reuse the result in padding or layout calculations.
+
+For interpolation, prefer `Color` and `Markup`. `ConsoleColor` interpolation still works, but `Color` is the primary public surface for guarded styled output.
 
 ```csharp
-Console.WriteInterpolated($"Hello {ConsoleColor.Green / ConsoleColor.DefaultBackground}world{ConsoleColor.Default}!");
-Console.WriteInterpolated(OutputPipe.Error, $"{ConsoleColor.Yellow / ConsoleColor.DefaultBackground}warning{ConsoleColor.Default}: {message}");
+Console.WriteInterpolated($"Hello {Green}world{Default}!");
+Console.WriteInterpolated(OutputPipe.Error, $"{Yellow}warning{Default}: {message}");
 
-if (!Console.TryReadLine(out int choice, $"Pick option {ConsoleColor.Cyan / ConsoleColor.DefaultBackground}1-5{ConsoleColor.Default}: ")) {
-    Console.WriteLineInterpolated($"{ConsoleColor.Red / ConsoleColor.DefaultBackground}Not a number.{ConsoleColor.Default}");
+if (!Console.TryReadLine(out int choice, $"Pick option {Cyan}1-5{Default}: ")) {
+    Console.WriteLineInterpolated($"{Red}Not a number.{Default}");
 }
 
 // Zero-allocation padding directly from the handler
 Console.WriteInterpolated($"Header{new WhiteSpace(6)}Value");
 ```
 
-`ConsoleColor.DefaultForeground`, `ConsoleColor.DefaultBackground`, and the `/` operator overload make it easy to compose foreground/background tuples inline (`ConsoleColor.Red / ConsoleColor.White`).
+`Color` exposes tokens for both foreground and background colors (`Green`, `GreenBackground`, `DefaultForeground`, `DefaultBackground`, `Default`). `AnsiColors` is available when you want to convert an existing `ConsoleColor` value into the same style of token, while APIs like `ProgressBar` and span-based `Write`/`WriteLine` still take `ConsoleColor` directly.
 
 #### Inline decorations via `Markup`
 
-When ANSI escape sequences are safe to emit (`Console.IsOutputRedirected`/`IsErrorRedirected` are both `false`), the `Markup` helper exposes ready-to-use toggles for underline, bold, italic, and strikethrough:
+`Markup` exposes ready-to-use guarded tokens for underline, bold, italic, and strikethrough:
 
 ```csharp
 Console.WriteLineInterpolated($"{Markup.Bold}Build{Markup.ResetBold} {Markup.Underline}completed{Markup.ResetUnderline} in {elapsed:duration}"); // e.g. "completed in 2h 3m 17s"
 ```
 
-All fields collapse to `string.Empty` when markup is disabled, so the same call sites continue to work when output is redirected or the terminal ignores decorations. Use `Markup.Reset` if you want to reset every decoration at once.
+Use `Markup.Reset` if you want to reset every decoration and color at once.
 
 #### Formatting & alignment helpers
 
-- **`TimeSpan :duration` format** — the interpolated string handler understands the custom `:duration` specifier. It emits integer `hours`/`minutes`/`seconds` tokens (e.g., `5h 32m 12s`, `27h 12m 3s`, `123h 0m 0s`) without allocations, and the hour component keeps growing past 24 so long-running tasks stay accurate. Minutes/seconds are not zero-padded so the output stays compact:
+- **`TimeSpan :duration` format** — use the custom `:duration` specifier to render values like `5h 32m 12s`, `27h 12m 3s`, or `123h 0m 0s`. The hour component keeps growing past 24 so long-running tasks stay accurate, and minutes/seconds stay compact:
 
   ```csharp
   var elapsed = stopwatch.Elapsed;
@@ -119,7 +122,7 @@ All fields collapse to `string.Empty` when markup is disabled, so the same call 
   Console.WriteInterpolated($"Remaining {remaining,8:bytes}"); // right-aligned units stay tidy
   ```
 
-- **Alignment** — standard alignment syntax works the same way it does with regular interpolated strings, but the handler writes directly into the console buffer. This keeps columnar output zero-allocation friendly:
+- **Alignment** — standard alignment syntax works the same way it does with regular interpolated strings, so columnar console output stays straightforward:
 
   ```csharp
   Console.WriteInterpolated($"|{"Label",-10}|{value,10:0.00}|");
@@ -127,48 +130,31 @@ All fields collapse to `string.Empty` when markup is disabled, so the same call 
 
 You can combine both, e.g., `$"{elapsed,8:duration}"`, to keep progress/status displays tidy.
 
-- **`WhiteSpace` struct for padding** — pass `new WhiteSpace(length)` inside an interpolated string to emit that many spaces straight from the handler without allocating intermediate strings.
+- **`WhiteSpace` struct for padding** — pass `new WhiteSpace(length)` inside an interpolated string when you want explicit padding without building a separate string first.
 
-- **Custom escape sequences** — if you need your own ANSI code (extra markup/colors), keep it in an interpolated hole instead of hardcoding it into the literal so the handler can treat it like other escape spans:
+- **Custom ANSI tokens** — if you need your own ANSI code for extra markup or color, wrap it in `AnsiToken` and keep it in an interpolated hole:
 
 ```csharp
-var rose = "\u001b[38;5;213m"; // custom 256-color escape
-Console.WriteInterpolated($"{rose}accent text{Markup.Reset}");
+var rose = new AnsiToken("\u001b[38;5;213m"); // custom 256-color escape
+Console.WriteInterpolated($"{rose}accent text{Color.Default}");
 ```
 
-Avoid embedding the escape directly in the literal (`"\u001b[38;5;213maccent text"`), which would be measured as visible width and could skew padding/alignment.
+Avoid embedding the escape directly in the literal (`"\u001b[38;5;213maccent text"`), which can interfere with width-sensitive output. If you want PrettyConsole to handle ANSI safely for you, use `Color`, `Markup`, or `AnsiToken`.
 
 ### Basic outputs
 
 ```csharp
 // Interpolated text
 Console.WriteInterpolated($"Processed {items} items in {elapsed:duration}"); // Processed 42 items in 3h 44m 9s
-Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Magenta}debug{ConsoleColor.Default}");
+Console.WriteLineInterpolated(OutputPipe.Error, $"{Magenta}debug{Default}");
 ```
 
-`WriteInterpolated` / `WriteLineInterpolated` should be your default output path. The handler already applies the high-performance formatting path internally and supports inline colors/alignment/specifiers.
-
-### Low-level output escape hatch (rare)
-
-Use these only when you intentionally bypass the interpolated handler and own formatting end-to-end (advanced/manual pipelines):
-
-```csharp
-// Span + color overloads (no boxing)
-ReadOnlySpan<char> header = "Title";
-Console.Write(header, OutputPipe.Error, ConsoleColor.White, ConsoleColor.DarkBlue);
-Console.NewLine(OutputPipe.Error);
-
-// ISpanFormattable (works with ref structs)
-Console.Write(percentage); // uses the default output pipe
-Console.Write(percentage, OutputPipe.Error, ConsoleColor.Cyan, ConsoleColor.DefaultBackground, format: "F2", formatProvider: null);
-```
-
-These overloads stay public mainly for compatibility and niche scenarios; for normal app code, prefer interpolated handler calls.
+`WriteInterpolated` / `WriteLineInterpolated` should be your default output path for styled console text.
 
 ### Basic inputs
 
 ```csharp
-if (!Console.TryReadLine(out int port, $"Port ({ConsoleColor.Green}5000{ConsoleColor.Default}): ")) {
+if (!Console.TryReadLine(out int port, $"Port ({Green}5000{Default}): ")) {
     port = 5000;
 }
 
@@ -177,7 +163,7 @@ if (!Console.TryReadLine(out DayOfWeek day, ignoreCase: true, $"Day? ")) {
     day = DayOfWeek.Monday;
 }
 
-var apiKey = Console.ReadLine($"Enter API key ({ConsoleColor.DarkGray}optional{ConsoleColor.Default}): ");
+var apiKey = Console.ReadLine($"Enter API key ({DarkGray}optional{Default}): ");
 ```
 
 All input helpers work with `IParsable<T>` and enums, respect the active culture, and honor `OutputPipe` when prompts are colored.
@@ -185,9 +171,9 @@ All input helpers work with `IParsable<T>` and enums, respect the active culture
 ### Advanced inputs
 
 ```csharp
-Console.RequestAnyInput($"Press {ConsoleColor.Yellow}any key{ConsoleColor.Default} to continue…");
+Console.RequestAnyInput($"Press {Yellow}any key{Default} to continue…");
 
-if (!Console.Confirm($"Deploy to production? ({ConsoleColor.Green}y{ConsoleColor.Default}/{ConsoleColor.Red}n{ConsoleColor.Default}) ")) {
+if (!Console.Confirm($"Deploy to production? ({Green}y{Default}/{Red}n{Default}) ")) {
     return;
 }
 
@@ -207,7 +193,7 @@ Console.ResetColors();
 Console.SkipLines(2); // keep multi-line UIs (progress bars, dashboards) and continue writing below them
 ```
 
-`ConsoleContext.Out`/`Error` expose the live writers (both are settable if you need to swap in test doubles). Use `Console.WriteWhiteSpaces(int length, OutputPipe pipe)` for convenient padding from call sites, or call `WriteWhiteSpaces(int)` on an existing writer. `Console.SkipLines(n)` advances the cursor without clearing so you can keep overwritten UI (progress bars, spinners, dashboards) visible after completion:
+`ConsoleContext.Out`/`Error` expose the active writers, which is useful for tests or custom writer-based output. Use `Console.WriteWhiteSpaces(int length, OutputPipe pipe)` for convenient padding from call sites, or call `WriteWhiteSpaces(int)` on an existing writer. `Console.SkipLines(n)` advances the cursor without clearing so you can keep overwritten UI (progress bars, spinners, dashboards) visible after completion:
 
 ```csharp
 Console.WriteWhiteSpaces(8, OutputPipe.Error); // pad status blocks
@@ -218,8 +204,8 @@ ConsoleContext.Error.WriteWhiteSpaces(4);      // same via writer
 
 ```csharp
 Console.Overwrite(() => {
-    Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Cyan}Working…{ConsoleColor.Default}");
-    Console.WriteInterpolated(OutputPipe.Error, $"{ConsoleColor.DarkGray}Elapsed:{ConsoleColor.Default} {stopwatch.Elapsed:duration}"); // Elapsed: 0h 1m 12s
+    Console.WriteLineInterpolated(OutputPipe.Error, $"{Cyan}Working…{Default}");
+    Console.WriteInterpolated(OutputPipe.Error, $"{DarkGray}Elapsed:{Default} {stopwatch.Elapsed:duration}"); // Elapsed: 0h 1m 12s
 }, lines: 2);
 
 // Prevent closure allocations with state + generic overload
@@ -235,7 +221,7 @@ Always call `Console.ClearNextLines(totalLines, pipe)` once after the last `Over
 
 ### Live console regions
 
-`LiveConsoleRegion` owns one retained live region on a single `OutputPipe` and coordinates it with durable line output on that same pipe. This is the right fit where status lines stream normally while a pinned transient line keeps updating at the bottom.
+`LiveConsoleRegion` is useful when status lines should continue streaming normally while a pinned transient line keeps updating at the bottom.
 
 ```csharp
 using var live = new LiveConsoleRegion(OutputPipe.Error);
@@ -251,7 +237,7 @@ live.Render($"Linking {elapsed:duration}");
 live.Clear();
 ```
 
-Use `WriteLine` for durable lines that should scroll above the retained region, `Render` for arbitrary transient snapshots, and `RenderProgress` when you want the built-in progress bar renderer inside the region. Keep all output that must coordinate with the live region flowing through that region instance. In interactive CLIs, `OutputPipe.Error` is usually the correct pipe so stdout remains machine-friendly.
+Use `WriteLine` for lines that should scroll above the live region, `Render` for transient snapshots, and `RenderProgress` when you want the built-in progress bar inside the region. In interactive CLIs, `OutputPipe.Error` is usually the right pipe so stdout stays machine-friendly.
 
 ### Menus and tables
 
@@ -295,11 +281,11 @@ progress.Update(42.5, "Syncing", sameLine: false);
 ProgressBar.Render(OutputPipe.Error, 75, ConsoleColor.Magenta, '*', maxLineWidth: 32);
 ```
 
-`ProgressBar.Update` always re-renders (even if the percentage didn't change) so you can refresh status text. You can also set `ProgressBar.MaxLineWidth` on the instance to limit the rendered `[=====]  42%` line width before each update, mirroring the `maxLineWidth` option on `ProgressBar.Render`. The helper `ProgressBar.Render` keeps the cursor on the same line, which is ideal inside `Console.Overwrite`, and accepts an optional `maxLineWidth` so the entire `[=====]  42%` line can be constrained for left-column layouts. For dynamic headers, use the overload that accepts a `PrettyConsoleInterpolatedStringHandlerFactory`, mirroring the spinner pattern.
+`ProgressBar.Update` lets you keep refreshing status text and progress together. You can also set `ProgressBar.MaxLineWidth` on the instance to constrain the rendered line before each update, mirroring the `maxLineWidth` option on `ProgressBar.Render`. The helper `ProgressBar.Render` keeps the cursor on the same line, which is ideal inside `Console.Overwrite`. For dynamic headers, use the overload that accepts a `PrettyConsoleInterpolatedStringHandlerFactory`, mirroring the spinner pattern.
 
 #### Spinner (indeterminate progress)
 
-`Spinner` renders animated frames on the error pipe. `PrettyConsoleInterpolatedStringHandlerFactory` overloads take a lambda that creates a `PrettyConsoleInterpolatedStringHandler` via the builder for per-frame headers:
+`Spinner` renders animated frames on the error pipe. For dynamic per-frame headers, use the `PrettyConsoleInterpolatedStringHandlerFactory` overload:
 
 ```csharp
 var spinner = new Spinner();
@@ -307,7 +293,7 @@ await spinner.RunAsync(workTask, (builder, out handler) =>
     handler = builder.Build(OutputPipe.Error, $"Syncing {DateTime.Now:T}"));
 ```
 
-The factory runs each frame so you can inject dynamic status text without allocations while avoiding extra struct copies.
+The factory runs each frame, so the header can reflect changing status.
 
 #### Multiple progress bars with tasks + channels
 
@@ -350,7 +336,7 @@ await consumer;
 Console.ClearNextLines(downloads.Length, OutputPipe.Error); // ensure no artifacts remain
 ```
 
-Each producer reports progress over the channel, the consumer loops with `ReadAllAsync`, and `Console.Overwrite` redraws the stacked bars on every update. After the consumer completes, clear the region once to remove the progress UI.
+Each producer reports progress over the channel, the consumer redraws the stacked bars on every update, and the region is cleared once at the end.
 
 ### Pipes & writers
 
@@ -363,6 +349,14 @@ TextReader @in = ConsoleContext.In;
 ```
 
 Use these when you need direct writer access (custom buffering, `WriteWhiteSpaces`, etc.) or swap in mocks for testing. In cases where you must call raw `System.Console` APIs (e.g., `Console.ReadKey(true)`), do so explicitly—PrettyConsole never hides the built-in console.
+
+## Color model
+
+- Prefer `Color` and `Markup` inside `WriteInterpolated` / `WriteLineInterpolated`.
+- Use `new AnsiToken("...")` for custom ANSI you want to interpolate like any other style token.
+- `ConsoleColor` remains supported for compatibility and for APIs that explicitly take it (`ProgressBar`, `Spinner`, low-level `Write`/`WriteLine`, `Console.SetColors`, `TypeWrite`, and similar APIs).
+- `AnsiColors` maps `ConsoleColor` values into the same token-based color model.
+- If you use raw ANSI strings directly, PrettyConsole will not manage them for you.
 
 ## Contributing
 

@@ -76,7 +76,7 @@ public class LiveConsoleRegionTests {
             Error = Utilities.GetWriter(out var errorWriter);
             using var region = new LiveConsoleRegion();
 
-            region.RenderProgress(40, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"hdr"), sameLine: true, progressColor: Cyan);
+            region.RenderProgress(40, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"hdr"), sameLine: true, progressColor: Color.Cyan);
 
             var output = Utilities.StripAnsiSequences(errorWriter.ToString());
             await Assert.That(output).Contains("hdr");
@@ -97,7 +97,7 @@ public class LiveConsoleRegionTests {
             Error = Utilities.GetWriter(out var errorWriter);
             using var region = new LiveConsoleRegion();
 
-            region.RenderProgress(55, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"status"), sameLine: false, progressColor: Cyan);
+            region.RenderProgress(55, (builder, out handler) => handler = builder.Build(OutputPipe.Error, $"status"), sameLine: false, progressColor: Color.Cyan);
 
             var output = Utilities.StripAnsiSequences(errorWriter.ToString());
             await Assert.That(output).Contains("status");

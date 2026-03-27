@@ -47,11 +47,32 @@ public static class AdvancedOutputExtensions {
         /// <param name="output"></param>
         /// <param name="colorTuple"></param>
         /// <param name="delay">Delay in milliseconds between each character.</param>
-        public static async Task TypeWrite(string output, (ConsoleColor foregroundColor, ConsoleColor backgroundColor) colorTuple, int delay = TypeWriteDefaultDelay) {
+        public static async Task TypeWrite(string output, (AnsiToken foregroundColor, AnsiToken backgroundColor) colorTuple, int delay = TypeWriteDefaultDelay) {
             foreach (char c in output) {
-                Console.Write(c, OutputPipe.Out, colorTuple.foregroundColor, colorTuple.backgroundColor);
+                Console.WriteInterpolated($"{colorTuple.foregroundColor}{colorTuple.backgroundColor}{c}");
                 await Task.Delay(delay);
             }
+        }
+
+        /// <summary>
+        /// Types out <paramref name="output"/> character by character with a delay of <paramref name="delay"/> milliseconds between each character, styled using <paramref name="colorTuple"/>.
+        /// </summary>
+        /// <param name="output"></param>
+        /// <param name="colorTuple"></param>
+        /// <param name="delay">Delay in milliseconds between each character.</param>
+        public static async Task TypeWrite(string output, (ConsoleColor foregroundColor, ConsoleColor backgroundColor) colorTuple, int delay = TypeWriteDefaultDelay) {
+            await TypeWrite(output, (AnsiColors.Foreground(colorTuple.foregroundColor), AnsiColors.Background(colorTuple.backgroundColor)), delay);
+        }
+
+        /// <summary>
+        /// Types out <paramref name="output"/> character by character with a delay of <paramref name="delay"/> milliseconds between each character, styled using <paramref name="colorTuple"/> followed by a line terminator.
+        /// </summary>
+        /// <param name="output"></param>
+        /// <param name="colorTuple"></param>
+        /// <param name="delay">Delay in milliseconds between each character.</param>
+        public static async Task TypeWriteLine(string output, (AnsiToken foregroundColor, AnsiToken backgroundColor) colorTuple, int delay = TypeWriteDefaultDelay) {
+            await TypeWrite(output, colorTuple, delay);
+            Console.NewLine();
         }
 
         /// <summary>
@@ -61,7 +82,7 @@ public static class AdvancedOutputExtensions {
         /// <param name="colorTuple"></param>
         /// <param name="delay">Delay in milliseconds between each character.</param>
         public static async Task TypeWriteLine(string output, (ConsoleColor foregroundColor, ConsoleColor backgroundColor) colorTuple, int delay = TypeWriteDefaultDelay) {
-            await TypeWrite(output, colorTuple, delay);
+            await TypeWrite(output, (AnsiColors.Foreground(colorTuple.foregroundColor), AnsiColors.Background(colorTuple.backgroundColor)), delay);
             Console.NewLine();
         }
     }

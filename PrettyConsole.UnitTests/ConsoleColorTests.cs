@@ -96,6 +96,12 @@ public class ConsoleColorTests {
     }
 
     [Test]
+    public async Task ConsoleColor_ImplicitlyConvertsToForegroundAnsiToken() {
+        AnsiToken token = ConsoleColor.Green;
+        await Assert.That(token).IsSameReferenceAs(Color.Green);
+    }
+
+    [Test]
     public async Task AnsiColors_IndexOrder_MatchesConsoleColorEnumOrder() {
         AnsiToken[] expectedForeground = [
             Color.Black,
