@@ -3,17 +3,21 @@
 namespace PrettyConsole;
 
 public static partial class ConsoleContext {
-#if WINDOWS
     /// <summary>
-    /// Holds a value that checks whether ANSI is supported in the current console (WINDOWS ONLY)
+    /// Holds a value that checks whether ANSI is supported in the current console.
     /// </summary>
     public static readonly bool IsAnsiSupported = GetIsAnsiSupported();
 
     private static bool GetIsAnsiSupported() {
+        if (!OperatingSystem.IsWindows()) {
+            return true;
+        }
+
         nint outputHandle = GetStdHandle(StdOutputHandle);
         if (outputHandle == 0 || outputHandle == InvalidHandleValue) {
             return false;
         }
+
 
         return GetConsoleMode(outputHandle, out uint consoleMode)
             && (consoleMode & EnableVirtualTerminalProcessing) != 0;
@@ -28,5 +32,4 @@ public static partial class ConsoleContext {
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool GetConsoleMode(nint hConsoleHandle, out uint lpMode);
-#endif
 }

@@ -1,12 +1,15 @@
-#if WINDOWS
 using System.Runtime.InteropServices;
 
 namespace PrettyConsole.UnitTests;
 
 [SkipWhenConsoleUnavailable]
-public static partial class ConsoleContextWindowsAnsiTests {
+public partial class ConsoleContextWindowsAnsiTests {
     [Test]
-    public static async Task IsAnsiSupported_MatchesConsoleModeVirtualTerminalFlag() {
+    public async Task IsAnsiSupported_MatchesConsoleModeVirtualTerminalFlag() {
+        if (!OperatingSystem.IsWindows()) {
+            return;
+        }
+
         bool expected = TryGetVirtualTerminalSupport(out bool isSupported) && isSupported;
 
         await Assert.That(ConsoleContext.IsAnsiSupported).IsEqualTo(expected);
@@ -39,4 +42,3 @@ public static partial class ConsoleContextWindowsAnsiTests {
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool GetConsoleMode(nint hConsoleHandle, out uint lpMode);
 }
-#endif
