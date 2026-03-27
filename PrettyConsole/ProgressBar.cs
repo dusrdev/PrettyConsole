@@ -150,7 +150,6 @@ public class ProgressBar {
     /// <param name="progressChar">The character used to render the filled portion of the bar.</param>
     /// <param name="maxLineWidth">Optional total line length (including brackets and percentage). When provided, the rendered output will not exceed this width unless the decorations already require more characters.</param>
     public static void Render(OutputPipe pipe, int percentage, ConsoleColor progressColor, char progressChar = DefaultProgressChar, int? maxLineWidth = null) {
-        Console.ResetColor();
         var handler = new PrettyConsoleInterpolatedStringHandler(pipe);
         AppendTo(ref handler, percentage, progressColor, Console.CursorLeft, progressChar, maxLineWidth);
         handler.Flush();
