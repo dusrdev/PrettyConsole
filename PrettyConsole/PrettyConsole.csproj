@@ -25,7 +25,7 @@
 		<PackageProjectUrl>https://github.com/dusrdev/PrettyConsole/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/dusrdev/PrettyConsole/</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Version>6.0.0</Version>
+		<Version>6.0.1</Version>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -44,16 +44,14 @@
 
 	<PropertyGroup>
 		<PackageReleaseNotes>
-			- Added LiveConsoleRegion for retained live output on one pipe.
-			- Added Color and AnsiToken as the preferred styled-output color model.
-			- Added token-based color support across ProgressBar, Spinner, TypeWrite, and live-region progress rendering.
-			- Added Windows ANSI capability detection for styled output.
-			- BREAKING: Markup and AnsiColors now expose guarded AnsiToken values instead of raw strings.
+			- Updated the shipped PrettyConsole skill and README guidance to match the v6 API surface.
+			- Removed the stale packaged v5 skill reference and added payload cleanup for existing consumers.
+			- Clarified LiveConsoleRegion lifecycle guidance, including when Dispose versus Clear should be used.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.*" PrivateAssets="All" />
 		<PackageReference Include="Payload" Version="1.0.0" />
 	</ItemGroup>
 
@@ -62,6 +60,9 @@
 			<Tag>PrettyConsoleExpert</Tag>
 			<TargetPath>.agents/skills/pretty-console-expert</TargetPath>
 		</PayloadContent>
+		<PayloadRemove Include=".agents/skills/pretty-console-expert/references/v5-api-map.md">
+			<Tag>PrettyConsoleExpert</Tag>
+		</PayloadRemove>
 	</ItemGroup>
 
 	<PropertyGroup>
