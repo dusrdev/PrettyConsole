@@ -1,4 +1,4 @@
-#:package PrettyConsole@5.4.0
+#:package PrettyConsole@6.0.0
 
 using PrettyConsole;
 
@@ -14,7 +14,7 @@ var region = PromptSelection(
 	title: "Pick region",
 	options: ["us-east", "us-west", "eu-central"]);
 
-Console.WriteLineInterpolated($"{ConsoleColor.Green}Ready to deploy!");
+Console.WriteLineInterpolated($"{Color.Green}Ready to deploy!");
 Console.WriteLineInterpolated($"Environment: {Markup.Underline}{environment}{Markup.ResetUnderline}");
 Console.WriteLineInterpolated($"Features:    {Markup.Underline}{string.Join(", ", features)}{Markup.ResetUnderline}");
 Console.WriteLineInterpolated($"Region:      {Markup.Underline}{region}{Markup.ResetUnderline}");
@@ -27,9 +27,9 @@ static string PromptSelection(string title, string[] options) {
 
 	while (selection.Length == 0) {
 		Console.Overwrite(() => {
-			selection = Console.Selection(options, $"{ConsoleColor.Cyan}{title}{ConsoleColor.DefaultForeground}:");
+			selection = Console.Selection(options, $"{Color.Cyan}{title}{Color.Default}:");
 			if (selection.Length == 0) {
-				Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Red}Invalid choice. Try again.");
+				Console.WriteLineInterpolated(OutputPipe.Error, $"{Color.Red}Invalid choice. Try again.");
 			}
 		}, lines: options.Length + 3, pipe: OutputPipe.Out);
 	}
@@ -42,9 +42,9 @@ static string[] PromptMultiSelection(string title, string[] options) {
 
 	while (selection.Length == 0) {
 		Console.Overwrite(() => {
-			selection = Console.MultiSelection(options, $"{ConsoleColor.Cyan}{title}{ConsoleColor.DefaultForeground}:");
+			selection = Console.MultiSelection(options, $"{Color.Cyan}{title}{Color.Default}:");
 			if (selection.Length == 0) {
-				Console.WriteLineInterpolated(OutputPipe.Error, $"{ConsoleColor.Red}Please pick at least one option.");
+				Console.WriteLineInterpolated(OutputPipe.Error, $"{Color.Red}Please pick at least one option.");
 			}
 		}, lines: options.Length + 3, pipe: OutputPipe.Out);
 	}

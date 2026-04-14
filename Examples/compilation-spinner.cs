@@ -1,4 +1,4 @@
-#:package PrettyConsole@5.4.0
+#:package PrettyConsole@6.0.0
 
 using System.Diagnostics;
 using PrettyConsole;
@@ -22,15 +22,15 @@ var build = Task.Run(async () => {
 
 var spinner = new Spinner {
 	Pattern = Spinner.Patterns.Braille,
-	ForegroundColor = ConsoleColor.Green,
+	ForegroundColor = Color.Green,
 	DisplayElapsedTime = true,
 	UpdateRate = 100,
 };
 
 await spinner.RunAsync(build, (builder, out handler) => {
 	var current = Volatile.Read(ref step);
-	handler = builder.Build(OutputPipe.Error, $"Current step: {ConsoleColor.Green}{steps[current]}");
+	handler = builder.Build(OutputPipe.Error, $"Current step: {Color.Green}{steps[current]}");
 }, CancellationToken.None);
 
 var elapsed = Stopwatch.GetElapsedTime(start);
-Console.WriteLineInterpolated($"Build complete in {ConsoleColor.Green}{elapsed:duration}");
+Console.WriteLineInterpolated($"Build complete in {Color.Green}{elapsed:duration}");

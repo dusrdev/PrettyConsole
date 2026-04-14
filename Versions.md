@@ -1,5 +1,14 @@
 # Versions
 
+## v6.0.1
+
+### Changed
+
+- Updated the shipped `pretty-console-expert` skill and its references so the packaged guidance reflects the v6 API surface.
+- Removed the stale packaged `v5-api-map.md` skill reference and added package cleanup for consumers that already received it.
+- Clarified `LiveConsoleRegion` lifecycle docs so examples use `Dispose()` as the normal cleanup path and describe `Clear()` as the reusable mid-scope hide case.
+- Refreshed README and file-based example guidance to match the current `Color`/`Markup`/`AnsiToken`-first model and the current package version.
+
 ## v6.0.0
 
 ### Added
@@ -48,7 +57,7 @@
   - Is now passed by `ref` to accepting methods.
 - Added `SkipLines` which can be used to move the cursor `n` amount of lines forward. This can be used to keep the output of overwritten lines, like progress bars, spinners, `OverWrite` and so on and forth.
 - `Confirm(trueValues, ref handler, bool emptyIsTrue = true)` parameters were reordered, `emptyIsTrue` is now the last parameter.
-- `IndeterminateProgressBar` overloads with the `Func` now use `PrettyConsoleInterpolatedStringHandlerFactory` instead, and usage is now `(builder, out handler) => handler = PrettyConsoleInterpolatedStringHandler.Build(...)`. This was required to reduce compiler created struct copies and increase safety.
+- `IndeterminateProgressBar` overloads with the `Func` now use `PrettyConsoleInterpolatedStringHandlerFactory` instead, and usage is now `(builder, out handler) => handler = builder.Build(OutputPipe.Error, $"...")`. This was required to reduce compiler created struct copies and increase safety.
   - Building custom handlers is now done with `PrettyConsoleInterpolatedStringHandlerBuilder` which contains a thread-safe singleton; `PrettyConsoleInterpolatedStringHandler.Build` was removed in favor of using the builder.
 - `AnsiColors` which provides static utilities to convert `ConsoleColor` to `ANSI` sequences is now public (was previously internal)
 
@@ -62,8 +71,8 @@
 
 - `Console.WriteInterpolated` and `Console.WriteLineInterpolated` now return a `int` that contains the number of characters written using the handler. This could be used to help calculate paddings or other things when creating structured output.
   - It will ignore escape sequences that were added using the handler like `ConsoleColor`, `Color`, `Markup`, or any guarded `AnsiToken`, but if you hardcode your own they might be taken into account. As such, if you do this, I recommend first checking the length without using those helpers, then using this result for the calculation.
-- `PrettyConsoleExtensions` that contains the `Out`, `Err`, `In`, etc... was renamed to `ConsoleContext`.
-- The standard `Out`, `Err`, `In` streams now have a public setter, so end users could mock it in their own tests.
+- `PrettyConsoleExtensions` that contains the `Out`, `Error`, `In`, etc... was renamed to `ConsoleContext`.
+- The standard `Out`, `Error`, `In` streams now have a public setter, so end users could mock them in their own tests.
 - `Console.WriteWhiteSpaces(length, OutputPipe)` was added to reduce the complexity of using the `TextWriter` extension.
 
 ## v5.0.0 - .NET 10+

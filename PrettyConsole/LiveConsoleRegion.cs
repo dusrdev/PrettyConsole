@@ -4,6 +4,7 @@ namespace PrettyConsole;
 
 /// <summary>
 /// Manages a retained transient console region on a single output pipe while coordinating durable writes above it.
+/// Disposing the region clears the retained snapshot and permanently closes the instance.
 /// </summary>
 public sealed class LiveConsoleRegion : IDisposable {
     private const int InitialSnapshotCapacity = 256;
@@ -132,7 +133,8 @@ public sealed class LiveConsoleRegion : IDisposable {
     }
 
     /// <summary>
-    /// Clears the retained region from the console and discards the current snapshot.
+    /// Clears the retained region from the console and discards the current snapshot without disposing the region.
+    /// Call this when the pinned region should disappear before the region instance itself goes out of scope and you still intend to reuse it later.
     /// </summary>
     public void Clear() {
         lock (_lock) {
@@ -149,21 +151,13 @@ public sealed class LiveConsoleRegion : IDisposable {
         }
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Clears any retained snapshot and permanently closes the region.
+    /// After disposal, the region can no longer be rendered to or written through.
+    /// </summary>
     public void Dispose() {
-        lock (_lock) {
-            if (_disposed) {
-                return;
-            }
-
-            if (_isVisible) {
-                ClearVisibleOnly();
-            }
-
-            _snapshot.Clear();
-            OccupiedLines = 0;
-            _disposed = true;
-        }
+        Clear();
+        _disposed = true;
     }
 
     private void ClearVisibleOnly() {

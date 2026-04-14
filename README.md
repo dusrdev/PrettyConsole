@@ -168,7 +168,7 @@ if (!Console.TryReadLine(out DayOfWeek day, ignoreCase: true, $"Day? ")) {
 var apiKey = Console.ReadLine($"Enter API key ({DarkGray}optional{Default}): ");
 ```
 
-All input helpers work with `IParsable<T>` and enums, respect the active culture, and honor `OutputPipe` when prompts are colored.
+All input helpers work with `IParsable<T>` and enums, respect the active culture, and render prompts through PrettyConsole's normal output path.
 
 ### Advanced inputs
 
@@ -223,7 +223,7 @@ Always call `Console.ClearNextLines(totalLines, pipe)` once after the last `Over
 
 ### Live console regions
 
-`LiveConsoleRegion` is useful when status lines should continue streaming normally while a pinned transient line keeps updating at the bottom.
+`LiveConsoleRegion` is useful when status lines should continue streaming normally while a pinned transient line keeps updating at the bottom. In normal usage, disposing the region removes the retained snapshot for you, so a `using` block is usually all the cleanup you need. Call `Clear()` only when you want the pinned region to disappear before the region instance itself goes out of scope and you still plan to reuse that same instance later.
 
 ```csharp
 using var live = new LiveConsoleRegion(OutputPipe.Error);
@@ -234,12 +234,10 @@ live.WriteLine($"Updated package-b");
 
 live.RenderProgress(42, (builder, out handler) =>
     handler = builder.Build(OutputPipe.Error, $"Compiling"));
-
 live.Render($"Linking {elapsed:duration}");
-live.Clear();
 ```
 
-Use `WriteLine` for lines that should scroll above the live region, `Render` for transient snapshots, and `RenderProgress` when you want the built-in progress bar inside the region. In interactive CLIs, `OutputPipe.Error` is usually the right pipe so stdout stays machine-friendly.
+Use `WriteLine` for lines that should scroll above the live region, `Render` for transient snapshots, and `RenderProgress` when you want the built-in progress bar inside the region. `Dispose()` is the usual end-of-life cleanup and clears the retained snapshot before the region becomes unusable. `Clear()` is different: it removes the current snapshot but leaves the region usable for a later `Render(...)` or `RenderProgress(...)`, which is mainly useful when one phase should temporarily remove the pinned region before a later phase reuses the same instance. In interactive CLIs, `OutputPipe.Error` is usually the right pipe so stdout stays machine-friendly.
 
 ### Menus and tables
 

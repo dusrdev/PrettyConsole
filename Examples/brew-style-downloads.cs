@@ -1,4 +1,4 @@
-#:package PrettyConsole@5.4.0
+#:package PrettyConsole@6.0.0
 
 using PrettyConsole;
 
@@ -23,10 +23,10 @@ while (!task.IsCompleted) {
 		foreach (var download in downloads) {
 			int written = 0;
 			if (download.IsComplete) {
-				written += Console.WriteInterpolated(OutputPipe.Error, $"{ConsoleColor.Green}✔︎{ConsoleColor.DefaultForeground} {download.Name}") - 1;
+				written += Console.WriteInterpolated(OutputPipe.Error, $"{Color.Green}✔︎{Color.Default} {download.Name}") - 1;
 				// I remove 1 from written here because "✔︎" is 2 characters long but renders a single block in the terminal
 			} else {
-				written += Console.WriteInterpolated(OutputPipe.Error, $"{ConsoleColor.Green}{spinner[spinnerIndex]}{ConsoleColor.DefaultForeground} {download.Name}");
+				written += Console.WriteInterpolated(OutputPipe.Error, $"{Color.Green}{spinner[spinnerIndex]}{Color.Default} {download.Name}");
 			}
 
 			var current = (double)download.BytesDownloaded;
@@ -51,7 +51,7 @@ if (keepProgressOutput) {
 	Console.ClearNextLines(count, OutputPipe.Error);
 }
 
-Console.WriteLineInterpolated($"{ConsoleColor.Green}Done!{ConsoleColor.DefaultForeground}");
+Console.WriteLineInterpolated($"{Color.Green}Done!");
 
 /// <summary>
 /// Represents a single download in a "brew" style feed with progress tracking.

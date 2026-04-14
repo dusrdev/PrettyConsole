@@ -7,18 +7,13 @@ description: Expert workflow for using PrettyConsole correctly and efficiently i
 
 ## Core Workflow
 
-1. Verify the installed PrettyConsole version before coding.
-- Read `Directory.Packages.props`, `*.csproj`, and/or run `dotnet list package`.
-- Keep implementation compatible with the installed version; do not "fix" compilation by downgrading unless the user explicitly requests downgrading.
-
-2. Bring extension APIs into scope:
+1. Bring extension APIs into scope:
 
 ```csharp
 using PrettyConsole;
-using static System.Console; // optional
 ```
 
-3. Choose APIs by intent.
+2. Choose APIs by intent.
 - Styled output: `Console.WriteInterpolated`, `Console.WriteLineInterpolated`.
 - Inputs/prompts: `Console.TryReadLine`, `Console.ReadLine`, `Console.Confirm`, `Console.RequestAnyInput`.
 - Dynamic rendering and line control: `Console.Overwrite`, `Console.ClearNextLines`, `Console.SkipLines`, `Console.NewLine`.
@@ -27,7 +22,7 @@ using static System.Console; // optional
 - Menus/tables: `Console.Selection`, `Console.MultiSelection`, `Console.TreeMenu`, `Console.Table`.
 - Low-level override only: use `Console.Write(...)` / `Console.WriteLine(...)` span+`ISpanFormattable` overloads only when you intentionally bypass the handler for a custom formatting pipeline.
 
-4. Route output deliberately.
+3. Route output deliberately.
 - Keep normal prompts, menus, tables, durable user-facing output, and machine-readable non-error output on `OutputPipe.Out` unless there is a specific reason not to.
 - Use `OutputPipe.Error` for transient live UI and for actual errors/diagnostics/warnings so stdout stays pipe-friendly and error output remains distinguishable.
 - `LiveConsoleRegion` should usually live on `OutputPipe.Error` in interactive CLIs. Keep the durable lines that must coordinate with it flowing through the region instance instead of writing directly to the same pipe elsewhere.
@@ -51,7 +46,7 @@ using static System.Console; // optional
 - Prefer `Color`, `Markup`, and guarded `AnsiToken` in styled output. Use `Color.*` for token-based color APIs such as `ProgressBar`, `Spinner`, `TypeWrite`, and `LiveConsoleRegion.RenderProgress`. Keep `ConsoleColor` for APIs that explicitly require it, such as low-level span writes or `Console.SetColors`.
 - Route transient UI (spinner/progress/overwrite loops) to `OutputPipe.Error` to keep stdout pipe-friendly, and use `OutputPipe.Error` for genuine errors/diagnostics. Keep ordinary non-error interaction flow on `OutputPipe.Out`.
 - Spinner/progress/overwrite output is caller-owned after rendering completes. Explicitly remove it with `Console.ClearNextLines(totalLines, pipe)` or intentionally keep the region with `Console.SkipLines(totalLines)`.
-- `LiveConsoleRegion` is the right primitive when durable line output and transient status must interleave over time. It is line-oriented: use `WriteLine`, not inline writes, for cooperating durable output above the retained region.
+- `LiveConsoleRegion` is the right primitive when durable line output and transient status must interleave over time. It is line-oriented: use `WriteLine`, not inline writes, for cooperating durable output above the retained region. Disposing the region clears the retained snapshot automatically; call `Clear()` only when the region should disappear before the object itself is disposed and you still want to reuse that same instance later.
 - Only use the bounded `Channel<T>` snapshot pattern when multiple producers must update the same live region at high frequency. For single-producer or modest-rate updates, keep the rendering loop simple.
 
 ## Practical Patterns
@@ -114,12 +109,12 @@ live.Render($"Resolving graph");
 live.WriteLine($"Updated package-a");
 live.RenderProgress(65, (builder, out handler) =>
     handler = builder.Build(OutputPipe.Error, $"Compiling"));
-live.Clear();
+live.Render($"Linking");
 ```
 
 ## Reference File
 
-Read [references/v5-api-map.md](references/v5-api-map.md) when you need exact usage snippets, migration mapping from old APIs, or a compile-fix checklist.
+Read [references/v6-api-map.md](references/v6-api-map.md) when you need exact usage snippets, migration mapping from old APIs, or a compile-fix checklist.
 Read [references/testing-with-consolecontext.md](references/testing-with-consolecontext.md) when the task involves testing a PrettyConsole-based CLI or command handler.
 
 If public API usage changes in the edited project, ask whether to update `README.md` and changelog/release-notes files.
